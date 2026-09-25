@@ -7,6 +7,10 @@ contextBridge.exposeInMainWorld('api', {
   readDir: (p) => ipcRenderer.invoke('fs:readDir', p),
   readFile: (p) => ipcRenderer.invoke('fs:readFile', p),
   writeFile: (p, c) => ipcRenderer.invoke('fs:writeFile', p, c),
+  createFile: (p) => ipcRenderer.invoke('fs:createFile', p),
+  createDir: (p) => ipcRenderer.invoke('fs:createDir', p),
+  rename: (from, to) => ipcRenderer.invoke('fs:rename', { from, to }),
+  deletePath: (p) => ipcRenderer.invoke('fs:delete', p),
   openFolder: () => ipcRenderer.invoke('dialog:openFolder'),
   // 配置
   getConfig: () => ipcRenderer.invoke('config:get'),

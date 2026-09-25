@@ -80,6 +80,7 @@ async function renderDir(dirPath, container, depth, seq) {
         else EditorState.treeOpenDirs.add(ent.path);
         renderTree();
       };
+      row.oncontextmenu = (ev) => { ev.preventDefault(); ev.stopPropagation(); showFileTreeMenu(ev.clientX, ev.clientY, ent, dirPath); };
       container.appendChild(row);
       if (open) {
         const childBox = document.createElement('div');
@@ -93,9 +94,88 @@ async function renderDir(dirPath, container, depth, seq) {
         '<span class="icon icon-file ' + ext + '">' + (window.lucideIcon ? window.lucideIcon(fileIconName(ext)) : '') + '</span>' +
         '<span class="name">' + escapeHtml(ent.name) + '</span>';
       row.onclick = () => openFile(ent.path);
+      row.oncontextmenu = (ev) => { ev.preventDefault(); ev.stopPropagation(); showFileTreeMenu(ev.clientX, ev.clientY, ent, dirPath); };
       container.appendChild(row);
     }
   }
+}
+
+/* ---- 文件树右键菜单 + 内联新建/重命名 ---- */
+function showFileTreeMenu(x, y, ent, parentDir) {
+  let menu = document.getElementById('tree-menu');
+  if (!menu) {
+    menu = document.createElement('div');
+    menu.id = 'tree-menu';
+    menu.className = 'ctx-menu';
+    document.body.appendChild(menu);
+  }
+  const mk = (label, icon, act) =>
+    '<div class="ctx-item" data-act="' + label + '"><span class="ctx-ico">' + (window.lucideIcon(icon) || '') + '</span><span class="ctx-label">' + label + '</span></div>';
+  menu.innerHTML =
+    mk('新建文件', 'file-plus') +
+    mk('新建文件夹', 'folder-plus') +
+    '<div class="ctx-sep"></div>' +
+    mk('重命名', 'pencil') +
+    mk('删除', 'trash-2') +
+    mk('复制路径', 'copy');
+  menu.style.left = x + 'px'; menu.style.top = y + 'px';
+  menu.classList.remove('hidden');
+  const actions = {
+    '新建文件': () => startInlineCreate(parentDir, false),
+    '新建文件夹': () => startInlineCreate(parentDir, true),
+    '重命名': () => startInlineRename(ent),
+    '删除': async () => { if (confirm('确定删除「' + ent.name + '」？')) { await window.api.deletePath(ent.path); renderTree(); } },
+    '复制路径': () => { navigator.clipboard.writeText(ent.path); flashStatus('已复制路径'); }
+  };
+  menu.querySelectorAll('.ctx-item').forEach((it) => {
+    it.onclick = () => { menu.classList.add('hidden'); (actions[it.dataset.act] || (() => {}))(); };
+  });
+  setTimeout(() => document.addEventListener('click', () => menu.classList.add('hidden'), { once: true }), 0);
+}
+
+function startInlineRename(ent) {
+  const tree = document.getElementById('filetree');
+  const box = document.createElement('div');
+  box.className = 'tree-item';
+  box.style.paddingLeft = '10px';
+  box.innerHTML = '<span class="twist"></span><input class="tree-input" value="' + escapeHtml(ent.name) + '">';
+  tree.prepend(box);
+  const input = box.querySelector('input');
+  input.focus(); input.select();
+  const finish = async (commit) => {
+    box.remove();
+    const name = input.value.trim();
+    if (commit && name && name !== ent.name) {
+      const to = window.api.pathJoin(window.api.pathDirname(ent.path), name);
+      await window.api.rename(ent.path, to);
+      renderTree();
+    }
+  };
+  input.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); finish(true); } else if (e.key === 'Escape') finish(false); };
+  input.onblur = () => finish(true);
+}
+
+function startInlineCreate(dirPath, isDir) {
+  const tree = document.getElementById('filetree');
+  const box = document.createElement('div');
+  box.className = 'tree-item';
+  box.style.paddingLeft = '10px';
+  box.innerHTML = '<span class="twist"></span><input class="tree-input" placeholder="' + (isDir ? '文件夹名称' : '文件名称') + '">';
+  tree.prepend(box);
+  const input = box.querySelector('input');
+  input.focus();
+  const finish = async (commit) => {
+    box.remove();
+    const name = input.value.trim();
+    if (commit && name) {
+      const full = window.api.pathJoin(dirPath, name);
+      if (isDir) await window.api.createDir(full);
+      else { await window.api.createFile(full); openFile(full); }
+      renderTree();
+    }
+  };
+  input.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); finish(true); } else if (e.key === 'Escape') finish(false); };
+  input.onblur = () => finish(true);
 }
 
 /* ---- 标签页 + Monaco ---- */

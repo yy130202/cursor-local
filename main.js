@@ -157,6 +157,36 @@ ipcMain.handle('dialog:openFolder', async () => {
   return r.filePaths[0];
 });
 
+/* 文件操作（新建/重命名/删除/新建文件夹），均记日志并通知刷新 */
+function notifyFs(path) {
+  if (win && !win.isDestroyed()) win.webContents.send('fs:changed', { path });
+}
+ipcMain.handle('fs:createFile', async (_e, filePath) => {
+  await fsp.mkdir(path.dirname(filePath), { recursive: true });
+  await fsp.writeFile(filePath, '', 'utf8');
+  addLog('info', 'fs', '新建文件 ' + filePath);
+  notifyFs(filePath);
+  return true;
+});
+ipcMain.handle('fs:createDir', async (_e, dirPath) => {
+  await fsp.mkdir(dirPath, { recursive: true });
+  addLog('info', 'fs', '新建文件夹 ' + dirPath);
+  notifyFs(dirPath);
+  return true;
+});
+ipcMain.handle('fs:rename', async (_e, { from, to }) => {
+  await fsp.rename(from, to);
+  addLog('info', 'fs', '重命名 ' + from + ' → ' + to);
+  notifyFs(from); notifyFs(to);
+  return true;
+});
+ipcMain.handle('fs:delete', async (_e, targetPath) => {
+  await fsp.rm(targetPath, { recursive: true, force: true });
+  addLog('warning', 'fs', '删除 ' + targetPath);
+  notifyFs(targetPath);
+  return true;
+});
+
 ipcMain.handle('config:get', () => loadConfig());
 ipcMain.handle('config:set', (_e, partial) => {
   const cfg = { ...loadConfig(), ...partial };
@@ -958,6 +988,18 @@ async function takeScreenshots() {
       });
     })()`);
     console.log('[debug keymap]', km);
+    // 文件操作 IPC 往返验证
+    const fsops = await win.webContents.executeJavaScript(`(async () => {
+      const base = window.api.pathJoin(${JSON.stringify(__dirname)}, '.fs-test');
+      try {
+        await window.api.createDir(base);
+        await window.api.createFile(window.api.pathJoin(base, 'a.txt'));
+        await window.api.rename(window.api.pathJoin(base, 'a.txt'), window.api.pathJoin(base, 'b.txt'));
+        await window.api.deletePath(base);
+        return JSON.stringify({ ok: true, treeMenuFn: typeof showFileTreeMenu });
+      } catch (e) { return JSON.stringify({ ok: false, err: String(e) }); }
+    })()`);
+    console.log('[debug fsops]', fsops);
   } catch (err) {
     console.error('[shot] FAILED:', err);
   }

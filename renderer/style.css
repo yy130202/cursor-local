@@ -159,6 +159,11 @@ main { flex: 1; display: flex; min-height: 0; position: relative; z-index: 1; }
 .tree-item .icon { flex-shrink: 0; display: grid; place-items: center; }
 .tree-item .icon svg.lucide { width: 15px; height: 15px; }
 .tree-item .name { overflow: hidden; text-overflow: ellipsis; }
+.tree-input {
+  flex: 1; min-width: 0; background: rgba(0,0,0,0.3); color: var(--text);
+  border: 1px solid var(--accent); border-radius: 4px; padding: 2px 6px;
+  font-size: 12px; font-family: inherit; outline: none;
+}
 .icon-dir { color: #dcb67a; }
 .icon-file { color: var(--text-dim); }
 .icon-file.js, .icon-file.ts, .icon-file.jsx { color: #f1e05a; }
