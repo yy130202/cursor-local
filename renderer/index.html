@@ -243,6 +243,11 @@
               <div class="theme-cards small" id="theme-cards-settings"></div>
             </div>
           </div>
+          <div class="sgroup">
+            <div class="srow-label" style="padding: 13px 0 6px;">快捷键</div>
+            <div class="srow-desc" style="margin-bottom: 6px;">点击右侧按键重新录制自定义快捷键（右键菜单与快捷键同步生效）</div>
+            <div id="keybind-list"></div>
+          </div>
         </div>
         <div class="spage" data-page="about">
           <div class="spage-title">关于</div>
@@ -303,6 +308,7 @@
     if (typeof define === 'function' && window.__amdFlag !== undefined) { try { define.amd = window.__amdFlag; } catch (e) {} }
     delete window.__amdFlag;
   </script>
+  <script src="keymap.js"></script>
   <script src="editor.js"></script>
   <script src="agents.js"></script>
   <script src="theme.js"></script>

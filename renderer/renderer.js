@@ -63,7 +63,48 @@ async function openSettings() {
   if (aiToggle) aiToggle.classList.toggle('on', cfg.aiComplete !== false);
   const permToggle = document.getElementById('cfg-permission');
   if (permToggle) permToggle.classList.toggle('on', cfg.permission === 'full');
+  renderKeybinds();
   modal.classList.remove('hidden');
+}
+
+/* ---- 快捷键列表 + 录制 ---- */
+let recordingId = null;
+function renderKeybinds() {
+  const list = document.getElementById('keybind-list');
+  if (!list || typeof window.getCommandList !== 'function') return;
+  const cmds = window.getCommandList();
+  list.innerHTML = '';
+  cmds.forEach((c) => {
+    const row = document.createElement('div');
+    row.className = 'srow';
+    row.innerHTML =
+      '<div class="srow-main"><div class="srow-label">' + escapeHtml(c.label) + '</div></div>' +
+      '<button class="keybind-btn" data-id="' + c.id + '">' + escapeHtml(c.key) + '</button>';
+    row.querySelector('.keybind-btn').onclick = () => startKeyRecord(c.id);
+    list.appendChild(row);
+  });
+}
+
+function startKeyRecord(id) {
+  if (recordingId) return;
+  recordingId = id;
+  const btn = document.querySelector('.keybind-btn[data-id="' + id + '"]');
+  if (btn) { btn.classList.add('recording'); btn.textContent = '按下组合键…'; }
+  window.__keyRecordHandler = (e) => {
+    e.preventDefault(); e.stopPropagation();
+    const combo = window.formatKeyEvent(e);
+    if (!combo) return;
+    finishKeyRecord(combo);
+  };
+  window.addEventListener('keydown', window.__keyRecordHandler, true);
+}
+
+async function finishKeyRecord(combo) {
+  const id = recordingId;
+  recordingId = null;
+  window.removeEventListener('keydown', window.__keyRecordHandler, true);
+  if (id && combo) await window.setKeybinding(id, combo);
+  renderKeybinds();
 }
 
 document.getElementById('settings-btn').onclick = openSettings;

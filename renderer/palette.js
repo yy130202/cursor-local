@@ -123,13 +123,6 @@
     }
   }
 
-  /* ---- 快捷键 ---- */
-  window.addEventListener('keydown', (e) => {
-    const mod = e.ctrlKey || e.metaKey;
-    if (mod && e.shiftKey && e.key.toLowerCase() === 'p') { e.preventDefault(); openPalette(); }
-    else if (mod && e.shiftKey && e.key.toLowerCase() === 'f') { e.preventDefault(); openGlobalSearch(); }
-  });
-
   // 暴露给调试/外部调用
   window.openPalette = openPalette;
   window.openGlobalSearch = openGlobalSearch;

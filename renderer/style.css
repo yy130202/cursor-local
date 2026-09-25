@@ -1020,3 +1020,36 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
 .log-src { flex-shrink: 0; color: var(--accent); }
 .log-msg { flex: 1; color: var(--text); white-space: pre-wrap; }
 .log-time { flex-shrink: 0; color: var(--text-dim); }
+
+/* ==================== 编辑器右键菜单 ==================== */
+.ctx-menu {
+  position: fixed; z-index: 400; min-width: 230px;
+  background: var(--glass-strong);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border: 1px solid var(--glass-border); border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 16px 50px rgba(0,0,0,0.55);
+  animation: pop 0.12s ease;
+}
+.ctx-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 10px; border-radius: 7px; cursor: pointer; font-size: 13px; color: var(--text);
+}
+.ctx-item:hover { background: var(--accent); color: var(--accent-contrast); }
+.ctx-ico { display: grid; place-items: center; }
+.ctx-ico svg.lucide { width: 15px; height: 15px; }
+.ctx-label { flex: 1; }
+.ctx-key { font-size: 11px; color: var(--text-dim); font-family: Consolas, monospace; }
+.ctx-item:hover .ctx-key { color: var(--accent-contrast); opacity: 0.8; }
+.ctx-sep { height: 1px; background: var(--glass-border); margin: 5px 6px; }
+
+/* 快捷键设置 */
+.keybind-btn {
+  background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+  color: var(--text); border-radius: 8px; padding: 5px 12px; cursor: pointer;
+  font-family: Consolas, monospace; font-size: 12px; min-width: 96px; flex-shrink: 0;
+  transition: border-color 0.12s ease, color 0.12s ease;
+}
+.keybind-btn:hover { border-color: var(--accent); }
+.keybind-btn.recording { border-color: var(--accent); color: var(--accent); animation: pulse 1s infinite; }

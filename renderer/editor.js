@@ -116,7 +116,7 @@ require(['vs/editor/editor.main'], function () {
       quickSuggestions: { other: true, comments: true, strings: true }
     });
     setupInlineCompletion();  // AI 代码补全（Tab 接受）
-    setupInlineActions();     // 选区 AI 操作
+    if (typeof window.setupEditorContextMenu === 'function') window.setupEditorContextMenu(EditorState.editor);
     monacoReady = true;
     while (pendingOpens.length) openFile(pendingOpens.shift());
   } catch (err) {
@@ -150,37 +150,33 @@ function setupInlineCompletion() {
     freeInlineCompletions: () => {}
   };
   monaco.languages.registerInlineCompletionsProvider({ pattern: '**' }, provider);
-  // 手动触发快捷键 Alt+\\
-  EditorState.editor.addCommand(monaco.KeyMod.Alt | monaco.KeyCode.Backslash, () => {
-    EditorState.editor.trigger('keyboard', 'editor.action.inlineSuggest.trigger', {});
-  });
 }
 
-/* ---- 选区 AI 操作（解释 / 注释 / 改写 / 测试） ---- */
-function setupInlineActions() {
+/* ---- 选区 AI 操作（解释 / 注释 / 改写 / 测试），暴露全局供右键菜单与快捷键共用 ---- */
+window.applyAiEdit = async (instruction) => {
   const ed = EditorState.editor;
-  const applyEdit = async (instruction) => {
-    const sel = ed.getSelection();
-    if (!sel || sel.isEmpty()) { flashStatus('请先选中代码'); return; }
-    const text = ed.getModel().getValueInRange(sel);
-    flashStatus('AI 处理中…');
-    let r;
-    try { r = await window.api.aiEdit(text, instruction); }
-    catch { flashStatus('AI 调用失败'); return; }
-    if (!r.ok) { flashStatus(r.error || 'AI 处理失败'); return; }
-    if (instruction === 'explain') {
-      showAiPanel('解释', r.result, null);
-    } else {
-      ed.executeEdits('ai-edit', [{ range: sel, text: r.result, forceMoveMarkers: true }]);
-      flashStatus('已应用「' + ({ comment: '注释', rewrite: '改写', test: '测试' }[instruction] || instruction) + '」');
-    }
-  };
-  const mod = monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt;
-  ed.addCommand(mod | monaco.KeyCode.KeyE, () => applyEdit('explain'));
-  ed.addCommand(mod | monaco.KeyCode.KeyC, () => applyEdit('comment'));
-  ed.addCommand(mod | monaco.KeyCode.KeyR, () => applyEdit('rewrite'));
-  ed.addCommand(mod | monaco.KeyCode.KeyT, () => applyEdit('test'));
-}
+  if (!ed) return;
+  const sel = ed.getSelection();
+  if (!sel || sel.isEmpty()) { flashStatus('请先选中代码'); return; }
+  const text = ed.getModel().getValueInRange(sel);
+  flashStatus('AI 处理中…');
+  let r;
+  try { r = await window.api.aiEdit(text, instruction); }
+  catch { flashStatus('AI 调用失败'); return; }
+  if (!r.ok) { flashStatus(r.error || 'AI 处理失败'); return; }
+  if (instruction === 'explain') {
+    showAiPanel('解释', r.result, null);
+  } else {
+    ed.executeEdits('ai-edit', [{ range: sel, text: r.result, forceMoveMarkers: true }]);
+    flashStatus('已应用「' + ({ comment: '注释', rewrite: '改写', test: '测试' }[instruction] || instruction) + '」');
+  }
+};
+
+/* 手动触发 AI 补全 */
+window.triggerAiComplete = () => {
+  const ed = EditorState.editor;
+  if (ed) ed.trigger('keyboard', 'editor.action.inlineSuggest.trigger', {});
+};
 
 function flashStatus(msg) {
   document.getElementById('status-right').textContent = msg;

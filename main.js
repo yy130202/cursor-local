@@ -55,7 +55,8 @@ function loadConfig() {
     lastFolder: '',
     theme: { preset: 'aurora', custom: null },
     aiComplete: true,
-    permission: 'safe'
+    permission: 'safe',
+    keybindings: {}
   };
   try {
     const raw = JSON.parse(fs.readFileSync(configPath(), 'utf8'));
@@ -843,20 +844,24 @@ async function takeScreenshots() {
     await sleep(2500); // 等待 monaco 加载
 
     // 1. 主页
-    const homeDbg = await win.webContents.executeJavaScript(`JSON.stringify({
-      themeCards: document.querySelectorAll('.theme-card').length,
-      heroBanner: !!document.querySelector('.hero-banner'),
-      fakeWindow: !!document.querySelector('.fake-window'),
-      featureCards: document.querySelectorAll('.feature-card').length,
-      iconTiles: document.querySelectorAll('.icon-tile').length,
-      checkList: document.querySelectorAll('.check-list li').length,
-      orbs: document.querySelectorAll('.orb').length,
-      composer: !!document.getElementById('home-composer'),
-      snavItems: document.querySelectorAll('.snav-item').length,
-      accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
-      homeActive: document.getElementById('home-view').classList.contains('active'),
-      lucideIcons: document.querySelectorAll('svg.lucide').length
-    })`);
+    const homeDbg = await win.webContents.executeJavaScript(`(async () => {
+      const hc = document.getElementById('home-view').className;
+      const bootDebug = window.__bootDebug || null;
+      const bootError = window.__bootError || null;
+      // 手动确保主页 active
+      if (typeof switchMode === 'function') switchMode('home');
+      return JSON.stringify({
+        homeClassBefore: hc,
+        homeActiveNow: document.getElementById('home-view').classList.contains('active'),
+        bootDebug, bootError,
+        themeCards: document.querySelectorAll('.theme-card').length,
+        orbs: document.querySelectorAll('.orb').length,
+        composer: !!document.getElementById('home-composer'),
+        snavItems: document.querySelectorAll('.snav-item').length,
+        accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
+        lucideIcons: document.querySelectorAll('svg.lucide').length
+      });
+    })()`);
     console.log('[debug home]', homeDbg);
     await captureTo(path.join(shotDir, '01-home.png'));
 
@@ -896,6 +901,19 @@ async function takeScreenshots() {
       return JSON.stringify(r);
     })()`);
     console.log('[debug features]', feat);
+    // 命令/快捷键系统断言
+    const km = await win.webContents.executeJavaScript(`(async () => {
+      const cmds = (typeof window.getCommandList === 'function') ? window.getCommandList() : [];
+      return JSON.stringify({
+        cmdCount: cmds.length,
+        cmdSample: cmds.slice(0, 3).map((c) => c.id + ':' + c.key).join(', '),
+        formatKey: typeof window.formatKeyEvent,
+        ctxMenuReady: !!window.__ctxMenuReady,
+        setKeybinding: typeof window.setKeybinding,
+        applyAiEdit: typeof window.applyAiEdit
+      });
+    })()`);
+    console.log('[debug keymap]', km);
   } catch (err) {
     console.error('[shot] FAILED:', err);
   }
