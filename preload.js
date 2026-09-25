@@ -23,6 +23,8 @@ contextBridge.exposeInMainWorld('api', {
   onAgentEvent: (cb) => ipcRenderer.on('agent:event', (_e, ev) => cb(ev)),
   // 会话持久化
   listSessions: () => ipcRenderer.invoke('session:list'),
+  deleteSession: (id) => ipcRenderer.invoke('session:delete', id),
+  exportSession: (id) => ipcRenderer.invoke('session:export', id),
   // 文件变更通知 + 回滚
   onFsChanged: (cb) => ipcRenderer.on('fs:changed', (_e, data) => cb(data)),
   revertChange: (c) => ipcRenderer.invoke('fs:revert', c),

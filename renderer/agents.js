@@ -316,8 +316,22 @@ function renderHistory() {
     el.innerHTML =
       '<span class="dot ' + (s.status || 'done') + '"></span>' +
       '<span class="ht">' + escapeHtml(s.task || '（会话）') + '</span>' +
-      '<span class="htime">' + time + '</span>';
+      '<span class="htime">' + time + '</span>' +
+      '<button class="hist-btn hist-exp" title="导出 Markdown">' + (window.lucideIcon('download') || '') + '</button>' +
+      '<button class="hist-btn hist-del" title="删除会话">' + (window.lucideIcon('trash-2') || '') + '</button>';
     el.onclick = () => openHistory(s);
+    el.querySelector('.hist-exp').onclick = async (e) => {
+      e.stopPropagation();
+      const md = await window.api.exportSession(s.id);
+      if (md && typeof downloadText === 'function') downloadText('session-' + s.id + '.md', md);
+      else flashStatus('导出失败');
+    };
+    el.querySelector('.hist-del').onclick = async (e) => {
+      e.stopPropagation();
+      if (!confirm('确定删除该会话？')) return;
+      await window.api.deleteSession(s.id);
+      await loadHistory();
+    };
     listEl.appendChild(el);
   }
 }

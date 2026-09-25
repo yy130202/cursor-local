@@ -1154,3 +1154,37 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
 .diag-fix { flex-shrink: 0; background: transparent; border: 1px solid var(--glass-border); color: var(--accent); border-radius: 6px; padding: 2px 8px; cursor: pointer; font-size: 11px; }
 .diag-fix:hover { background: var(--accent-soft); }
 .diag-fix:disabled { opacity: 0.5; cursor: default; }
+
+/* ==================== 主页最近会话 ==================== */
+.recent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.recent-card {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--glass-strong);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  border: 1px solid var(--glass-border); border-radius: 14px; padding: 14px;
+  cursor: pointer; transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+}
+.recent-card:hover { transform: translateY(-3px); border-color: var(--accent-soft-2); box-shadow: 0 12px 32px rgba(0,0,0,0.3); }
+.recent-body { flex: 1; min-width: 0; }
+.recent-task { font-size: 13px; font-weight: 600; color: var(--title); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.recent-meta { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+.recent-open { flex-shrink: 0; background: var(--accent-soft); border: none; color: var(--accent); border-radius: 7px; padding: 5px 10px; cursor: pointer; font-size: 11px; }
+.recent-open:hover { background: var(--accent-soft-2); }
+
+/* 历史会话操作按钮 */
+.hist-btn {
+  flex-shrink: 0; background: transparent; border: none; color: var(--text-dim); cursor: pointer;
+  padding: 3px; border-radius: 5px; display: grid; place-items: center; opacity: 0; transition: opacity 0.12s ease;
+}
+.history-item:hover .hist-btn { opacity: 1; }
+.hist-btn:hover { background: var(--hover-strong); color: var(--text); }
+.hist-btn svg.lucide { width: 13px; height: 13px; }
+.hist-del:hover { color: var(--red); }
+
+/* ==================== 过渡动效 ==================== */
+.view.active { animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .view.active, .orb, .recent-card, .feature-card { animation: none !important; transition: none !important; }
+}

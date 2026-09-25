@@ -12,11 +12,48 @@ function switchMode(mode) {
   document.getElementById('home-view').classList.toggle('active', mode === 'home');
   document.getElementById('editor-view').classList.toggle('active', mode === 'editor');
   document.getElementById('agents-view').classList.toggle('active', mode === 'agents');
+  if (mode === 'home' && typeof renderRecent === 'function') renderRecent();
 }
 
 btnHome.onclick = () => switchMode('home');
 btnEditor.onclick = () => switchMode('editor');
 btnAgents.onclick = () => switchMode('agents');
+
+/* ---- 主页「最近会话」动态卡片 ---- */
+async function renderRecent() {
+  const list = document.getElementById('recent-list');
+  const section = document.getElementById('recent-section');
+  if (!list || !section) return;
+  let sessions = [];
+  try { sessions = await window.api.listSessions(); } catch { /* 忽略 */ }
+  sessions.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+  const recent = sessions.slice(0, 3);
+  if (!recent.length) { section.classList.add('hidden'); return; }
+  section.classList.remove('hidden');
+  list.innerHTML = '';
+  recent.forEach((s) => {
+    const card = document.createElement('div');
+    card.className = 'recent-card';
+    const time = new Date(s.ts).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+    card.innerHTML =
+      '<span class="dot ' + (s.status || 'done') + '"></span>' +
+      '<div class="recent-body"><div class="recent-task">' + escapeHtml(s.task || '（会话）') + '</div>' +
+      '<div class="recent-meta">' + time + '</div></div>' +
+      '<button class="recent-open">打开</button>';
+    card.onclick = () => { switchMode('agents'); if (typeof openHistory === 'function') openHistory(s); };
+    list.appendChild(card);
+  });
+}
+
+/* 前端下载文本文件 */
+function downloadText(filename, text) {
+  const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+window.downloadText = downloadText;
 
 /* ---- 主页：CTA / 特性卡片入口 ---- */
 const ctaStart = document.getElementById('cta-start');

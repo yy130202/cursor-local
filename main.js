@@ -507,6 +507,33 @@ function loadSessions() {
 
 ipcMain.handle('session:list', () => loadSessions());
 
+/* 删除历史会话 */
+ipcMain.handle('session:delete', (_e, id) => {
+  try {
+    fs.rmSync(path.join(sessionsDir(), id + '.json'), { force: true });
+    addLog('info', 'session', '删除会话 ' + id);
+    return true;
+  } catch (e) { return false; }
+});
+
+/* 导出会话为 Markdown */
+ipcMain.handle('session:export', (_e, id) => {
+  try {
+    const data = JSON.parse(fs.readFileSync(path.join(sessionsDir(), id + '.json'), 'utf8'));
+    let md = '# ' + (data.task || 'Agent 会话') + '\n\n';
+    md += '> ' + new Date(data.ts).toLocaleString('zh-CN') + ' · 状态 ' + (data.status || 'done') + '\n\n';
+    for (const e of (data.log || [])) {
+      if (e.kind === 'meta') continue;
+      else if (e.kind === 'user_msg') md += '## 任务\n' + e.text + '\n\n';
+      else if (e.kind === 'text') md += '**Agent**：' + e.text + '\n\n';
+      else if (e.kind === 'tool_call') md += '- 调用 `' + e.name + '`\n';
+      else if (e.kind === 'change') md += '- 修改 `' + (e.relPath || e.path) + '`\n';
+      else if (e.kind === 'error') md += '> **错误**：' + e.text + '\n\n';
+    }
+    return md;
+  } catch { return null; }
+});
+
 /* 回滚单个文件变更（diff 审阅的「撤销」） */
 async function revertFile({ path: p, before, existed }) {
   if (existed) {
@@ -926,6 +953,7 @@ async function takeScreenshots() {
         bootDebug, bootError,
         themeCards: document.querySelectorAll('.theme-card').length,
         orbs: document.querySelectorAll('.orb').length,
+        recentCards: document.querySelectorAll('.recent-card').length,
         composer: !!document.getElementById('home-composer'),
         snavItems: document.querySelectorAll('.snav-item').length,
         accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
