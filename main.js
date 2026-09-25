@@ -41,7 +41,8 @@ function loadConfig() {
     apiKey: '',
     model: 'deepseek-flash',
     lastFolder: '',
-    theme: { preset: 'blue', custom: null }
+    theme: { preset: 'aurora', custom: null },
+    aiComplete: true
   };
   try {
     const raw = JSON.parse(fs.readFileSync(configPath(), 'utf8'));
@@ -97,6 +98,40 @@ ipcMain.handle('fs:writeFile', async (_e, filePath, content) => {
   await fsp.mkdir(path.dirname(filePath), { recursive: true });
   await fsp.writeFile(filePath, content, 'utf8');
   return true;
+});
+
+/* 全局搜索：递归 grep 当前文件夹（跳过 node_modules/.git，限制规模） */
+ipcMain.handle('search:grep', async (_e, { folder, pattern }) => {
+  if (!folder || !pattern) return [];
+  const results = [];
+  const maxResults = 500;
+  const needle = String(pattern).toLowerCase();
+  async function walk(dir, depth) {
+    if (results.length >= maxResults || depth > 10) return;
+    let entries;
+    try { entries = await fsp.readdir(dir, { withFileTypes: true }); } catch { return; }
+    for (const ent of entries) {
+      if (results.length >= maxResults) return;
+      if (ent.name === 'node_modules' || ent.name === '.git' || ent.name === 'dist' || ent.name === '.test-sessions') continue;
+      const p = path.join(dir, ent.name);
+      if (ent.isDirectory()) { await walk(p, depth + 1); continue; }
+      try {
+        const stat = await fsp.stat(p);
+        if (stat.size > 500000) continue; // 跳过超大文件
+        const content = await fsp.readFile(p, 'utf8');
+        const lines = content.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+          const idx = lines[i].toLowerCase().indexOf(needle);
+          if (idx >= 0) {
+            results.push({ file: path.relative(folder, p), line: i + 1, col: idx + 1, text: lines[i].slice(0, 200) });
+            if (results.length >= maxResults) return;
+          }
+        }
+      } catch { /* 忽略二进制/读取失败 */ }
+    }
+  }
+  await walk(folder, 0);
+  return results;
 });
 
 ipcMain.handle('dialog:openFolder', async () => {
@@ -587,6 +622,63 @@ ipcMain.handle('auth:updateProfile', (_e, patch) => {
   return { ok: true, user: getUserStore().updateUser(s.userId, patch) };
 });
 
+/* ---------------- AI 辅助（代码补全 / 选区编辑） ---------------- */
+async function aiChat(messages, opts = {}) {
+  const cfg = loadConfig();
+  if (!cfg.apiKey) throw new Error('未配置 API Key，请在设置中填写');
+  const body = { model: cfg.model, messages, temperature: opts.temperature ?? 0.3 };
+  if (opts.maxTokens) body.max_tokens = opts.maxTokens;
+  const res = await fetch(cfg.baseUrl.replace(/\/+$/, '') + '/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + cfg.apiKey },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error('API ' + res.status + ': ' + (await res.text()).slice(0, 300));
+  const j = await res.json();
+  return (j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || '';
+}
+
+function stripFence(s) {
+  return String(s || '').replace(/^```[\w]*\s*\n?/, '').replace(/\n?```\s*$/, '').trim();
+}
+
+/* 代码补全（FIM 风格） */
+ipcMain.handle('ai:complete', async (_e, { code, lang }) => {
+  try {
+    const prompt = [
+      '你是代码补全助手。严格根据上下文补全代码，只输出要补全的代码片段本身，不要解释、不要输出已有的上文、不要用代码块包裹。',
+      '语言：' + (lang || '未知'),
+      '上文：',
+      '```',
+      (code || '').slice(-4000),
+      '```',
+      '补全：'
+    ].join('\n');
+    const completion = await aiChat([{ role: 'user', content: prompt }], { temperature: 0.2, maxTokens: 220 });
+    return { ok: true, completion: stripFence(completion) };
+  } catch (e) {
+    return { ok: false, error: String(e.message || e) };
+  }
+});
+
+/* 选区编辑：解释 / 注释 / 改写 / 测试 */
+ipcMain.handle('ai:edit', async (_e, { text, instruction }) => {
+  try {
+    const mode = {
+      explain: '解释这段代码的作用、思路和关键点，用简洁中文，不要改代码',
+      comment: '为这段代码添加清晰的中文注释，保持代码逻辑不变',
+      rewrite: '优化改写这段代码，保持功能一致，代码更清晰健壮',
+      test: '为这段代码编写单元测试'
+    }[instruction] || instruction;
+    const prompt = '对以下代码执行操作：' + mode + '\n代码：\n```\n' + (text || '').slice(0, 12000) + '\n```';
+    const result = await aiChat([{ role: 'user', content: prompt }], { temperature: 0.3, maxTokens: 2000 });
+    const out = stripFence(result);
+    return { ok: true, result: out, mode: instruction };
+  } catch (e) {
+    return { ok: false, error: String(e.message || e) };
+  }
+});
+
 /* ---------------- token 计费（结构占位，暂不启用） ---------------- */
 ipcMain.handle('billing:query', (_e, userId) => billing.queryBilling(userId));
 
@@ -657,6 +749,14 @@ async function takeScreenshots() {
     const dbg2 = await win.webContents.executeJavaScript('JSON.stringify(window.__debugAgents())');
     console.log('[debug agents]', dbg2);
     await captureTo(path.join(shotDir, '03-agents.png'));
+
+    // 新功能断言：命令面板 / 全局搜索 / AI 补全开关
+    const feat = await win.webContents.executeJavaScript(`(async () => {
+      const r = { palette: typeof window.openPalette, search: typeof window.openGlobalSearch, toggle: !!document.getElementById('cfg-ai-complete'), monaco: typeof monaco };
+      if (window.openPalette) { window.openPalette(); r.cpItems = document.querySelectorAll('.cp-item').length; const el = document.querySelector('.cmd-palette'); if (el) el.classList.add('hidden'); }
+      return JSON.stringify(r);
+    })()`);
+    console.log('[debug features]', feat);
   } catch (err) {
     console.error('[shot] FAILED:', err);
   }

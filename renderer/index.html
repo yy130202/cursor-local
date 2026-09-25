@@ -222,6 +222,10 @@
               <div class="srow-main"><div class="srow-label">模型 ID</div><div class="srow-desc">Agent 与对话使用的模型</div></div>
               <input id="cfg-model" placeholder="deepseek-flash">
             </div>
+            <div class="srow">
+              <div class="srow-main"><div class="srow-label">AI 代码补全</div><div class="srow-desc">输入时灰字补全，Tab 接受（Alt+\ 手动触发）</div></div>
+              <button class="toggle" id="cfg-ai-complete"><span class="knob"></span></button>
+            </div>
           </div>
           <div class="modal-actions"><button id="cfg-cancel">取消</button><button id="cfg-save" class="primary">保存</button></div>
         </div>
@@ -280,6 +284,7 @@
   <script src="agents.js"></script>
   <script src="theme.js"></script>
   <script src="auth.js"></script>
+  <script src="palette.js"></script>
   <script src="renderer.js"></script>
 </body>
 </html>

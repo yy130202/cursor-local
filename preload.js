@@ -22,6 +22,11 @@ contextBridge.exposeInMainWorld('api', {
   // 文件变更通知 + 回滚
   onFsChanged: (cb) => ipcRenderer.on('fs:changed', (_e, data) => cb(data)),
   revertChange: (c) => ipcRenderer.invoke('fs:revert', c),
+  // 全局搜索
+  grep: (folder, pattern) => ipcRenderer.invoke('search:grep', { folder, pattern }),
+  // AI 辅助
+  aiComplete: (code, lang) => ipcRenderer.invoke('ai:complete', { code, lang }),
+  aiEdit: (text, instruction) => ipcRenderer.invoke('ai:edit', { text, instruction }),
   // 用户系统
   auth: {
     register: (d) => ipcRenderer.invoke('auth:register', d),

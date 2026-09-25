@@ -59,6 +59,8 @@ async function openSettings() {
   document.getElementById('cfg-baseurl').value = cfg.baseUrl || '';
   document.getElementById('cfg-apikey').value = cfg.apiKey || '';
   document.getElementById('cfg-model').value = cfg.model || '';
+  const aiToggle = document.getElementById('cfg-ai-complete');
+  if (aiToggle) aiToggle.classList.toggle('on', cfg.aiComplete !== false);
   modal.classList.remove('hidden');
 }
 
@@ -66,11 +68,14 @@ document.getElementById('settings-btn').onclick = openSettings;
 document.getElementById('settings-close-btn').onclick = () => modal.classList.add('hidden');
 document.getElementById('cfg-cancel').onclick = () => modal.classList.add('hidden');
 document.getElementById('cfg-save').onclick = async () => {
+  const aiToggle = document.getElementById('cfg-ai-complete');
   const cfg = await window.api.setConfig({
     baseUrl: document.getElementById('cfg-baseurl').value.trim(),
     apiKey: document.getElementById('cfg-apikey').value.trim(),
-    model: document.getElementById('cfg-model').value.trim()
+    model: document.getElementById('cfg-model').value.trim(),
+    aiComplete: aiToggle ? aiToggle.classList.contains('on') : true
   });
+  window.__aiCompleteEnabled = cfg.aiComplete !== false;
   modal.classList.add('hidden');
   refreshStatusBar(cfg);
 };
@@ -84,6 +89,10 @@ document.querySelectorAll('.snav-item').forEach((el) => {
     );
   };
 });
+
+// AI 补全开关
+const aiToggleBtn = document.getElementById('cfg-ai-complete');
+if (aiToggleBtn) aiToggleBtn.onclick = () => aiToggleBtn.classList.toggle('on');
 
 document.getElementById('open-folder-btn').onclick = () => openFolder();
 
@@ -126,6 +135,7 @@ function updateCwdChip() {
   }
   const cfg = await window.api.getConfig();
   refreshStatusBar(cfg);
+  window.__aiCompleteEnabled = cfg.aiComplete !== false;
   if (cfg.lastFolder) {
     EditorState.currentFolder = cfg.lastFolder;
     document.getElementById('workdir-label').textContent = cfg.lastFolder;

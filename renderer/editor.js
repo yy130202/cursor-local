@@ -110,8 +110,13 @@ require(['vs/editor/editor.main'], function () {
       automaticLayout: true,
       fontSize: 14,
       minimap: { enabled: true },
-      scrollBeyondLastLine: false
+      scrollBeyondLastLine: false,
+      tabCompletion: 'off',          // Tab 用于接受 AI 补全
+      inlineSuggest: { enabled: true },
+      quickSuggestions: { other: true, comments: true, strings: true }
     });
+    setupInlineCompletion();  // AI 代码补全（Tab 接受）
+    setupInlineActions();     // 选区 AI 操作
     monacoReady = true;
     while (pendingOpens.length) openFile(pendingOpens.shift());
   } catch (err) {
@@ -120,6 +125,86 @@ require(['vs/editor/editor.main'], function () {
 }, function (err) {
   window.__monacoErr = 'require 加载失败: ' + String(err);
 });
+
+/* ---- AI 代码补全（Copilot 式灰字，Tab 接受） ---- */
+let lastInlineAt = 0;
+function setupInlineCompletion() {
+  const provider = {
+    provideInlineCompletions: async (model, position, context, token) => {
+      if (window.__aiCompleteEnabled === false) return { items: [] };
+      const now = Date.now();
+      if (now - lastInlineAt < 900) return { items: [] }; // 防抖
+      lastInlineAt = now;
+      const before = model.getValueInRange({
+        startLineNumber: 1, startColumn: 1,
+        endLineNumber: position.lineNumber, endColumn: position.column
+      });
+      if (before.trim().length < 4) return { items: [] };
+      let r;
+      try { r = await window.api.aiComplete(before, model.getLanguageId()); }
+      catch { return { items: [] }; }
+      if (!r || !r.ok || !r.completion) return { items: [] };
+      const range = new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column);
+      return { items: [{ insertText: r.completion, range }] };
+    },
+    freeInlineCompletions: () => {}
+  };
+  monaco.languages.registerInlineCompletionsProvider({ pattern: '**' }, provider);
+  // 手动触发快捷键 Alt+\\
+  EditorState.editor.addCommand(monaco.KeyMod.Alt | monaco.KeyCode.Backslash, () => {
+    EditorState.editor.trigger('keyboard', 'editor.action.inlineSuggest.trigger', {});
+  });
+}
+
+/* ---- 选区 AI 操作（解释 / 注释 / 改写 / 测试） ---- */
+function setupInlineActions() {
+  const ed = EditorState.editor;
+  const applyEdit = async (instruction) => {
+    const sel = ed.getSelection();
+    if (!sel || sel.isEmpty()) { flashStatus('请先选中代码'); return; }
+    const text = ed.getModel().getValueInRange(sel);
+    flashStatus('AI 处理中…');
+    let r;
+    try { r = await window.api.aiEdit(text, instruction); }
+    catch { flashStatus('AI 调用失败'); return; }
+    if (!r.ok) { flashStatus(r.error || 'AI 处理失败'); return; }
+    if (instruction === 'explain') {
+      showAiPanel('解释', r.result, null);
+    } else {
+      ed.executeEdits('ai-edit', [{ range: sel, text: r.result, forceMoveMarkers: true }]);
+      flashStatus('已应用「' + ({ comment: '注释', rewrite: '改写', test: '测试' }[instruction] || instruction) + '」');
+    }
+  };
+  const mod = monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt;
+  ed.addCommand(mod | monaco.KeyCode.KeyE, () => applyEdit('explain'));
+  ed.addCommand(mod | monaco.KeyCode.KeyC, () => applyEdit('comment'));
+  ed.addCommand(mod | monaco.KeyCode.KeyR, () => applyEdit('rewrite'));
+  ed.addCommand(mod | monaco.KeyCode.KeyT, () => applyEdit('test'));
+}
+
+function flashStatus(msg) {
+  document.getElementById('status-right').textContent = msg;
+  setTimeout(() => {
+    const c = EditorState.currentFolder;
+    document.getElementById('status-right').textContent = c ? '工作目录: ' + c : '';
+  }, 2500);
+}
+
+/* AI 结果浮窗（解释类） */
+function showAiPanel(title, content, onReplace) {
+  let p = document.getElementById('ai-panel');
+  if (!p) {
+    p = document.createElement('div');
+    p.id = 'ai-panel';
+    p.className = 'ai-panel';
+    document.body.appendChild(p);
+  }
+  p.innerHTML =
+    '<div class="ai-panel-head"><span>' + escapeHtml(title) + '</span><button class="ai-panel-close">×</button></div>' +
+    '<pre>' + escapeHtml(content) + '</pre>';
+  p.classList.remove('hidden');
+  p.querySelector('.ai-panel-close').onclick = () => p.classList.add('hidden');
+}
 
 function getEditor() {
   return EditorState.editor;
