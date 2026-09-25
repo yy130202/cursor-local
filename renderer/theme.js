@@ -14,7 +14,7 @@ const PRESETS = {
   horizon:  { name: 'Digital Horizon', color: '#6366f1', gradient: 'linear-gradient(135deg, #6366f1, #ec4899)' }
 };
 
-let currentTheme = { preset: 'aurora', custom: null };
+let currentTheme = { preset: 'aurora', custom: null, mode: 'dark' };
 
 function hexToRgb(hex) {
   let h = String(hex).replace('#', '');
@@ -38,6 +38,21 @@ function luminance(hex) {
   const { r, g, b } = hexToRgb(hex);
   return 0.299 * r + 0.587 * g + 0.114 * b;
 }
+
+/* 亮/暗模式切换 */
+function applyMode(mode) {
+  document.documentElement.dataset.theme = mode === 'light' ? 'light' : 'dark';
+  const color = currentTheme.custom || (PRESETS[currentTheme.preset] && PRESETS[currentTheme.preset].color) || PRESETS.aurora.color;
+  updateMonacoTheme(color);
+}
+
+async function setMode(mode) {
+  currentTheme.mode = mode === 'light' ? 'light' : 'dark';
+  applyMode(currentTheme.mode);
+  await window.api.setConfig({ theme: currentTheme });
+}
+
+window.setMode = setMode;
 
 function applyTheme(accentHex) {
   const root = document.documentElement;
@@ -93,7 +108,7 @@ function updateMonacoTheme(accentHex) {
 
 async function setTheme(preset, custom) {
   const p = getPreset(preset);
-  currentTheme = { preset: p, custom: custom || null };
+  currentTheme = { preset: p, custom: custom || null, mode: currentTheme.mode };
   applyTheme(custom || PRESETS[p].color);
   markActiveCard();
   await window.api.setConfig({ theme: currentTheme });
@@ -166,10 +181,11 @@ function bindThemeUI() {
 async function initTheme() {
   try {
     const cfg = await window.api.getConfig();
-    if (cfg.theme) currentTheme = { preset: getPreset(cfg.theme.preset), custom: cfg.theme.custom || null };
+    if (cfg.theme) currentTheme = { preset: getPreset(cfg.theme.preset), custom: cfg.theme.custom || null, mode: cfg.theme.mode || 'dark' };
   } catch { /* 使用默认 */ }
   const color = currentTheme.custom || PRESETS[currentTheme.preset].color;
   applyTheme(color);
+  applyMode(currentTheme.mode);
   renderThemeCards();
   markActiveCard();
   if (currentTheme.custom) {

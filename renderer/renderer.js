@@ -63,6 +63,8 @@ async function openSettings() {
   if (aiToggle) aiToggle.classList.toggle('on', cfg.aiComplete !== false);
   const permToggle = document.getElementById('cfg-permission');
   if (permToggle) permToggle.classList.toggle('on', cfg.permission === 'full');
+  const lightToggle = document.getElementById('cfg-light-mode');
+  if (lightToggle) lightToggle.classList.toggle('on', (cfg.theme && cfg.theme.mode) === 'light');
   renderKeybinds();
   modal.classList.remove('hidden');
 }
@@ -141,6 +143,12 @@ if (aiToggleBtn) aiToggleBtn.onclick = () => aiToggleBtn.classList.toggle('on');
 // 完全控制权限开关
 const permToggleBtn = document.getElementById('cfg-permission');
 if (permToggleBtn) permToggleBtn.onclick = () => permToggleBtn.classList.toggle('on');
+// 亮色模式开关（即时切换）
+const lightToggleBtn = document.getElementById('cfg-light-mode');
+if (lightToggleBtn) lightToggleBtn.onclick = () => {
+  const on = lightToggleBtn.classList.toggle('on');
+  if (typeof window.setMode === 'function') window.setMode(on ? 'light' : 'dark');
+};
 
 document.getElementById('open-folder-btn').onclick = () => openFolder();
 

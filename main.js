@@ -1000,6 +1000,23 @@ async function takeScreenshots() {
       } catch (e) { return JSON.stringify({ ok: false, err: String(e) }); }
     })()`);
     console.log('[debug fsops]', fsops);
+    // 亮色模式验证 + 截图
+    const lightTest = await win.webContents.executeJavaScript(`(async () => {
+      await window.setMode('light');
+      const light = {
+        theme: document.documentElement.dataset.theme,
+        bg: getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(),
+        text: getComputedStyle(document.documentElement).getPropertyValue('--text').trim()
+      };
+      await window.setMode('dark');
+      const dark = { theme: document.documentElement.dataset.theme, bg: getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() };
+      return JSON.stringify({ light, dark });
+    })()`);
+    console.log('[debug lightmode]', lightTest);
+    await win.webContents.executeJavaScript('switchMode("home"); window.setMode("light")');
+    await sleep(400);
+    await captureTo(path.join(shotDir, '04-light.png'));
+    await win.webContents.executeJavaScript('window.setMode("dark")');
   } catch (err) {
     console.error('[shot] FAILED:', err);
   }
