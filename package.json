@@ -10,6 +10,7 @@
     "test:agent": "node test-agent.js"
   },
   "dependencies": {
+    "lucide": "^1.48.0",
     "monaco-editor": "^0.52.0"
   },
   "devDependencies": {

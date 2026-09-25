@@ -159,6 +159,15 @@ function lineDiff(before, after) {
   return { lines: out };
 }
 
+function toolIconName(name) {
+  return {
+    list_dir: 'folder-search',
+    read_file: 'file-search',
+    write_file: 'file-pen',
+    run_command: 'square-terminal'
+  }[name] || 'wrench';
+}
+
 function buildChangeCard(en, a) {
   const card = document.createElement('div');
   card.className = 'change-card';
@@ -180,10 +189,10 @@ function buildChangeCard(en, a) {
   const ro = en.readonly;
   card.innerHTML =
     '<div class="change-head">' +
-      '<span class="change-icon">' + (ro ? '🕘' : (reverted ? '↩' : '✏')) + '</span>' +
+      '<span class="change-icon">' + (window.lucideIcon(ro ? 'history' : (reverted ? 'undo-2' : 'pencil')) || '') + '</span>' +
       '<span class="change-file">' + escapeHtml(en.relPath || en.path) + '</span>' +
       '<span class="change-state">' + (ro ? '历史变更' : (reverted ? '已撤销' : (en.existed ? '已修改' : '新建'))) + '</span>' +
-      ((reverted || ro) ? '' : '<button class="revert-btn">撤销改动</button>') +
+      ((reverted || ro) ? '' : '<button class="revert-btn">' + (window.lucideIcon('undo-2') || '') + '<span>撤销改动</span></button>') +
     '</div>' + bodyHtml;
   if (!reverted && !ro) {
     card.querySelector('.revert-btn').onclick = async (e) => {
@@ -222,9 +231,11 @@ function renderTranscript() {
       const summary = escapeHtml(argsSummary(en.name, en.args));
       card.innerHTML =
         '<div class="head">' +
-          '<span class="tag ' + en.name + '">' + en.name + '</span>' +
+          '<span class="tag ' + en.name + '">' + (window.lucideIcon(toolIconName(en.name)) || '') + en.name + '</span>' +
           '<span class="args">' + summary + '</span>' +
-          '<span class="tw">' + (en.result ? (en.result.startsWith('ERROR') || en.result.includes('拦截') ? '⛔' : '✓') : '⏳') + '</span>' +
+          '<span class="tw ' + (en.result ? (en.result.startsWith('ERROR') || en.result.includes('拦截') ? 'err' : 'ok') : 'wait') + '">' +
+            (en.result ? (en.result.startsWith('ERROR') || en.result.includes('拦截') ? (window.lucideIcon('circle-x') || '') : (window.lucideIcon('circle-check') || '')) : (window.lucideIcon('loader-circle') || '')) +
+          '</span>' +
         '</div>' +
         '<pre>' + escapeHtml(
           '参数:\n' + JSON.stringify(en.args || {}, null, 2) +
@@ -241,7 +252,7 @@ function renderTranscript() {
     } else if (en.kind === 'error') {
       const d = document.createElement('div');
       d.className = 'entry entry-error';
-      d.textContent = '⚠ ' + en.text;
+      d.innerHTML = '<span class="err-ico">' + (window.lucideIcon('alert-triangle') || '') + '</span> ' + escapeHtml(en.text);
       transcriptEl.appendChild(d);
     }
   }

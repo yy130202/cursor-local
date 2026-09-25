@@ -32,6 +32,16 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+/* 根据扩展名选择 lucide 图标 */
+function fileIconName(ext) {
+  if (['js', 'mjs', 'cjs', 'ts', 'jsx', 'tsx', 'py', 'java', 'go', 'rs', 'c', 'h', 'cpp', 'hpp', 'cs', 'rb', 'php', 'sh', 'bat', 'ps1', 'sql', 'html', 'htm', 'css', 'scss', 'less', 'xml', 'yml', 'yaml', 'toml', 'dockerfile'].includes(ext)) return 'file-code';
+  if (ext === 'json') return 'file-json';
+  if (ext === 'md') return 'file-text';
+  if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'ico', 'webp'].includes(ext)) return 'file-image';
+  if (['zip', 'tar', 'gz', 'rar', '7z'].includes(ext)) return 'file-archive';
+  return 'file';
+}
+
 /* ---- 状态 ---- */
 const EditorState = {
   currentFolder: '',
@@ -63,7 +73,7 @@ async function renderDir(dirPath, container, depth, seq) {
       const open = EditorState.treeOpenDirs.has(ent.path);
       row.innerHTML =
         '<span class="twist">' + (open ? '▾' : '▸') + '</span>' +
-        '<span class="icon icon-dir">📁</span>' +
+        '<span class="icon icon-dir">' + (window.lucideIcon ? window.lucideIcon(open ? 'folder-open' : 'folder') : '') + '</span>' +
         '<span class="name">' + escapeHtml(ent.name) + '</span>';
       row.onclick = () => {
         if (EditorState.treeOpenDirs.has(ent.path)) EditorState.treeOpenDirs.delete(ent.path);
@@ -80,7 +90,7 @@ async function renderDir(dirPath, container, depth, seq) {
       const ext = extOf(ent.path);
       row.innerHTML =
         '<span class="twist"></span>' +
-        '<span class="icon icon-file ' + ext + '">📄</span>' +
+        '<span class="icon icon-file ' + ext + '">' + (window.lucideIcon ? window.lucideIcon(fileIconName(ext)) : '') + '</span>' +
         '<span class="name">' + escapeHtml(ent.name) + '</span>';
       row.onclick = () => openFile(ent.path);
       container.appendChild(row);

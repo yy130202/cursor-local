@@ -5,9 +5,16 @@ const path = require('path');
 const fs = require('fs');
 const fsp = fs.promises;
 const { spawn } = require('child_process');
+const { LocalUserStore } = require('./store/user-store');
+const billing = require('./store/billing');
 
 let win = null;
 const agents = new Map();
+let userStore = null;
+function getUserStore() {
+  if (!userStore) userStore = new LocalUserStore(app.getPath('userData'));
+  return userStore;
+}
 
 /* ---------------- 配置（持久化 + API Key 加密） ---------------- */
 const configPath = () => process.env.CONFIG_PATH || path.join(app.getPath('userData'), 'config.json');
@@ -33,7 +40,8 @@ function loadConfig() {
     baseUrl: 'https://api.deepseek.com/v1',
     apiKey: '',
     model: 'deepseek-flash',
-    lastFolder: ''
+    lastFolder: '',
+    theme: { preset: 'blue', custom: null }
   };
   try {
     const raw = JSON.parse(fs.readFileSync(configPath(), 'utf8'));
@@ -399,6 +407,7 @@ async function chatCompletionStream(cfg, messages, onDelta) {
   const tool_calls = [...toolMap.values()].map((tc) => ({
     id: tc.id, function: { name: tc.name, arguments: tc.arguments }
   }));
+  // 【token 计费预留】启用后在此记录本次调用用量（结构见 store/billing.js，当前 BILLING_ENABLED=false）
   return { content, tool_calls };
 }
 
@@ -513,6 +522,54 @@ ipcMain.handle('agent:stop', (_e, id) => {
   return true;
 });
 
+/* ---------------- 用户系统（本地存储 + 预留云接口） ---------------- */
+const sessionFile = () => path.join(app.getPath('userData'), 'session.json');
+function getSession() {
+  try { return JSON.parse(fs.readFileSync(sessionFile(), 'utf8')); } catch { return null; }
+}
+function setSession(s) {
+  if (s) {
+    fs.mkdirSync(path.dirname(sessionFile()), { recursive: true });
+    fs.writeFileSync(sessionFile(), JSON.stringify(s), 'utf8');
+  } else {
+    try { fs.rmSync(sessionFile(), { force: true }); } catch { /* 忽略 */ }
+  }
+}
+
+ipcMain.handle('auth:register', (_e, { username, email, password }) => {
+  const store = getUserStore();
+  if (!username || !password) return { ok: false, error: '用户名和密码不能为空' };
+  if (store.findByUsername(username)) return { ok: false, error: '用户名已存在' };
+  if (email && store.findByEmail(email)) return { ok: false, error: '邮箱已被注册' };
+  const user = store.createUser({ username, email, password });
+  setSession({ userId: user.id });
+  return { ok: true, user };
+});
+
+ipcMain.handle('auth:login', (_e, { account, password }) => {
+  const store = getUserStore();
+  const user = store.findByUsername(account) || store.findByEmail(account);
+  if (!user || !store.verifyPassword(user, password)) {
+    return { ok: false, error: '用户名/邮箱或密码错误' };
+  }
+  setSession({ userId: user.id });
+  return { ok: true, user };
+});
+
+ipcMain.handle('auth:logout', () => { setSession(null); return { ok: true }; });
+ipcMain.handle('auth:current', () => {
+  const s = getSession();
+  return s ? getUserStore().getUser(s.userId) : null;
+});
+ipcMain.handle('auth:updateProfile', (_e, patch) => {
+  const s = getSession();
+  if (!s) return { ok: false, error: '未登录' };
+  return { ok: true, user: getUserStore().updateUser(s.userId, patch) };
+});
+
+/* ---------------- token 计费（结构占位，暂不启用） ---------------- */
+ipcMain.handle('billing:query', (_e, userId) => billing.queryBilling(userId));
+
 /* ---------------- 窗口 ---------------- */
 function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
@@ -541,6 +598,37 @@ async function takeScreenshots() {
       'JSON.stringify(window.__debugState())'
     );
     console.log('[debug editor]', dbg);
+    const visual = await win.webContents.executeJavaScript(`(async () => {
+      const before = { svg: document.querySelectorAll('svg.lucide').length, dl: document.querySelectorAll('[data-lucide]').length };
+      let createErr = null, afterSvg = -1;
+      try { window.lucide.createIcons({ icons: window.lucide.icons }); afterSvg = document.querySelectorAll('svg.lucide').length; } catch (e) { createErr = String(e.message || e); }
+      return JSON.stringify({
+        lucide: typeof window.lucide,
+        bootError: window.__bootError || null,
+        bootDebug: window.__bootDebug || null,
+        before, afterSvg, createErr,
+        initAuth: typeof initAuth,
+        statusModel: document.getElementById('status-model').textContent,
+        accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
+        topbarBackdrop: getComputedStyle(document.getElementById('topbar')).backdropFilter,
+        userArea: document.getElementById('user-area').innerHTML.slice(0, 120)
+      });
+    })()`);
+    console.log('[debug visual]', visual);
+    // 主题切换测试
+    const themeTest = await win.webContents.executeJavaScript(`(async () => {
+      const r = {};
+      try {
+        await setTheme('violet', null);
+        r.violet = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+        await setTheme('custom', '#10b981');
+        r.custom = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+        await setTheme('blue', null);
+        r.blue = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+      } catch (e) { r.err = String(e.message || e); }
+      return JSON.stringify(r);
+    })()`);
+    console.log('[debug theme]', themeTest);
     await captureTo(path.join(shotDir, '01-editor.png'));
     await win.webContents.executeJavaScript(`window.__switchToAgents()`);
     await sleep(400);
@@ -606,6 +694,8 @@ function createWindow() {
     minWidth: 960,
     minHeight: 600,
     backgroundColor: '#1e1e1e',
+    // Win11 云母/亚克力材质（Windows 11 22H2+ 生效，其余系统自动忽略，CSS 兜底）
+    backgroundMaterial: 'mica',
     title: 'Cursor Local',
     webPreferences: {
       nodeIntegration: false,

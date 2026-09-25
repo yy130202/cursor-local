@@ -21,6 +21,18 @@ contextBridge.exposeInMainWorld('api', {
   // 文件变更通知 + 回滚
   onFsChanged: (cb) => ipcRenderer.on('fs:changed', (_e, data) => cb(data)),
   revertChange: (c) => ipcRenderer.invoke('fs:revert', c),
+  // 用户系统
+  auth: {
+    register: (d) => ipcRenderer.invoke('auth:register', d),
+    login: (d) => ipcRenderer.invoke('auth:login', d),
+    logout: () => ipcRenderer.invoke('auth:logout'),
+    current: () => ipcRenderer.invoke('auth:current'),
+    updateProfile: (p) => ipcRenderer.invoke('auth:updateProfile', p)
+  },
+  // token 计费（结构占位）
+  billing: {
+    query: (uid) => ipcRenderer.invoke('billing:query', uid)
+  },
   // 工具
   pathJoin: (...a) => path.join(...a),
   pathDirname: (p) => path.dirname(p)

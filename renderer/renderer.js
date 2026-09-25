@@ -49,6 +49,19 @@ function refreshStatusBar(cfg) {
 
 /* ---- 启动 ---- */
 (async function boot() {
+  // 初始化 lucide 图标（替换静态 data-lucide）
+  try {
+    if (window.lucide && window.lucide.createIcons) {
+      const nBefore = document.querySelectorAll('[data-lucide]').length;
+      window.lucide.createIcons({ icons: window.lucide.icons });
+      const nAfter = document.querySelectorAll('svg.lucide').length;
+      window.__bootDebug = { nBefore, nAfter, icons: Object.keys(window.lucide.icons || {}).length };
+    } else {
+      window.__bootError = 'lucide 未加载';
+    }
+  } catch (e) {
+    window.__bootError = String(e && e.message || e);
+  }
   const cfg = await window.api.getConfig();
   refreshStatusBar(cfg);
   if (cfg.lastFolder) {
@@ -57,5 +70,8 @@ function refreshStatusBar(cfg) {
     document.getElementById('status-right').textContent = '工作目录: ' + cfg.lastFolder;
     renderTree();
   }
+  // 主题 + 用户系统初始化
+  if (typeof initTheme === 'function') initTheme();
+  if (typeof initAuth === 'function') initAuth();
   if (!cfg.apiKey) openSettings(); // 首次启动引导配置
 })();

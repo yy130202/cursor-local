@@ -9,15 +9,20 @@
 </head>
 <body>
   <header id="topbar">
-    <div class="logo">⌘ Cursor Local</div>
+    <div class="logo">
+      <span class="logo-mark"><i data-lucide="terminal"></i></span>
+      <span class="logo-text">Cursor Local</span>
+    </div>
     <div class="mode-switch">
-      <button id="mode-editor" class="active" title="传统代码编辑器">◧ Editor</button>
-      <button id="mode-agents" title="Agent 工作台">🤖 Agents</button>
+      <button id="mode-editor" class="active" title="传统代码编辑器"><i data-lucide="file-code-2"></i><span>Editor</span></button>
+      <button id="mode-agents" title="Agent 工作台"><i data-lucide="bot"></i><span>Agents</span></button>
     </div>
     <div class="spacer"></div>
     <div id="workdir-label"></div>
-    <button id="open-folder-btn" class="action">📁 打开文件夹</button>
-    <button id="settings-btn" class="action">⚙ 设置</button>
+    <button id="open-folder-btn" class="action icon-btn" title="打开文件夹"><i data-lucide="folder-open"></i></button>
+    <button id="theme-btn" class="action icon-btn" title="主题颜色"><i data-lucide="palette"></i></button>
+    <button id="settings-btn" class="action icon-btn" title="设置"><i data-lucide="settings"></i></button>
+    <div id="user-area"></div>
   </header>
 
   <main>
@@ -26,7 +31,7 @@
       <div id="filetree-panel">
         <div class="panel-title"><span>资源管理器</span></div>
         <div id="filetree">
-          <div id="filetree-empty">尚未打开文件夹<br><button onclick="openFolder()">打开文件夹</button></div>
+          <div id="filetree-empty">尚未打开文件夹<br><button class="action" onclick="openFolder()">打开文件夹</button></div>
         </div>
       </div>
       <div id="editor-main">
@@ -39,7 +44,7 @@
     <!-- Agents Window -->
     <section id="agents-view" class="view">
       <div id="agents-sidebar">
-        <div class="panel-title"><span>Agents</span><button id="new-agent-btn">＋ 新建 Agent</button></div>
+        <div class="panel-title"><span>Agents</span><button id="new-agent-btn"><i data-lucide="plus"></i>新建 Agent</button></div>
         <div id="agent-list"></div>
         <div id="history-section" class="hidden">
           <div class="history-title">历史会话</div>
@@ -49,7 +54,7 @@
           <textarea id="agent-task-input" placeholder="描述任务，例如：&#10;阅读本项目代码，写一个 README.md 介绍项目结构"></textarea>
           <div class="form-actions">
             <span class="hint">Agent 将在当前工作目录运行，可并行启动多个</span>
-            <button id="agent-run-btn">▶ 启动</button>
+            <button id="agent-run-btn"><i data-lucide="play"></i>启动</button>
           </div>
         </div>
       </div>
@@ -58,7 +63,7 @@
           <span id="agent-head-dot" class="dot"></span>
           <span class="task-text" id="agent-head-task"></span>
           <span class="badge" id="agent-head-status"></span>
-          <button id="agent-stop-btn" class="action" style="display:none">■ 停止</button>
+          <button id="agent-stop-btn" class="action" style="display:none"><i data-lucide="square"></i>停止</button>
         </div>
         <div id="transcript"></div>
         <div id="agents-empty">创建一个 Agent，让它替你读写代码、执行命令</div>
@@ -68,15 +73,49 @@
 
   <footer id="statusbar">
     <span id="status-model">模型: -</span>
-    <span id="status-warn" class="warn" style="display:none">⚠ 未配置 API Key</span>
+    <span id="status-warn" class="warn" style="display:none"><i data-lucide="alert-triangle"></i>未配置 API Key</span>
     <div class="spacer"></div>
     <span id="status-right"></span>
   </footer>
 
-  <!-- 设置弹窗 -->
+  <!-- 主题面板 -->
+  <div id="theme-panel" class="popover hidden">
+    <div class="popover-title">主题颜色</div>
+    <div class="theme-presets">
+      <button class="swatch" data-preset="blue" data-color="#3b82f6" title="蓝色"></button>
+      <button class="swatch" data-preset="violet" data-color="#8b5cf6" title="紫色"></button>
+      <button class="swatch" data-preset="emerald" data-color="#10b981" title="绿色"></button>
+      <button class="swatch" data-preset="orange" data-color="#f59e0b" title="橙色"></button>
+      <button class="swatch" data-preset="rose" data-color="#f43f5e" title="粉色"></button>
+    </div>
+    <div class="theme-custom">
+      <span>自定义颜色</span>
+      <input type="color" id="theme-custom-color" value="#3b82f6">
+    </div>
+  </div>
+
+  <!-- 登录 / 注册 -->
+  <div id="auth-modal" class="modal hidden">
+    <div class="modal-box auth-box">
+      <h3 id="auth-title">登录</h3>
+      <div class="modal-tabs">
+        <button id="tab-login" class="active">登录</button>
+        <button id="tab-register">注册</button>
+      </div>
+      <form id="auth-form" autocomplete="off">
+        <label>用户名 / 邮箱<input id="auth-account" placeholder="用户名或邮箱"></label>
+        <label id="auth-email-field" class="hidden">邮箱（选填）<input id="auth-email" placeholder="you@example.com"></label>
+        <label>密码<input id="auth-password" type="password" placeholder="密码"></label>
+        <div id="auth-error" class="auth-error hidden"></div>
+        <button type="submit" class="primary" id="auth-submit">登录</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 设置 -->
   <div id="settings-modal" class="modal hidden">
     <div class="modal-box">
-      <h3>⚙ 设置</h3>
+      <h3>设置</h3>
       <label>Base URL（OpenAI 兼容接口）
         <input id="cfg-baseurl" placeholder="https://api.deepseek.com/v1">
       </label>
@@ -93,9 +132,34 @@
     </div>
   </div>
 
+  <!-- 用户菜单 -->
+  <div id="user-menu" class="popover hidden">
+    <div class="user-card">
+      <div class="avatar" id="um-avatar">?</div>
+      <div class="user-meta">
+        <div class="uname" id="um-name">-</div>
+        <div class="uemail" id="um-email">-</div>
+      </div>
+    </div>
+    <button id="logout-btn" class="menu-item"><i data-lucide="log-out"></i>退出登录</button>
+  </div>
+
   <script src="../node_modules/monaco-editor/min/vs/loader.js"></script>
+  <script>
+    // Monaco 的 AMD loader 定义了全局 define，会让 lucide UMD 误走 AMD 分支而不设置 window.lucide
+    // 临时把 define.amd 置为 falsy，让 lucide 走 global 分支，加载后恢复
+    window.__amdFlag = (typeof define === 'function' && define.amd) ? define.amd : undefined;
+    if (typeof define === 'function') { try { define.amd = false; } catch (e) {} }
+  </script>
+  <script src="../node_modules/lucide/dist/umd/lucide.js"></script>
+  <script>
+    if (typeof define === 'function' && window.__amdFlag !== undefined) { try { define.amd = window.__amdFlag; } catch (e) {} }
+    delete window.__amdFlag;
+  </script>
   <script src="editor.js"></script>
   <script src="agents.js"></script>
+  <script src="theme.js"></script>
+  <script src="auth.js"></script>
   <script src="renderer.js"></script>
 </body>
 </html>
