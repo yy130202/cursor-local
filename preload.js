@@ -25,6 +25,13 @@ contextBridge.exposeInMainWorld('api', {
   listSessions: () => ipcRenderer.invoke('session:list'),
   deleteSession: (id) => ipcRenderer.invoke('session:delete', id),
   exportSession: (id) => ipcRenderer.invoke('session:export', id),
+  // Git
+  gitStatus: (cwd) => ipcRenderer.invoke('git:status', cwd),
+  gitDiff: (cwd, file, staged) => ipcRenderer.invoke('git:diff', { cwd, file, staged }),
+  gitStage: (cwd, file) => ipcRenderer.invoke('git:stage', { cwd, file }),
+  gitUnstage: (cwd, file) => ipcRenderer.invoke('git:unstage', { cwd, file }),
+  gitCommit: (cwd, message) => ipcRenderer.invoke('git:commit', { cwd, message }),
+  gitPush: (cwd) => ipcRenderer.invoke('git:push', cwd),
   // 文件变更通知 + 回滚
   onFsChanged: (cb) => ipcRenderer.on('fs:changed', (_e, data) => cb(data)),
   revertChange: (c) => ipcRenderer.invoke('fs:revert', c),

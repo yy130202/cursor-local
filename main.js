@@ -14,6 +14,7 @@ const { createAgentModule } = require('./modules/agent');
 const { createSessionModule } = require('./modules/session');
 const { registerAi } = require('./modules/ai');
 const { registerAuth } = require('./modules/auth');
+const { createGitModule } = require('./modules/git');
 
 let win = null;
 const agents = new Map();
@@ -31,6 +32,7 @@ const logs = log.logs;
 
 const sessionMod = createSessionModule({ winRef, addLog });
 const agentMod = createAgentModule({ winRef, addLog, loadConfig, agents, saveSession: sessionMod.saveSession, rootDir: __dirname });
+const gitMod = createGitModule({ winRef, addLog });
 const { executeTool, runAgent, killChildren, emitAgent } = agentMod;
 const { revertFile } = sessionMod;
 
@@ -39,6 +41,7 @@ registerLog(ipcMain, log);
 registerFs(ipcMain, { winRef, addLog, loadConfig, saveConfig });
 agentMod.register(ipcMain);
 sessionMod.register(ipcMain);
+gitMod.register(ipcMain);
 registerAi(ipcMain, { loadConfig });
 registerAuth(ipcMain, { getUserStore });
 ipcMain.handle('billing:query', (_e, userId) => billing.queryBilling(userId));
@@ -151,6 +154,12 @@ async function takeScreenshots() {
       } catch (e) { return JSON.stringify({ ok: false, err: String(e) }); }
     })()`);
     console.log('[debug fsops]', fsops);
+    // Git 面板断言
+    const gitTest = await win.webContents.executeJavaScript(`(async () => {
+      const r = await window.api.gitStatus(${JSON.stringify(__dirname)});
+      return JSON.stringify({ ok: r.ok, branch: r.branch, staged: (r.staged||[]).length, unstaged: (r.unstaged||[]).length, panelFn: typeof window.openGitPanel });
+    })()`);
+    console.log('[debug git]', gitTest);
     // 亮色模式验证 + 截图
     const lightTest = await win.webContents.executeJavaScript(`(async () => {
       await window.setMode('light');
@@ -168,6 +177,11 @@ async function takeScreenshots() {
     await sleep(400);
     await captureTo(path.join(shotDir, '04-light.png'));
     await win.webContents.executeJavaScript('window.setMode("dark")');
+    // Git 面板截图
+    await win.webContents.executeJavaScript('switchMode("editor"); window.openGitPanel()');
+    await sleep(500);
+    await captureTo(path.join(shotDir, '05-git.png'));
+    await win.webContents.executeJavaScript('document.querySelector(".git-panel") && document.querySelector(".git-panel").classList.add("hidden")');
   } catch (err) {
     console.error('[shot] FAILED:', err);
   }
