@@ -81,22 +81,22 @@ window.lucideIcon = function (name) {
   return node ? window.lucide.createElement(node).outerHTML : '';
 };
 
-/* ---- 主题卡片渲染 ---- */
+/* ---- 主题卡片渲染（支持多容器：主页 / 设置页） ---- */
 function renderThemeCards() {
-  const container = document.getElementById('theme-cards');
-  if (!container) return;
-  container.innerHTML = '';
-  for (const [key, p] of Object.entries(PRESETS)) {
-    const card = document.createElement('button');
-    card.className = 'theme-card';
-    card.dataset.preset = key;
-    card.innerHTML =
-      '<span class="theme-preview" style="background:' + p.gradient + '"></span>' +
-      '<span class="theme-meta"><span class="theme-name">' + p.name + '</span>' +
-      '<span class="theme-check">' + (window.lucideIcon('check') || '') + '</span></span>';
-    card.onclick = () => setTheme(key, null);
-    container.appendChild(card);
-  }
+  document.querySelectorAll('.theme-cards').forEach((container) => {
+    container.innerHTML = '';
+    for (const [key, p] of Object.entries(PRESETS)) {
+      const card = document.createElement('button');
+      card.className = 'theme-card';
+      card.dataset.preset = key;
+      card.innerHTML =
+        '<span class="theme-preview" style="background:' + p.gradient + '"></span>' +
+        '<span class="theme-meta"><span class="theme-name">' + p.name + '</span>' +
+        '<span class="theme-check">' + (window.lucideIcon('check') || '') + '</span></span>';
+      card.onclick = () => setTheme(key, null);
+      container.appendChild(card);
+    }
+  });
 }
 
 /* ---- UI 绑定 ---- */

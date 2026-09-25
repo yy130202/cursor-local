@@ -27,7 +27,7 @@
   </header>
 
   <main>
-    <!-- Home Window（主页） -->
+    <!-- Home Window（主页，WorkBuddy 风格：hero + 胶囊分段 + chips + 大输入框） -->
     <section id="home-view" class="view active">
       <div class="home-aurora" aria-hidden="true">
         <div class="orb orb-1"></div>
@@ -35,38 +35,46 @@
         <div class="orb orb-3"></div>
       </div>
       <div class="home-content">
-        <div class="home-hero glass-card">
+        <div class="hero-center">
           <div class="hero-mark"><i data-lucide="terminal"></i></div>
           <h1>Cursor Local</h1>
           <p class="hero-sub">本地桌面 AI 编程工具 · 复刻 Cursor 核心体验</p>
-          <div class="hero-tags">
-            <span class="chip">Editor Window</span>
-            <span class="chip">Agents Window</span>
-            <span class="chip">本地 Agent</span>
+        </div>
+
+        <!-- 胶囊分段：快速开始 -->
+        <div class="hero-seg-row">
+          <span class="seg-label">开始</span>
+          <div class="seg-pill">
+            <button id="seg-editor"><i data-lucide="file-code-2"></i><span>写代码</span></button>
+            <button id="seg-agents"><i data-lucide="bot"></i><span>跑 Agent</span></button>
+          </div>
+          <span class="seg-label">之旅</span>
+        </div>
+
+        <!-- 功能 chips -->
+        <div class="hero-chips">
+          <button class="chip-btn" id="chip-folder"><i data-lucide="folder-open"></i>打开文件夹</button>
+          <button class="chip-btn" id="chip-history"><i data-lucide="history"></i>历史会话</button>
+          <button class="chip-btn" id="chip-theme"><i data-lucide="palette"></i>主题</button>
+          <button class="chip-btn" id="chip-settings"><i data-lucide="settings"></i>设置</button>
+        </div>
+
+        <!-- 大输入框（启动 Agent） -->
+        <div class="composer" id="home-composer">
+          <textarea id="home-task-input" rows="3" placeholder="描述任务，让 Agent 替你写代码、改文件、跑命令…"></textarea>
+          <div class="composer-bar">
+            <div class="composer-left">
+              <span class="mini-chip" id="home-cwd-chip" title="工作目录"><i data-lucide="folder"></i><span id="home-cwd-text">未选择文件夹</span></span>
+              <span class="mini-chip" title="当前模型"><i data-lucide="cpu"></i><span id="home-model-text">-</span></span>
+            </div>
+            <button class="send-btn" id="home-send" title="启动 Agent（Enter）"><i data-lucide="arrow-up"></i></button>
           </div>
         </div>
 
-        <div class="home-grid">
-          <!-- 主题选择（卡片式） -->
-          <div class="glass-card theme-section">
-            <div class="card-title"><i data-lucide="palette"></i><span>主题颜色</span></div>
-            <div class="card-desc">选择你喜欢的强调色，一键切换</div>
-            <div class="theme-cards" id="theme-cards"></div>
-            <div class="theme-custom-row">
-              <span>自定义颜色</span>
-              <input type="color" id="home-theme-color" value="#3b82f6">
-            </div>
-          </div>
-
-          <!-- 快捷入口 -->
-          <div class="glass-card quick-section">
-            <div class="card-title"><i data-lucide="zap"></i><span>快速开始</span></div>
-            <div class="quick-actions">
-              <button class="quick-btn" id="quick-folder"><i data-lucide="folder-open"></i><span>打开文件夹</span></button>
-              <button class="quick-btn" id="quick-editor"><i data-lucide="file-code-2"></i><span>进入编辑器</span></button>
-              <button class="quick-btn" id="quick-agents"><i data-lucide="bot"></i><span>启动 Agent</span></button>
-            </div>
-          </div>
+        <!-- 主题卡片行 -->
+        <div class="home-themes">
+          <div class="card-title-sm"><i data-lucide="palette"></i><span>主题颜色</span></div>
+          <div class="theme-cards" id="theme-cards"></div>
         </div>
       </div>
     </section>
@@ -86,21 +94,14 @@
       </div>
     </section>
 
-    <!-- Agents Window -->
+    <!-- Agents Window（Cursor 风格：时间分组列表 + 气泡 + 底部 follow-up） -->
     <section id="agents-view" class="view">
       <div id="agents-sidebar">
-        <div class="panel-title"><span>Agents</span><button id="new-agent-btn"><i data-lucide="plus"></i>新建 Agent</button></div>
+        <div class="panel-title"><span>Agents</span><button id="new-agent-btn"><i data-lucide="plus"></i>新建</button></div>
         <div id="agent-list"></div>
         <div id="history-section" class="hidden">
           <div class="history-title">历史会话</div>
           <div id="history-list"></div>
-        </div>
-        <div id="new-agent-form" class="hidden">
-          <textarea id="agent-task-input" placeholder="描述任务，例如：&#10;阅读本项目代码，写一个 README.md 介绍项目结构"></textarea>
-          <div class="form-actions">
-            <span class="hint">Agent 将在当前工作目录运行，可并行启动多个</span>
-            <button id="agent-run-btn"><i data-lucide="play"></i>启动</button>
-          </div>
         </div>
       </div>
       <div id="agents-main">
@@ -112,6 +113,17 @@
         </div>
         <div id="transcript"></div>
         <div id="agents-empty">创建一个 Agent，让它替你读写代码、执行命令</div>
+        <!-- 底部 follow-up 输入框（Cursor 风格） -->
+        <div class="composer agents-composer" id="agents-composer">
+          <textarea id="followup-input" rows="2" placeholder="添加后续任务…（Enter 发送）"></textarea>
+          <div class="composer-bar">
+            <div class="composer-left">
+              <span class="mini-chip"><i data-lucide="bot"></i><span>Agent</span></span>
+              <span class="mini-chip" title="当前模型"><i data-lucide="cpu"></i><span id="agents-model-text">-</span></span>
+            </div>
+            <button class="send-btn" id="followup-send" title="发送（Enter）"><i data-lucide="arrow-up"></i></button>
+          </div>
+        </div>
       </div>
     </section>
   </main>
@@ -157,23 +169,58 @@
     </div>
   </div>
 
-  <!-- 设置 -->
+  <!-- 设置（WorkBuddy 风格：左侧导航 + 右侧行式卡片） -->
   <div id="settings-modal" class="modal hidden">
-    <div class="modal-box">
-      <h3>设置</h3>
-      <label>Base URL（OpenAI 兼容接口）
-        <input id="cfg-baseurl" placeholder="https://api.deepseek.com/v1">
-      </label>
-      <label>API Key
-        <input id="cfg-apikey" type="password" placeholder="sk-...">
-      </label>
-      <label>模型 ID
-        <input id="cfg-model" placeholder="deepseek-flash">
-      </label>
-      <div class="modal-actions">
-        <button id="cfg-cancel">取消</button>
-        <button id="cfg-save" class="primary">保存</button>
+    <div class="settings-box">
+      <aside class="settings-nav">
+        <div class="settings-nav-title">设置</div>
+        <button class="snav-item active" data-page="general"><i data-lucide="settings"></i><span>通用</span></button>
+        <button class="snav-item" data-page="appearance"><i data-lucide="palette"></i><span>外观</span></button>
+        <button class="snav-item" data-page="about"><i data-lucide="info"></i><span>关于</span></button>
+      </aside>
+      <div class="settings-body">
+        <div class="spage active" data-page="general">
+          <div class="spage-title">通用</div>
+          <div class="sgroup">
+            <div class="srow">
+              <div class="srow-main"><div class="srow-label">Base URL</div><div class="srow-desc">OpenAI 兼容接口地址，修改后立即生效</div></div>
+              <input id="cfg-baseurl" placeholder="https://api.deepseek.com/v1">
+            </div>
+            <div class="srow">
+              <div class="srow-main"><div class="srow-label">API Key</div><div class="srow-desc">加密存储在本机，不会上传</div></div>
+              <input id="cfg-apikey" type="password" placeholder="sk-...">
+            </div>
+            <div class="srow">
+              <div class="srow-main"><div class="srow-label">模型 ID</div><div class="srow-desc">Agent 与对话使用的模型</div></div>
+              <input id="cfg-model" placeholder="deepseek-flash">
+            </div>
+          </div>
+          <div class="modal-actions"><button id="cfg-cancel">取消</button><button id="cfg-save" class="primary">保存</button></div>
+        </div>
+        <div class="spage" data-page="appearance">
+          <div class="spage-title">外观</div>
+          <div class="sgroup">
+            <div class="srow-col">
+              <div class="srow-label">主题颜色</div>
+              <div class="srow-desc">选择强调色，全局即时生效</div>
+              <div class="theme-cards small" id="theme-cards-settings"></div>
+            </div>
+          </div>
+        </div>
+        <div class="spage" data-page="about">
+          <div class="spage-title">关于</div>
+          <div class="sgroup">
+            <div class="srow">
+              <div class="srow-main"><div class="srow-label">Cursor Local</div><div class="srow-desc">复刻 Cursor 核心体验的本地桌面 AI 编程工具</div></div>
+              <span class="ver-badge">v0.1.0</span>
+            </div>
+            <div class="srow">
+              <div class="srow-main"><div class="srow-label">技术栈</div><div class="srow-desc">Electron + Monaco Editor + 本地 Agent 引擎</div></div>
+            </div>
+          </div>
+        </div>
       </div>
+      <button class="settings-close" id="settings-close-btn"><i data-lucide="x"></i></button>
     </div>
   </div>
 

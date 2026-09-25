@@ -10,28 +10,44 @@ const transcriptEl = document.getElementById('transcript');
 const agentsEmptyEl = document.getElementById('agents-empty');
 const mainHeadEl = document.getElementById('agents-main-head');
 
-/* ---- 新建 Agent 表单 ---- */
+/* ---- 新建 Agent / followup 输入 ---- */
 document.getElementById('new-agent-btn').onclick = () => {
-  document.getElementById('new-agent-form').classList.toggle('hidden');
+  document.getElementById('followup-input').focus();
 };
-
-document.getElementById('agent-run-btn').onclick = async () => {
-  const input = document.getElementById('agent-task-input');
-  const task = input.value.trim();
-  if (!task) { input.focus(); return; }
-  input.value = '';
-  const cwd = EditorState.currentFolder || '';
-  const r = await window.api.createAgent({ task, cwd });
-  selectAgent(r.id);
-};
-
-document.getElementById('agent-task-input').addEventListener('keydown', (e) => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') document.getElementById('agent-run-btn').click();
-});
 
 document.getElementById('agent-stop-btn').onclick = () => {
   if (agentsState.selectedId) window.api.stopAgent(agentsState.selectedId);
 };
+
+/* 底部 follow-up 输入框：选中已结束的 Agent 则续跑，否则新建 */
+async function sendFollowup() {
+  const input = document.getElementById('followup-input');
+  const task = input.value.trim();
+  if (!task) { input.focus(); return; }
+  const sel = agentsState.agents.get(agentsState.selectedId);
+  const canFollow = sel && !sel.readonly && !sel.id.startsWith('hist-') && sel.status !== 'running';
+  if (canFollow) {
+    const r = await window.api.followAgent(sel.id, task);
+    if (!r.ok) { input.value = ''; flashComposer(r.error); return; }
+    input.value = '';
+  } else {
+    const cwd = EditorState.currentFolder || '';
+    const r = await window.api.createAgent({ task, cwd });
+    input.value = '';
+    selectAgent(r.id);
+  }
+}
+
+function flashComposer(msg) {
+  const input = document.getElementById('followup-input');
+  input.placeholder = msg || '出错了，请重试';
+  setTimeout(() => { input.placeholder = '添加后续任务…（Enter 发送）'; }, 2500);
+}
+
+document.getElementById('followup-send').onclick = sendFollowup;
+document.getElementById('followup-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendFollowup(); }
+});
 
 /* ---- 流式累积辅助 ---- */
 function closeStreaming(a) {
@@ -48,8 +64,12 @@ window.api.onAgentEvent((ev) => {
   }
   switch (ev.kind) {
     case 'meta':
-      a.task = ev.task; a.cwd = ev.cwd;
+      a.task = ev.task; a.cwd = ev.cwd; a.ts = ev.ts || Date.now();
       a.entries.push({ kind: 'user', text: ev.task });
+      break;
+    case 'user_msg':
+      closeStreaming(a);
+      a.entries.push({ kind: 'user', text: ev.text });
       break;
     case 'text_delta': {
       const last = a.entries[a.entries.length - 1];
@@ -120,7 +140,6 @@ function renderAgentList() {
 
 function selectAgent(id) {
   agentsState.selectedId = id;
-  document.getElementById('new-agent-form').classList.add('hidden');
   renderAgentList();
   renderTranscript();
 }
@@ -218,10 +237,16 @@ function renderTranscript() {
     (a.status === 'running' && !a.readonly) ? '' : 'none';
 
   for (const en of a.entries) {
-    if (en.kind === 'user' || en.kind === 'agent-msg') {
+    if (en.kind === 'user') {
+      // Cursor 式用户气泡
       const d = document.createElement('div');
-      d.className = 'entry entry-text ' + en.kind + (en.streaming ? ' streaming' : '');
-      d.innerHTML = '<span class="who">' + (en.kind === 'user' ? '任务' : 'Agent') + '</span><span class="body">' + escapeHtml(en.text) + (en.streaming ? '<span class="caret">▍</span>' : '') + '</span>';
+      d.className = 'entry user-row';
+      d.innerHTML = '<div class="user-bubble">' + escapeHtml(en.text) + '</div>';
+      transcriptEl.appendChild(d);
+    } else if (en.kind === 'agent-msg') {
+      const d = document.createElement('div');
+      d.className = 'entry entry-text agent-msg' + (en.streaming ? ' streaming' : '');
+      d.innerHTML = '<span class="who">Agent</span><span class="body">' + escapeHtml(en.text) + (en.streaming ? '<span class="caret">▍</span>' : '') + '</span>';
       transcriptEl.appendChild(d);
     } else if (en.kind === 'tool') {
       const d = document.createElement('div');
@@ -259,14 +284,32 @@ function renderTranscript() {
   transcriptEl.scrollTop = transcriptEl.scrollHeight;
 }
 
-/* ---- 历史会话 ---- */
+/* ---- 历史会话（时间分组：今天 / 昨天 / 本周 / 更早） ---- */
+function timeGroupOf(ts) {
+  const d = new Date(ts), now = new Date();
+  if (d.toDateString() === now.toDateString()) return '今天';
+  const days = Math.floor((now - d) / 86400000);
+  if (days < 2) return '昨天';
+  if (days < 7) return '本周';
+  return '更早';
+}
+
 function renderHistory() {
   const section = document.getElementById('history-section');
   const listEl = document.getElementById('history-list');
   if (!agentsState.history.length) { section.classList.add('hidden'); return; }
   section.classList.remove('hidden');
   listEl.innerHTML = '';
+  let lastGroup = null;
   for (const s of agentsState.history) {
+    const group = timeGroupOf(s.ts || Date.now());
+    if (group !== lastGroup) {
+      lastGroup = group;
+      const g = document.createElement('div');
+      g.className = 'list-group-label';
+      g.textContent = group;
+      listEl.appendChild(g);
+    }
     const el = document.createElement('div');
     el.className = 'history-item';
     const time = new Date(s.ts).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });

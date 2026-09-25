@@ -415,7 +415,7 @@ async function runAgent(agent) {
   const cfg = loadConfig();
   if (!cfg.apiKey && !process.env.MOCK_LLM) {
     agent.status = 'error';
-    emitAgent(agent, 'error', { text: '未配置 API Key，请点击右上角 ⚙ 设置 填入你的 DeepSeek API Key 后重试。' });
+    emitAgent(agent, 'error', { text: '未配置 API Key，请点击右上角「设置」填入你的 API Key 后重试。' });
     return;
   }
   const sys = [
@@ -432,7 +432,11 @@ async function runAgent(agent) {
   ];
   agent.status = 'running';
   emitAgent(agent, 'status', { status: 'running' });
+  await agentLoop(agent, cfg);
+}
 
+/* Agent 工具循环（新建与 followup 续跑共用） */
+async function agentLoop(agent, cfg) {
   try {
     for (let i = 0; i < 30; i++) {
       let content = '';
@@ -501,7 +505,7 @@ ipcMain.handle('agent:create', (_e, { task, cwd }) => {
     children: new Set()
   };
   agents.set(agent.id, agent);
-  emitAgent(agent, 'meta', { task: agent.task, cwd: agent.cwd });
+  emitAgent(agent, 'meta', { task: agent.task, cwd: agent.cwd, ts: Date.now() });
   runAgent(agent); // 异步并行运行
   return { id: agent.id };
 });
@@ -520,6 +524,22 @@ ipcMain.handle('agent:stop', (_e, id) => {
     emitAgent(a, 'status', { status: 'stopped' });
   }
   return true;
+});
+
+/* 对已结束的 Agent 追加后续任务，续跑同一会话（Cursor 式 follow-up） */
+ipcMain.handle('agent:followup', (_e, { id, task }) => {
+  const a = agents.get(id);
+  if (!a) return { ok: false, error: 'Agent 不存在' };
+  if (a.status === 'running') return { ok: false, error: 'Agent 仍在运行中，请等待完成' };
+  const t = String(task || '').trim();
+  if (!t) return { ok: false, error: '任务不能为空' };
+  if (!a.messages || !a.messages.length) return { ok: false, error: '会话为空' };
+  a.messages.push({ role: 'user', content: t });
+  emitAgent(a, 'user_msg', { text: t });
+  a.status = 'running';
+  emitAgent(a, 'status', { status: 'running' });
+  agentLoop(a, loadConfig()); // 续跑（复用已有上下文）
+  return { ok: true };
 });
 
 /* ---------------- 用户系统（本地存储 + 预留云接口） ---------------- */
@@ -595,6 +615,12 @@ async function takeScreenshots() {
     const homeDbg = await win.webContents.executeJavaScript(`JSON.stringify({
       themeCards: document.querySelectorAll('.theme-card').length,
       orbs: document.querySelectorAll('.orb').length,
+      segPill: document.querySelectorAll('.seg-pill button').length,
+      chipBtns: document.querySelectorAll('.chip-btn').length,
+      composer: !!document.getElementById('home-composer'),
+      sendBtn: !!document.getElementById('home-send'),
+      followup: !!document.getElementById('followup-input'),
+      snavItems: document.querySelectorAll('.snav-item').length,
       accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
       homeActive: document.getElementById('home-view').classList.contains('active'),
       lucideIcons: document.querySelectorAll('svg.lucide').length
@@ -651,7 +677,7 @@ function runAgentTest() {
   try { fs.rmSync(path.join(__dirname, 'agent-demo'), { recursive: true, force: true }); } catch { /* 忽略 */ }
   const agent = { id: 'test-agent', task: '验证 Agent 工具循环', cwd: __dirname, status: 'running', messages: [], log: [], children: new Set() };
   agents.set(agent.id, agent);
-  emitAgent(agent, 'meta', { task: agent.task, cwd: agent.cwd });
+  emitAgent(agent, 'meta', { task: agent.task, cwd: agent.cwd, ts: Date.now() });
   runAgent(agent).then(async () => {
     try {
       console.log('[test-agent] status =', agent.status);

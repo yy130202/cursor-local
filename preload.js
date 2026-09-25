@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld('api', {
   createAgent: (a) => ipcRenderer.invoke('agent:create', a),
   listAgents: () => ipcRenderer.invoke('agent:list'),
   stopAgent: (id) => ipcRenderer.invoke('agent:stop', id),
+  followAgent: (id, task) => ipcRenderer.invoke('agent:followup', { id, task }),
   onAgentEvent: (cb) => ipcRenderer.on('agent:event', (_e, ev) => cb(ev)),
   // 会话持久化
   listSessions: () => ipcRenderer.invoke('session:list'),

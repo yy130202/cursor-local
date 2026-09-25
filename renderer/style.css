@@ -596,3 +596,193 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
   .theme-cards { grid-template-columns: repeat(3, 1fr); }
   .home-content { padding: 20px; }
 }
+
+/* ==================== 主页 v2（WorkBuddy 风格：hero + 胶囊分段 + 大输入框） ==================== */
+.home-content { align-items: center; }
+.hero-center { text-align: center; margin-top: 5vh; }
+.hero-center .hero-mark { width: 64px; height: 64px; margin: 0 auto 18px; border-radius: 18px; }
+.hero-center h1 { font-size: 38px; font-weight: 700; color: #fff; letter-spacing: 0.5px; }
+.hero-center .hero-sub { margin-top: 10px; }
+
+/* 胶囊分段 */
+.hero-seg-row { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 28px; }
+.seg-label { font-size: 18px; font-weight: 600; color: var(--text-dim); user-select: none; }
+.seg-pill {
+  display: flex; gap: 2px; padding: 4px;
+  background: var(--glass-strong);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border: 1px solid var(--glass-border); border-radius: 999px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.seg-pill button {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: transparent; border: none; color: var(--text);
+  padding: 8px 20px; border-radius: 999px; cursor: pointer; font-size: 14px;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+.seg-pill button svg.lucide { width: 15px; height: 15px; }
+.seg-pill button:hover { background: rgba(255,255,255,0.08); }
+.seg-pill button.on {
+  background: linear-gradient(180deg, var(--accent-hover), var(--accent));
+  color: var(--accent-contrast);
+  box-shadow: 0 0 16px var(--glow), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+/* 功能 chips */
+.hero-chips { display: flex; justify-content: center; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+.chip-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--glass);
+  backdrop-filter: blur(12px) saturate(1.3);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  border: 1px solid var(--glass-border); color: var(--text);
+  border-radius: 999px; padding: 6px 15px; cursor: pointer; font-size: 12px;
+  transition: border-color 0.15s, color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+.chip-btn svg.lucide { width: 13px; height: 13px; }
+.chip-btn:hover { border-color: var(--accent); color: #fff; box-shadow: 0 0 12px var(--glow); transform: translateY(-1px); }
+
+/* 大输入框（启动 Agent） */
+.composer {
+  width: min(760px, 100%); margin: 28px auto 0;
+  background: var(--glass-strong);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border: 1px solid var(--glass-border); border-radius: 16px;
+  padding: 12px 14px 10px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.composer:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 22px var(--glow);
+}
+.composer textarea {
+  width: 100%; resize: none; background: transparent; border: none; outline: none;
+  color: var(--text); font-size: 14px; font-family: inherit; line-height: 1.6;
+}
+.composer textarea::placeholder { color: var(--text-dim); }
+.composer-bar { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; gap: 10px; }
+.composer-left { display: flex; gap: 8px; min-width: 0; overflow: hidden; }
+.mini-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+  color: var(--text-dim); font-size: 11px; border-radius: 999px; padding: 3px 10px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 230px;
+}
+.mini-chip svg.lucide { width: 12px; height: 12px; flex-shrink: 0; }
+.send-btn {
+  width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer;
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+  color: var(--accent-contrast); display: grid; place-items: center;
+  box-shadow: 0 0 14px var(--glow); flex-shrink: 0;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.send-btn svg.lucide { width: 16px; height: 16px; }
+.send-btn:hover { transform: translateY(-2px); box-shadow: 0 0 24px var(--glow); }
+.send-btn:active { transform: translateY(0); }
+
+/* 主题卡片行（主页） */
+.home-themes { width: min(760px, 100%); margin: 24px auto 0; }
+.card-title-sm {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text-dim); margin-bottom: 10px;
+}
+.card-title-sm svg.lucide { width: 13px; height: 13px; color: var(--accent); }
+.theme-cards.small { margin-top: 10px; }
+
+/* Agents 底部 composer */
+#agents-main { position: relative; }
+.agents-composer {
+  width: 100%; margin: 0; border-radius: 0;
+  border: none; border-top: 1px solid var(--glass-border);
+  box-shadow: none; flex-shrink: 0;
+  background: var(--glass-strong);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+}
+
+/* Cursor 式用户气泡 */
+.user-row { display: flex; }
+.user-bubble {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px; padding: 10px 15px;
+  color: var(--text); line-height: 1.6;
+  white-space: pre-wrap; word-break: break-word;
+  max-width: 92%;
+}
+
+/* 会话列表分组标题 */
+.list-group-label {
+  padding: 10px 14px 4px; font-size: 11px;
+  color: var(--text-dim); letter-spacing: 1px;
+}
+
+/* ==================== 设置（WorkBuddy 导航式） ==================== */
+.settings-box {
+  width: min(860px, 94vw); height: min(600px, 88vh);
+  background: var(--glass-strong);
+  backdrop-filter: blur(24px) saturate(1.6);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+  border: 1px solid var(--glass-border); border-radius: 16px;
+  display: flex; overflow: hidden; position: relative;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.55);
+  animation: pop 0.18s ease;
+}
+.settings-nav {
+  width: 190px; flex-shrink: 0;
+  background: rgba(0,0,0,0.25);
+  border-right: 1px solid var(--glass-border);
+  padding: 18px 10px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.settings-nav-title { font-size: 15px; font-weight: 700; color: #fff; padding: 0 12px 12px; }
+.snav-item {
+  display: flex; align-items: center; gap: 9px;
+  background: transparent; border: none; color: var(--text);
+  padding: 9px 12px; border-radius: 9px; cursor: pointer; font-size: 13px;
+  text-align: left; transition: background 0.12s ease;
+}
+.snav-item svg.lucide { width: 15px; height: 15px; color: var(--text-dim); }
+.snav-item:hover { background: rgba(255,255,255,0.05); }
+.snav-item.active { background: var(--accent); color: var(--accent-contrast); box-shadow: 0 0 12px var(--glow); }
+.snav-item.active svg.lucide { color: var(--accent-contrast); }
+.settings-body { flex: 1; overflow: auto; padding: 20px 24px; }
+.spage { display: none; }
+.spage.active { display: block; }
+.spage-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 14px; }
+.sgroup {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--glass-border); border-radius: 12px;
+  padding: 4px 16px; margin-bottom: 16px;
+}
+.srow {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 13px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.srow:last-child { border-bottom: none; }
+.srow-main { min-width: 0; }
+.srow-label { font-size: 13px; font-weight: 600; color: var(--text); }
+.srow-desc { font-size: 11px; color: var(--text-dim); margin-top: 3px; line-height: 1.5; }
+.srow input {
+  width: 240px; background: rgba(0,0,0,0.3); color: var(--text);
+  border: 1px solid var(--glass-border); border-radius: 8px;
+  padding: 7px 10px; font-size: 12px; flex-shrink: 0;
+}
+.srow input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.srow-col { padding: 13px 0; }
+.ver-badge {
+  font-size: 11px; color: var(--accent); background: var(--accent-soft);
+  border-radius: 999px; padding: 3px 10px; flex-shrink: 0;
+}
+.settings-close {
+  position: absolute; top: 12px; right: 12px;
+  width: 30px; height: 30px; border-radius: 8px;
+  background: transparent; border: none; color: var(--text-dim);
+  cursor: pointer; display: grid; place-items: center;
+}
+.settings-close svg.lucide { width: 16px; height: 16px; }
+.settings-close:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.settings-box .modal-actions { padding-right: 0; }
