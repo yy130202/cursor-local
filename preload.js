@@ -27,6 +27,8 @@ contextBridge.exposeInMainWorld('api', {
   // AI 辅助
   aiComplete: (code, lang) => ipcRenderer.invoke('ai:complete', { code, lang }),
   aiEdit: (text, instruction) => ipcRenderer.invoke('ai:edit', { text, instruction }),
+  aiInline: (code, instruction) => ipcRenderer.invoke('ai:inline', { code, instruction }),
+  aiDiagnose: (code, lang) => ipcRenderer.invoke('ai:diagnose', { code, lang }),
   // 日志
   onLog: (cb) => ipcRenderer.on('log:event', (_e, entry) => cb(entry)),
   getLogs: () => ipcRenderer.invoke('log:list'),

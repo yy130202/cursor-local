@@ -235,7 +235,7 @@ async function openFile(filePath) {
 }
 
 function closeTab(path, ev) {
-  ev.stopPropagation();
+  if (ev) ev.stopPropagation();
   const idx = EditorState.tabs.findIndex((t) => t.path === path);
   if (idx < 0) return;
   const tab = EditorState.tabs[idx];
@@ -251,20 +251,83 @@ function closeTab(path, ev) {
   renderTabs();
 }
 
+function closeOthers(path) {
+  const keep = EditorState.tabs.find((t) => t.path === path);
+  if (!keep) return;
+  EditorState.tabs.forEach((t) => { if (t !== keep) t.model.dispose(); });
+  EditorState.tabs = [keep];
+  EditorState.activePath = path;
+  const ed = getEditor();
+  if (ed) ed.setModel(keep.model);
+  renderTabs();
+}
+
+function closeAllTabs() {
+  EditorState.tabs.forEach((t) => t.model.dispose());
+  EditorState.tabs = [];
+  EditorState.activePath = null;
+  const ed = getEditor();
+  if (ed) ed.setModel(null);
+  document.getElementById('editor-empty').classList.remove('hidden');
+  renderTabs();
+}
+
+function showTabMenu(x, y, path) {
+  let menu = document.getElementById('tab-menu');
+  if (!menu) {
+    menu = document.createElement('div');
+    menu.id = 'tab-menu';
+    menu.className = 'ctx-menu';
+    document.body.appendChild(menu);
+  }
+  menu.innerHTML =
+    '<div class="ctx-item" data-act="close"><span class="ctx-label">关闭</span></div>' +
+    '<div class="ctx-item" data-act="close-others"><span class="ctx-label">关闭其他</span></div>' +
+    '<div class="ctx-item" data-act="close-all"><span class="ctx-label">关闭所有</span></div>' +
+    '<div class="ctx-sep"></div>' +
+    '<div class="ctx-item" data-act="copy-path"><span class="ctx-ico">' + (window.lucideIcon('copy') || '') + '</span><span class="ctx-label">复制路径</span></div>';
+  menu.style.left = x + 'px'; menu.style.top = y + 'px';
+  menu.classList.remove('hidden');
+  menu.querySelectorAll('.ctx-item').forEach((it) => {
+    it.onclick = () => {
+      menu.classList.add('hidden');
+      const act = it.dataset.act;
+      if (act === 'close') closeTab(path);
+      else if (act === 'close-others') closeOthers(path);
+      else if (act === 'close-all') closeAllTabs();
+      else if (act === 'copy-path') { navigator.clipboard.writeText(path); flashStatus('已复制路径'); }
+    };
+  });
+  setTimeout(() => document.addEventListener('click', () => menu.classList.add('hidden'), { once: true }), 0);
+}
+
 function renderTabs() {
   const bar = document.getElementById('tabbar');
   bar.innerHTML = '';
-  for (const t of EditorState.tabs) {
+  EditorState.tabs.forEach((t, idx) => {
     const el = document.createElement('div');
     el.className = 'tab' + (t.path === EditorState.activePath ? ' active' : '');
+    el.draggable = true;
     el.innerHTML =
       '<span>' + escapeHtml(t.name) + '</span>' +
       (t.dirty ? '<span class="dirty">●</span>' : '') +
       '<span class="close" title="关闭">×</span>';
     el.onclick = () => openFile(t.path);
     el.querySelector('.close').onclick = (ev) => closeTab(t.path, ev);
+    el.oncontextmenu = (ev) => { ev.preventDefault(); showTabMenu(ev.clientX, ev.clientY, t.path); };
+    el.ondragstart = (ev) => { ev.dataTransfer.setData('text/plain', String(idx)); el.classList.add('dragging'); };
+    el.ondragend = () => el.classList.remove('dragging');
+    el.ondragover = (ev) => ev.preventDefault();
+    el.ondrop = (ev) => {
+      ev.preventDefault();
+      const from = parseInt(ev.dataTransfer.getData('text/plain'), 10);
+      if (from === idx || Number.isNaN(from)) return;
+      const [moved] = EditorState.tabs.splice(from, 1);
+      EditorState.tabs.splice(idx, 0, moved);
+      renderTabs();
+    };
     bar.appendChild(el);
-  }
+  });
 }
 
 async function saveActive() {

@@ -53,6 +53,42 @@ function applyTheme(accentHex) {
   root.style.setProperty('--orb-1', rgba(accentHex, 0.55));
   root.style.setProperty('--orb-2', rgba(mix(accentHex, 'white', 0.3), 0.4));
   root.style.setProperty('--orb-3', rgba(mix(accentHex, 'black', 0.3), 0.55));
+  updateMonacoTheme(accentHex);
+}
+
+/* Monaco 编辑器主题跟随主题色（光标/选区/高亮用 accent） */
+function updateMonacoTheme(accentHex) {
+  if (typeof monaco === 'undefined') return;
+  const dark = document.documentElement.dataset.theme !== 'light';
+  const { r, g, b } = hexToRgb(accentHex);
+  monaco.editor.defineTheme('cursor-theme', {
+    base: dark ? 'vs-dark' : 'vs',
+    inherit: true,
+    rules: [
+      { token: 'comment', foreground: dark ? '6a9955' : '008000' },
+      { token: 'keyword', foreground: dark ? '569cd6' : '0000ff' },
+      { token: 'string', foreground: dark ? 'ce9178' : 'a31515' },
+      { token: 'number', foreground: dark ? 'b5cea8' : '098658' }
+    ],
+    colors: {
+      'editor.background': dark ? '#1e1e1e' : '#ffffff',
+      'editor.foreground': dark ? '#d4d4d4' : '#1f1f1f',
+      'editorCursor.foreground': accentHex,
+      'editor.lineHighlightBackground': rgba(accentHex, dark ? 0.08 : 0.10),
+      'editor.selectionBackground': rgba(accentHex, 0.32),
+      'editor.selectionHighlightBackground': rgba(accentHex, 0.20),
+      'editor.wordHighlightBackground': rgba(accentHex, 0.16),
+      'editor.findMatchBackground': rgba(accentHex, 0.5),
+      'editor.findMatchHighlightBackground': rgba(accentHex, 0.28),
+      'editorSuggestWidget.selectedBackground': rgba(accentHex, 0.30),
+      'editor.inlineSuggest.foreground': dark ? '#888888' : '#888888',
+      'editor.inlineSuggest.background': rgba(accentHex, 0.08)
+    }
+  });
+  if (typeof EditorState !== 'undefined' && EditorState.editor) {
+    monaco.editor.setTheme('cursor-theme');
+    window.__monacoThemeApplied = accentHex;
+  }
 }
 
 async function setTheme(preset, custom) {

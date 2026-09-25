@@ -9,7 +9,9 @@
     { id: 'ai.comment', label: 'AI 添加注释', icon: 'message-square-plus', key: 'Ctrl+Alt+C', action: () => window.applyAiEdit && window.applyAiEdit('comment') },
     { id: 'ai.rewrite', label: 'AI 改写代码', icon: 'wand-sparkles', key: 'Ctrl+Alt+R', action: () => window.applyAiEdit && window.applyAiEdit('rewrite') },
     { id: 'ai.test', label: 'AI 编写测试', icon: 'test-tube', key: 'Ctrl+Alt+T', action: () => window.applyAiEdit && window.applyAiEdit('test') },
-    { id: 'ai.complete', label: '触发 AI 补全', icon: 'sparkles', key: 'Alt+\\', action: () => window.triggerAiComplete && window.triggerAiComplete() }
+    { id: 'ai.complete', label: '触发 AI 补全', icon: 'sparkles', key: 'Alt+\\', action: () => window.triggerAiComplete && window.triggerAiComplete() },
+    { id: 'inline.chat', label: '内联改写', icon: 'message-square', key: 'Ctrl+I', action: () => window.openInlineChat && window.openInlineChat() },
+    { id: 'ai.diagnose', label: 'AI 代码诊断', icon: 'stethoscope', key: 'Ctrl+Alt+D', action: () => window.openDiagnose && window.openDiagnose() }
   ];
 
   let customKeybindings = {}; // id -> combo（用户自定义覆盖默认）
@@ -69,7 +71,7 @@
       menuEl.className = 'ctx-menu';
       document.body.appendChild(menuEl);
     }
-    const aiCmds = ['ai.explain', 'ai.comment', 'ai.rewrite', 'ai.test', 'ai.complete'];
+    const aiCmds = ['inline.chat', 'ai.explain', 'ai.comment', 'ai.rewrite', 'ai.test', 'ai.diagnose', 'ai.complete'];
     const navCmds = ['command.palette', 'search.global', 'file.save'];
     const itemHtml = (cmd) =>
       '<div class="ctx-item" data-id="' + cmd.id + '">' +

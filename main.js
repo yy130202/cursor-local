@@ -819,6 +819,46 @@ ipcMain.handle('ai:edit', async (_e, { text, instruction }) => {
   }
 });
 
+/* 内联聊天（Ctrl+I）：按指令改写选中代码，返回完整新代码 */
+ipcMain.handle('ai:inline', async (_e, { code, instruction }) => {
+  try {
+    const prompt = [
+      '你是代码编辑助手。用户对一段选中代码给出修改指令，请直接返回改写后的完整代码，不要解释、不要用代码块包裹、不要遗漏任何必要代码。',
+      '用户指令：' + (instruction || '优化这段代码'),
+      '原代码：',
+      '```',
+      (code || '').slice(0, 12000),
+      '```',
+      '改写后的完整代码：'
+    ].join('\n');
+    const result = await aiChat([{ role: 'user', content: prompt }], { temperature: 0.2, maxTokens: 2500 });
+    return { ok: true, code: stripFence(result) };
+  } catch (e) {
+    return { ok: false, error: String(e.message || e) };
+  }
+});
+
+/* AI 代码诊断：返回 [{line, severity, message, suggestion}] */
+ipcMain.handle('ai:diagnose', async (_e, { code, lang }) => {
+  try {
+    const prompt = [
+      '你是代码审查助手。分析以下代码的潜在问题，返回 JSON 数组，每项含 line(行号), severity(取值 error/warning/info), message(简短中文问题描述), suggestion(修复建议)。',
+      '只输出 JSON 数组，不要任何其他文字或代码块。示例：[{"line":3,"severity":"warning","message":"变量未使用","suggestion":"删除该变量"}]',
+      '语言：' + (lang || '未知'),
+      '代码：',
+      '```',
+      (code || '').slice(0, 12000),
+      '```'
+    ].join('\n');
+    const result = await aiChat([{ role: 'user', content: prompt }], { temperature: 0.2, maxTokens: 1500 });
+    const s = result.slice(result.indexOf('['), result.lastIndexOf(']') + 1);
+    const arr = JSON.parse(s || '[]');
+    return { ok: true, diagnostics: Array.isArray(arr) ? arr : [] };
+  } catch (e) {
+    return { ok: false, error: String(e.message || e) };
+  }
+});
+
 /* ---------------- token 计费（结构占位，暂不启用） ---------------- */
 ipcMain.handle('billing:query', (_e, userId) => billing.queryBilling(userId));
 
@@ -910,7 +950,11 @@ async function takeScreenshots() {
         formatKey: typeof window.formatKeyEvent,
         ctxMenuReady: !!window.__ctxMenuReady,
         setKeybinding: typeof window.setKeybinding,
-        applyAiEdit: typeof window.applyAiEdit
+        applyAiEdit: typeof window.applyAiEdit,
+        inlineChat: typeof window.openInlineChat,
+        diagnose: typeof window.openDiagnose,
+        monacoTheme: window.__monacoThemeApplied || 'n/a',
+        tabDraggable: !!document.querySelector('.tab[draggable="true"]')
       });
     })()`);
     console.log('[debug keymap]', km);
