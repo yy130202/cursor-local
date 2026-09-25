@@ -1,10 +1,10 @@
-/* Cursor Local - 主题系统（预设 + 自定义取色器） */
+/* Cursor Local - 主题系统（卡片式选择 + 自定义取色器） */
 const PRESETS = {
-  blue: '#3b82f6',
-  violet: '#8b5cf6',
-  emerald: '#10b981',
-  orange: '#f59e0b',
-  rose: '#f43f5e'
+  blue:    { name: '蓝色', color: '#3b82f6', gradient: 'linear-gradient(135deg, #3b82f6, #8b5cf6)' },
+  violet:  { name: '紫色', color: '#8b5cf6', gradient: 'linear-gradient(135deg, #8b5cf6, #d946ef)' },
+  emerald: { name: '绿色', color: '#10b981', gradient: 'linear-gradient(135deg, #10b981, #22d3ee)' },
+  orange:  { name: '橙色', color: '#f59e0b', gradient: 'linear-gradient(135deg, #f59e0b, #f43f5e)' },
+  rose:    { name: '粉色', color: '#f43f5e', gradient: 'linear-gradient(135deg, #f43f5e, #a855f7)' }
 };
 
 let currentTheme = { preset: 'blue', custom: null };
@@ -42,13 +42,24 @@ function applyTheme(accentHex) {
   root.style.setProperty('--glow', rgba(accentHex, 0.5));
   root.style.setProperty('--accent-rgb', `${r}, ${g}, ${b}`);
   root.style.setProperty('--accent-contrast', luminance(accentHex) > 155 ? '#111' : '#fff');
+  // Aurora 光球跟随主题色
+  root.style.setProperty('--orb-1', rgba(accentHex, 0.55));
+  root.style.setProperty('--orb-2', rgba(mix(accentHex, 'white', 0.3), 0.4));
+  root.style.setProperty('--orb-3', rgba(mix(accentHex, 'black', 0.3), 0.55));
 }
 
 async function setTheme(preset, custom) {
   currentTheme = { preset, custom: custom || null };
-  applyTheme(custom || PRESETS[preset] || PRESETS.blue);
+  applyTheme(custom || PRESETS[preset].color);
+  markActiveCard();
   markActiveSwatch();
   await window.api.setConfig({ theme: currentTheme });
+}
+
+function markActiveCard() {
+  document.querySelectorAll('.theme-card').forEach((el) => {
+    el.classList.toggle('active', !currentTheme.custom && el.dataset.preset === currentTheme.preset);
+  });
 }
 
 function markActiveSwatch() {
@@ -70,6 +81,24 @@ window.lucideIcon = function (name) {
   return node ? window.lucide.createElement(node).outerHTML : '';
 };
 
+/* ---- 主题卡片渲染 ---- */
+function renderThemeCards() {
+  const container = document.getElementById('theme-cards');
+  if (!container) return;
+  container.innerHTML = '';
+  for (const [key, p] of Object.entries(PRESETS)) {
+    const card = document.createElement('button');
+    card.className = 'theme-card';
+    card.dataset.preset = key;
+    card.innerHTML =
+      '<span class="theme-preview" style="background:' + p.gradient + '"></span>' +
+      '<span class="theme-meta"><span class="theme-name">' + p.name + '</span>' +
+      '<span class="theme-check">' + (window.lucideIcon('check') || '') + '</span></span>';
+    card.onclick = () => setTheme(key, null);
+    container.appendChild(card);
+  }
+}
+
 /* ---- UI 绑定 ---- */
 function bindThemeUI() {
   document.getElementById('theme-btn').onclick = (e) => {
@@ -80,9 +109,13 @@ function bindThemeUI() {
   document.querySelectorAll('.swatch').forEach((el) => {
     el.onclick = () => setTheme(el.dataset.preset, null);
   });
-  document.getElementById('theme-custom-color').oninput = (e) => {
-    setTheme('custom', e.target.value);
+  // 两个自定义取色器（popover + 主页）
+  const bindColor = (id) => {
+    const input = document.getElementById(id);
+    if (input) input.oninput = (e) => setTheme('custom', e.target.value);
   };
+  bindColor('theme-custom-color');
+  bindColor('home-theme-color');
   // 点击外部关闭
   document.addEventListener('click', () => {
     document.getElementById('theme-panel').classList.add('hidden');
@@ -95,8 +128,14 @@ async function initTheme() {
     const cfg = await window.api.getConfig();
     if (cfg.theme) currentTheme = { preset: cfg.theme.preset || 'blue', custom: cfg.theme.custom || null };
   } catch { /* 使用默认 */ }
-  applyTheme(currentTheme.custom || PRESETS[currentTheme.preset] || PRESETS.blue);
-  if (currentTheme.custom) document.getElementById('theme-custom-color').value = currentTheme.custom;
+  const color = currentTheme.custom || (PRESETS[currentTheme.preset] && PRESETS[currentTheme.preset].color) || PRESETS.blue.color;
+  applyTheme(color);
+  renderThemeCards();
+  markActiveCard();
   markActiveSwatch();
+  if (currentTheme.custom) {
+    const el = document.getElementById('theme-custom-color');
+    if (el) el.value = currentTheme.custom;
+  }
   bindThemeUI();
 }

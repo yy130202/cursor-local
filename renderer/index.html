@@ -14,7 +14,8 @@
       <span class="logo-text">Cursor Local</span>
     </div>
     <div class="mode-switch">
-      <button id="mode-editor" class="active" title="传统代码编辑器"><i data-lucide="file-code-2"></i><span>Editor</span></button>
+      <button id="mode-home" title="主页"><i data-lucide="home"></i><span>Home</span></button>
+      <button id="mode-editor" title="传统代码编辑器"><i data-lucide="file-code-2"></i><span>Editor</span></button>
       <button id="mode-agents" title="Agent 工作台"><i data-lucide="bot"></i><span>Agents</span></button>
     </div>
     <div class="spacer"></div>
@@ -26,8 +27,52 @@
   </header>
 
   <main>
+    <!-- Home Window（主页） -->
+    <section id="home-view" class="view active">
+      <div class="home-aurora" aria-hidden="true">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+      </div>
+      <div class="home-content">
+        <div class="home-hero glass-card">
+          <div class="hero-mark"><i data-lucide="terminal"></i></div>
+          <h1>Cursor Local</h1>
+          <p class="hero-sub">本地桌面 AI 编程工具 · 复刻 Cursor 核心体验</p>
+          <div class="hero-tags">
+            <span class="chip">Editor Window</span>
+            <span class="chip">Agents Window</span>
+            <span class="chip">本地 Agent</span>
+          </div>
+        </div>
+
+        <div class="home-grid">
+          <!-- 主题选择（卡片式） -->
+          <div class="glass-card theme-section">
+            <div class="card-title"><i data-lucide="palette"></i><span>主题颜色</span></div>
+            <div class="card-desc">选择你喜欢的强调色，一键切换</div>
+            <div class="theme-cards" id="theme-cards"></div>
+            <div class="theme-custom-row">
+              <span>自定义颜色</span>
+              <input type="color" id="home-theme-color" value="#3b82f6">
+            </div>
+          </div>
+
+          <!-- 快捷入口 -->
+          <div class="glass-card quick-section">
+            <div class="card-title"><i data-lucide="zap"></i><span>快速开始</span></div>
+            <div class="quick-actions">
+              <button class="quick-btn" id="quick-folder"><i data-lucide="folder-open"></i><span>打开文件夹</span></button>
+              <button class="quick-btn" id="quick-editor"><i data-lucide="file-code-2"></i><span>进入编辑器</span></button>
+              <button class="quick-btn" id="quick-agents"><i data-lucide="bot"></i><span>启动 Agent</span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Editor Window -->
-    <section id="editor-view" class="view active">
+    <section id="editor-view" class="view">
       <div id="filetree-panel">
         <div class="panel-title"><span>资源管理器</span></div>
         <div id="filetree">

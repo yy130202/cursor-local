@@ -1,0 +1,9 @@
+
+[debug home] {"themeCards":5,"orbs":3,"accent":"#3b82f6","homeActive":true,"lucideIcons":18}
+[shot] 01-home.png 173470 bytes
+[debug editor] {"monaco":"object","monacoReady":true,"monacoErr":null,"tabs":1,"activePath":"H:\\workbubby\\2026-09-24-16-34-02\\cursor-clone\\main.js","monacoContainerSize":"1184x757","editorValueLen":27161,"editorLineCount":722,"tabbarItems":1,"filetreeItems":14}
+[debug theme] {"violet":"#8b5cf6","custom":"#10b981","blue":"#3b82f6"}
+[shot] 02-editor.png 201274 bytes
+[debug agents] {"agentCount":1,"selectedId":"demo-agent","listItems":1,"transcriptEntries":6,"toolCards":3,"changeCards":1,"historyCount":2,"emptyVisible":false,"headTask":"阅读项目结构，为 src/utils 添加日期格式化工具函数并补全测试","headStatus":"运行中"}
+[shot] 03-agents.png 88781 bytes
+can't open file for write !

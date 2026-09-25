@@ -1,19 +1,27 @@
 /* Cursor Local - 顶层渲染逻辑：窗口切换 + 设置 + 状态栏 */
 
-/* ---- 模式切换（Editor / Agents）---- */
+/* ---- 模式切换（Home / Editor / Agents）---- */
+const btnHome = document.getElementById('mode-home');
 const btnEditor = document.getElementById('mode-editor');
 const btnAgents = document.getElementById('mode-agents');
 
 function switchMode(mode) {
-  const isEditor = mode === 'editor';
-  btnEditor.classList.toggle('active', isEditor);
-  btnAgents.classList.toggle('active', !isEditor);
-  document.getElementById('editor-view').classList.toggle('active', isEditor);
-  document.getElementById('agents-view').classList.toggle('active', !isEditor);
+  btnHome.classList.toggle('active', mode === 'home');
+  btnEditor.classList.toggle('active', mode === 'editor');
+  btnAgents.classList.toggle('active', mode === 'agents');
+  document.getElementById('home-view').classList.toggle('active', mode === 'home');
+  document.getElementById('editor-view').classList.toggle('active', mode === 'editor');
+  document.getElementById('agents-view').classList.toggle('active', mode === 'agents');
 }
 
+btnHome.onclick = () => switchMode('home');
 btnEditor.onclick = () => switchMode('editor');
 btnAgents.onclick = () => switchMode('agents');
+
+/* ---- 主页快捷入口 ---- */
+document.getElementById('quick-folder').onclick = () => openFolder();
+document.getElementById('quick-editor').onclick = () => switchMode('editor');
+document.getElementById('quick-agents').onclick = () => switchMode('agents');
 
 /* ---- 设置 ---- */
 const modal = document.getElementById('settings-modal');

@@ -485,3 +485,114 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
   .logo-text { display: none; }
   #topbar button.action span { display: none; }
 }
+
+/* ==================== 主页（Aurora + 玻璃卡片 + 主题卡片） ==================== */
+#home-view {
+  position: relative;
+  overflow: hidden;
+  display: none;
+  flex: 1;
+}
+#home-view.active { display: flex; }
+
+/* Aurora 极光背景光球 */
+.home-aurora { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.orb { position: absolute; border-radius: 50%; will-change: transform; }
+.orb-1 { width: 460px; height: 460px; background: radial-gradient(circle, var(--orb-1, rgba(59,130,246,0.55)), transparent 70%); top: -12%; left: -6%; animation: float1 18s ease-in-out infinite alternate; }
+.orb-2 { width: 380px; height: 380px; background: radial-gradient(circle, var(--orb-2, rgba(120,150,255,0.4)), transparent 70%); top: 28%; right: -8%; animation: float2 24s ease-in-out infinite alternate; }
+.orb-3 { width: 320px; height: 320px; background: radial-gradient(circle, var(--orb-3, rgba(90,70,200,0.55)), transparent 70%); bottom: -12%; left: 32%; animation: float3 28s ease-in-out infinite alternate; }
+@keyframes float1 { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(80px, 60px) scale(1.2); } }
+@keyframes float2 { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(-90px, 70px) scale(1.15); } }
+@keyframes float3 { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(60px, -60px) scale(1.25); } }
+
+.home-content {
+  position: relative; z-index: 1; flex: 1; overflow: auto;
+  padding: 32px; display: flex; flex-direction: column; gap: 24px;
+}
+
+/* 玻璃卡片 */
+.glass-card {
+  background: var(--glass-strong);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+/* Hero */
+.home-hero { text-align: center; padding: 42px 24px; }
+.hero-mark {
+  width: 58px; height: 58px; margin: 0 auto 16px;
+  display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+  color: var(--accent-contrast); border-radius: 16px;
+  box-shadow: 0 0 30px var(--glow), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+.hero-mark svg.lucide { width: 28px; height: 28px; }
+.home-hero h1 { font-size: 34px; font-weight: 700; color: #fff; letter-spacing: 0.5px; }
+.hero-sub { color: var(--text-dim); margin-top: 8px; font-size: 14px; }
+.hero-tags { display: flex; gap: 8px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
+.chip {
+  font-size: 12px; padding: 4px 12px; border-radius: 999px;
+  border: 1px solid var(--glass-border); color: var(--text);
+  background: rgba(255,255,255,0.04);
+}
+
+/* Bento 网格 */
+.home-grid { display: grid; grid-template-columns: 1.25fr 1fr; gap: 24px; align-items: start; }
+
+.card-title { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: #fff; }
+.card-title svg.lucide { width: 16px; height: 16px; color: var(--accent); }
+.card-desc { font-size: 12px; color: var(--text-dim); margin: 6px 0 16px; }
+
+/* 主题卡片（卡片式换色） */
+.theme-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.theme-card {
+  background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
+  border-radius: 14px; padding: 0; cursor: pointer; overflow: hidden;
+  display: flex; flex-direction: column; text-align: left;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.theme-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.25); }
+.theme-card.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft-2), 0 0 18px var(--glow);
+}
+.theme-preview { display: block; height: 56px; }
+.theme-meta { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; }
+.theme-name { font-size: 12px; color: var(--text); }
+.theme-check { display: none; color: var(--accent); place-items: center; }
+.theme-check svg.lucide { width: 14px; height: 14px; }
+.theme-card.active .theme-check { display: grid; }
+.theme-custom-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 16px; font-size: 12px; color: var(--text-dim);
+}
+.theme-custom-row input[type="color"] {
+  width: 46px; height: 28px; border: 1px solid var(--glass-border); border-radius: 7px;
+  background: transparent; cursor: pointer; padding: 2px;
+}
+
+/* 快捷入口 */
+.quick-actions { display: flex; flex-direction: column; gap: 12px; }
+.quick-btn {
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border);
+  border-radius: 12px; padding: 14px 16px; cursor: pointer; color: var(--text);
+  font-size: 14px; text-align: left;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+}
+.quick-btn svg.lucide { width: 18px; height: 18px; color: var(--accent); }
+.quick-btn:hover {
+  border-color: var(--accent); background: var(--accent-soft);
+  box-shadow: 0 0 16px var(--glow); transform: translateX(4px);
+}
+
+/* 主页响应式 */
+@media (max-width: 900px) {
+  .home-grid { grid-template-columns: 1fr; }
+  .theme-cards { grid-template-columns: repeat(3, 1fr); }
+  .home-content { padding: 20px; }
+}

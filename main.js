@@ -590,32 +590,25 @@ async function takeScreenshots() {
   fs.mkdirSync(shotDir, { recursive: true });
   try {
     await sleep(2500); // 等待 monaco 加载
+
+    // 1. 主页
+    const homeDbg = await win.webContents.executeJavaScript(`JSON.stringify({
+      themeCards: document.querySelectorAll('.theme-card').length,
+      orbs: document.querySelectorAll('.orb').length,
+      accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
+      homeActive: document.getElementById('home-view').classList.contains('active'),
+      lucideIcons: document.querySelectorAll('svg.lucide').length
+    })`);
+    console.log('[debug home]', homeDbg);
+    await captureTo(path.join(shotDir, '01-home.png'));
+
+    // 2. Editor
     await win.webContents.executeJavaScript(
-      `window.__openFolderForDemo(${JSON.stringify(__dirname)})`
+      `window.__openFolderForDemo(${JSON.stringify(__dirname)}); switchMode('editor');`
     );
-    await sleep(1200);
-    const dbg = await win.webContents.executeJavaScript(
-      'JSON.stringify(window.__debugState())'
-    );
+    await sleep(1000);
+    const dbg = await win.webContents.executeJavaScript('JSON.stringify(window.__debugState())');
     console.log('[debug editor]', dbg);
-    const visual = await win.webContents.executeJavaScript(`(async () => {
-      const before = { svg: document.querySelectorAll('svg.lucide').length, dl: document.querySelectorAll('[data-lucide]').length };
-      let createErr = null, afterSvg = -1;
-      try { window.lucide.createIcons({ icons: window.lucide.icons }); afterSvg = document.querySelectorAll('svg.lucide').length; } catch (e) { createErr = String(e.message || e); }
-      return JSON.stringify({
-        lucide: typeof window.lucide,
-        bootError: window.__bootError || null,
-        bootDebug: window.__bootDebug || null,
-        before, afterSvg, createErr,
-        initAuth: typeof initAuth,
-        statusModel: document.getElementById('status-model').textContent,
-        accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
-        topbarBackdrop: getComputedStyle(document.getElementById('topbar')).backdropFilter,
-        userArea: document.getElementById('user-area').innerHTML.slice(0, 120)
-      });
-    })()`);
-    console.log('[debug visual]', visual);
-    // 主题切换测试
     const themeTest = await win.webContents.executeJavaScript(`(async () => {
       const r = {};
       try {
@@ -629,16 +622,14 @@ async function takeScreenshots() {
       return JSON.stringify(r);
     })()`);
     console.log('[debug theme]', themeTest);
-    await captureTo(path.join(shotDir, '01-editor.png'));
-    await win.webContents.executeJavaScript(`window.__switchToAgents()`);
-    await sleep(400);
-    await win.webContents.executeJavaScript(`window.__demoAgentEntry()`);
+    await captureTo(path.join(shotDir, '02-editor.png'));
+
+    // 3. Agents
+    await win.webContents.executeJavaScript(`switchMode('agents'); window.__demoAgentEntry();`);
     await sleep(800);
-    const dbg2 = await win.webContents.executeJavaScript(
-      'JSON.stringify(window.__debugAgents())'
-    );
+    const dbg2 = await win.webContents.executeJavaScript('JSON.stringify(window.__debugAgents())');
     console.log('[debug agents]', dbg2);
-    await captureTo(path.join(shotDir, '02-agents.png'));
+    await captureTo(path.join(shotDir, '03-agents.png'));
   } catch (err) {
     console.error('[shot] FAILED:', err);
   }
