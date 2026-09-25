@@ -10,3 +10,7 @@ screenshots/
 
 # 日志与临时文件
 *.log
+
+# 临时验证日志
+shot-log.txt
+test-log.txt
