@@ -16,6 +16,18 @@ function getUserStore() {
   return userStore;
 }
 
+/* ---------------- 日志系统（debug / info / warning / error） ---------------- */
+const logs = [];
+function addLog(level, source, message) {
+  const entry = { level, source, message: String(message), ts: Date.now() };
+  logs.push(entry);
+  if (logs.length > 1500) logs.shift();
+  if (win && !win.isDestroyed()) win.webContents.send('log:event', entry);
+  return entry;
+}
+ipcMain.handle('log:list', () => logs);
+ipcMain.handle('log:clear', () => { logs.length = 0; return true; });
+
 /* ---------------- 配置（持久化 + API Key 加密） ---------------- */
 const configPath = () => process.env.CONFIG_PATH || path.join(app.getPath('userData'), 'config.json');
 
@@ -42,7 +54,8 @@ function loadConfig() {
     model: 'deepseek-flash',
     lastFolder: '',
     theme: { preset: 'aurora', custom: null },
-    aiComplete: true
+    aiComplete: true,
+    permission: 'safe'
   };
   try {
     const raw = JSON.parse(fs.readFileSync(configPath(), 'utf8'));
@@ -194,8 +207,13 @@ function runCommand(cwd, command, agent, timeoutMs = 120000) {
 /* ---------------- Agent 引擎 ---------------- */
 const AGENT_TOOLS = [
   { type: 'function', function: { name: 'list_dir', description: '列出目录内容，返回条目列表（目录以 / 结尾）', parameters: { type: 'object', properties: { path: { type: 'string', description: '目录路径，相对工作目录或绝对路径' } }, required: ['path'] } } },
+  { type: 'function', function: { name: 'list_tree', description: '递归列出目录树（限制深度，跳过 node_modules/.git）', parameters: { type: 'object', properties: { path: { type: 'string', description: '起始目录路径' }, depth: { type: 'number', description: '递归深度（默认 3）' } }, required: ['path'] } } },
   { type: 'function', function: { name: 'read_file', description: '读取文件内容（过大自动截断）', parameters: { type: 'object', properties: { path: { type: 'string', description: '文件路径' } }, required: ['path'] } } },
   { type: 'function', function: { name: 'write_file', description: '写入文件（覆盖式，需提供完整最终内容；目录不存在会自动创建）', parameters: { type: 'object', properties: { path: { type: 'string', description: '文件路径' }, content: { type: 'string', description: '完整文件内容' } }, required: ['path', 'content'] } } },
+  { type: 'function', function: { name: 'delete_file', description: '删除文件或空目录', parameters: { type: 'object', properties: { path: { type: 'string', description: '要删除的文件路径' } }, required: ['path'] } } },
+  { type: 'function', function: { name: 'move_file', description: '移动或重命名文件/目录', parameters: { type: 'object', properties: { from: { type: 'string', description: '源路径' }, to: { type: 'string', description: '目标路径' } }, required: ['from', 'to'] } } },
+  { type: 'function', function: { name: 'search_files', description: '在目录中搜索包含关键词的文件（返回文件、行号、内容）', parameters: { type: 'object', properties: { pattern: { type: 'string', description: '搜索关键词' }, path: { type: 'string', description: '起始目录，默认工作目录' } }, required: ['pattern'] } } },
+  { type: 'function', function: { name: 'get_file_info', description: '获取文件信息（大小、修改时间、类型）', parameters: { type: 'object', properties: { path: { type: 'string', description: '文件路径' } }, required: ['path'] } } },
   { type: 'function', function: { name: 'run_command', description: '在工作目录执行终端命令（npm/node/python/git 等），返回退出码和输出', parameters: { type: 'object', properties: { command: { type: 'string', description: '要执行的命令' } }, required: ['command'] } } }
 ];
 
@@ -235,6 +253,59 @@ function checkDangerousCommand(command) {
   return null;
 }
 
+/* 完全控制模式仍拦截的「毁灭性」命令（不可逆系统操作） */
+const CATASTROPHIC_PATTERNS = [
+  { re: /\bformat\b/i, desc: '格式化磁盘' },
+  { re: /\bmkfs(\.\w+)?\b/i, desc: '创建文件系统' },
+  { re: /\bdd\s+if=/i, desc: 'dd 磁盘写入' },
+  { re: /\bshutdown\b/i, desc: '关机' },
+  { re: /\breboot\b/i, desc: '重启' },
+  { re: /\b:\(\)\s*\{\s*:\|:\s*&\s*\};:/, desc: 'fork 炸弹' },
+  { re: /\bdiskpart\b/i, desc: '磁盘分区' }
+];
+function checkCatastrophic(command) {
+  for (const { re, desc } of CATASTROPHIC_PATTERNS) {
+    if (re.test(command)) return desc;
+  }
+  return null;
+}
+
+/* 当前是否「完全控制」权限 */
+function isFullControl() {
+  try { return loadConfig().permission === 'full'; } catch { return false; }
+}
+
+/* 目录内搜索（供 search_files 工具复用） */
+async function searchInDir(folder, pattern, maxResults = 50) {
+  const results = [];
+  const needle = String(pattern).toLowerCase();
+  async function walk(dir, depth) {
+    if (results.length >= maxResults || depth > 10) return;
+    let entries;
+    try { entries = await fsp.readdir(dir, { withFileTypes: true }); } catch { return; }
+    for (const ent of entries) {
+      if (results.length >= maxResults) return;
+      if (ent.name === 'node_modules' || ent.name === '.git' || ent.name === 'dist') continue;
+      const p = path.join(dir, ent.name);
+      if (ent.isDirectory()) { await walk(p, depth + 1); continue; }
+      try {
+        const stat = await fsp.stat(p);
+        if (stat.size > 500000) continue;
+        const content = await fsp.readFile(p, 'utf8');
+        const lines = content.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].toLowerCase().indexOf(needle) >= 0) {
+            results.push(path.relative(folder, p) + ':' + (i + 1) + ': ' + lines[i].slice(0, 160));
+            if (results.length >= maxResults) return;
+          }
+        }
+      } catch { /* 忽略二进制 */ }
+    }
+  }
+  await walk(folder, 0);
+  return results;
+}
+
 /* 停止 Agent 时杀掉其已启动的子进程树 */
 function killChildren(agent) {
   if (!agent.children) return;
@@ -249,52 +320,116 @@ function killChildren(agent) {
 
 async function executeTool(agent, name, args) {
   const cwd = agent.cwd;
-  switch (name) {
-    case 'list_dir': {
-      const dir = resolveAgentPath(cwd, args.path || '.');
-      assertInsideWorkspace(cwd, dir);
-      const entries = await fsp.readdir(dir, { withFileTypes: true });
-      return entries.slice(0, 300)
-        .sort((a, b) => (b.isDirectory() - a.isDirectory()) || a.name.localeCompare(b.name))
-        .map((e) => (e.isDirectory() ? e.name + '/' : e.name))
-        .join('\n') || '[空目录]';
-    }
-    case 'read_file': {
-      const f = resolveAgentPath(cwd, args.path);
-      assertInsideWorkspace(cwd, f);
-      let content = await fsp.readFile(f, 'utf8');
-      if (content.length > 80000) content = content.slice(0, 80000) + '\n...[文件过长已截断]';
-      return content || '[空文件]';
-    }
-    case 'write_file': {
-      const f = resolveAgentPath(cwd, args.path);
-      assertInsideWorkspace(cwd, f);
-      const newContent = args.content ?? '';
-      let before = null, existed = false;
-      try { before = await fsp.readFile(f, 'utf8'); existed = true; } catch { /* 新文件 */ }
-      await fsp.mkdir(path.dirname(f), { recursive: true });
-      await fsp.writeFile(f, newContent, 'utf8');
-      if (before !== newContent) {
-        const change = { path: f, relPath: path.relative(cwd, f), before, after: newContent, existed };
-        agent.changes = agent.changes || [];
-        agent.changes.push(change);
-        emitAgent(agent, 'change', change);
+  const full = isFullControl();
+  const guard = (target) => { if (!full) assertInsideWorkspace(cwd, target); };
+  addLog('debug', 'tool', `${name} ${JSON.stringify(args || {}).slice(0, 140)}`);
+  try {
+    switch (name) {
+      case 'list_dir': {
+        const dir = resolveAgentPath(cwd, args.path || '.');
+        guard(dir);
+        const entries = await fsp.readdir(dir, { withFileTypes: true });
+        return entries.slice(0, 300)
+          .sort((a, b) => (b.isDirectory() - a.isDirectory()) || a.name.localeCompare(b.name))
+          .map((e) => (e.isDirectory() ? e.name + '/' : e.name))
+          .join('\n') || '[空目录]';
       }
-      // 通知文件树/编辑器刷新
-      if (win && !win.isDestroyed()) win.webContents.send('fs:changed', { path: f });
-      return `[OK] 已写入 ${f}（${newContent.length} 字符）`;
-    }
-    case 'run_command': {
-      const cmd = args.command || 'echo no-command';
-      const danger = checkDangerousCommand(cmd);
-      if (danger) {
-        return `[已拦截危险命令] 检测到「${danger}」，出于安全考虑已拒绝执行。\n如需执行请手动在系统终端操作。`;
+      case 'list_tree': {
+        const dir = resolveAgentPath(cwd, args.path || '.');
+        guard(dir);
+        const depth = Math.min(parseInt(args.depth, 10) || 3, 6);
+        const lines = [];
+        async function walk(d, prefix, level) {
+          if (level > depth) return;
+          let entries;
+          try { entries = await fsp.readdir(d, { withFileTypes: true }); } catch { return; }
+          entries.sort((a, b) => (b.isDirectory() - a.isDirectory()) || a.name.localeCompare(b.name));
+          for (const ent of entries.slice(0, 60)) {
+            if (ent.name === 'node_modules' || ent.name === '.git') continue;
+            lines.push(prefix + ent.name + (ent.isDirectory() ? '/' : ''));
+            if (ent.isDirectory()) await walk(path.join(d, ent.name), prefix + '  ', level + 1);
+          }
+        }
+        await walk(dir, '', 0);
+        return lines.join('\n') || '[空]';
       }
-      const r = await runCommand(cwd, cmd, agent);
-      return `退出码: ${r.code}\n${r.output}`;
+      case 'read_file': {
+        const f = resolveAgentPath(cwd, args.path);
+        guard(f);
+        let content = await fsp.readFile(f, 'utf8');
+        if (content.length > 80000) content = content.slice(0, 80000) + '\n...[文件过长已截断]';
+        return content || '[空文件]';
+      }
+      case 'write_file': {
+        const f = resolveAgentPath(cwd, args.path);
+        guard(f);
+        const newContent = args.content ?? '';
+        let before = null, existed = false;
+        try { before = await fsp.readFile(f, 'utf8'); existed = true; } catch { /* 新文件 */ }
+        await fsp.mkdir(path.dirname(f), { recursive: true });
+        await fsp.writeFile(f, newContent, 'utf8');
+        addLog('info', 'tool', '写入文件 ' + f);
+        if (before !== newContent) {
+          const change = { path: f, relPath: path.relative(cwd, f), before, after: newContent, existed };
+          agent.changes = agent.changes || [];
+          agent.changes.push(change);
+          emitAgent(agent, 'change', change);
+        }
+        if (win && !win.isDestroyed()) win.webContents.send('fs:changed', { path: f });
+        return `[OK] 已写入 ${f}（${newContent.length} 字符）`;
+      }
+      case 'delete_file': {
+        const f = resolveAgentPath(cwd, args.path);
+        guard(f);
+        await fsp.rm(f, { recursive: false, force: true });
+        addLog('warning', 'tool', '删除文件 ' + f);
+        if (win && !win.isDestroyed()) win.webContents.send('fs:changed', { path: f });
+        return '[OK] 已删除 ' + f;
+      }
+      case 'move_file': {
+        const from = resolveAgentPath(cwd, args.from);
+        const to = resolveAgentPath(cwd, args.to);
+        guard(from); guard(to);
+        await fsp.mkdir(path.dirname(to), { recursive: true });
+        await fsp.rename(from, to);
+        addLog('info', 'tool', '移动 ' + from + ' → ' + to);
+        if (win && !win.isDestroyed()) win.webContents.send('fs:changed', { path: from });
+        return '[OK] 已移动 ' + from + ' → ' + to;
+      }
+      case 'search_files': {
+        const dir = resolveAgentPath(cwd, args.path || '.');
+        guard(dir);
+        const r = await searchInDir(dir, args.pattern || '');
+        return r.join('\n') || '[无匹配]';
+      }
+      case 'get_file_info': {
+        const f = resolveAgentPath(cwd, args.path);
+        guard(f);
+        const st = await fsp.stat(f);
+        const ext = path.extname(f).slice(1) || '无';
+        return `大小: ${st.size} 字节\n修改时间: ${new Date(st.mtimeMs).toLocaleString('zh-CN')}\n类型: ${st.isDirectory() ? '目录' : (ext + ' 文件')}`;
+      }
+      case 'run_command': {
+        const cmd = args.command || 'echo no-command';
+        let blocked = null;
+        if (!full) blocked = checkDangerousCommand(cmd);
+        else blocked = checkCatastrophic(cmd);
+        if (blocked) {
+          addLog('warning', 'tool', '拦截命令: ' + cmd + '（' + blocked + '）');
+          return `[已拦截危险命令] 检测到「${blocked}」，已拒绝执行。\n如需执行请手动在系统终端操作。`;
+        }
+        if (full) addLog('warning', 'tool', '[完全控制] 执行: ' + cmd);
+        const r = await runCommand(cwd, cmd, agent);
+        if (r.code !== 0) addLog('warning', 'tool', '命令退出码 ' + r.code + ': ' + cmd);
+        else addLog('info', 'tool', '命令成功: ' + cmd);
+        return `退出码: ${r.code}\n${r.output}`;
+      }
+      default:
+        return `[未知工具 ${name}]`;
     }
-    default:
-      return `[未知工具 ${name}]`;
+  } catch (err) {
+    addLog('error', 'tool', `${name} 失败: ${err.message}`);
+    return 'ERROR: ' + err.message;
   }
 }
 
@@ -456,8 +591,10 @@ async function runAgent(agent) {
   const sys = [
     '你是运行在本地桌面应用「Cursor Local」中的编码 Agent。',
     `当前工作目录：${agent.cwd}`,
-    '你可以使用工具：list_dir 查看目录、read_file 读文件、write_file 写文件（覆盖式，需完整内容）、run_command 执行终端命令。',
-    '安全约束：所有文件读写必须限定在工作目录内（越界会被拦截）；run_command 不能执行 rm -rf、format、del /s /q、shutdown、git push --force 等危险命令（会被拦截）。',
+    '你可以使用工具：list_dir 查看目录、list_tree 查看目录树、read_file 读文件、write_file 写文件（覆盖式，需完整内容）、delete_file 删除文件、move_file 移动/重命名、search_files 搜索代码、get_file_info 查看文件信息、run_command 执行终端命令。',
+    '权限说明：' + (isFullControl()
+      ? '当前为「完全控制」模式——可读写任意路径、执行任意命令（磁盘格式化/关机等毁灭性操作仍会被拦截）。'
+      : '当前为「安全」模式——文件读写必须限定在工作目录内（越界会被拦截）；run_command 不能执行 rm -rf、format、del /s /q、shutdown、git push --force 等危险命令（会被拦截）。'),
     '请自主完成用户任务：先查看相关文件结构，再读取/修改代码，必要时运行命令验证。',
     '用简体中文简要说明每一步在做什么。写文件时必须给出完整最终内容。'
   ].join('\n');
@@ -519,9 +656,11 @@ async function agentLoop(agent, cfg) {
     }
     agent.status = 'done';
     emitAgent(agent, 'status', { status: 'done' });
+    addLog('info', 'agent', `Agent 完成：${agent.task.slice(0, 60)}`);
   } catch (err) {
     agent.status = 'error';
     emitAgent(agent, 'error', { text: String(err.message || err) });
+    addLog('error', 'agent', `Agent 出错：${String(err.message || err).slice(0, 200)}`);
   } finally {
     saveSession(agent); // 会话持久化
   }
@@ -795,6 +934,23 @@ function runAgentTest() {
       await fsp.writeFile(revFile, 'new', 'utf8');
       await revertFile({ path: revFile, before: 'old', existed: true });
       console.log('[test-agent] revert 写回旧内容 =', fs.readFileSync(revFile, 'utf8') === 'old' ? 'OK' : 'FAIL');
+
+      // 验证新增工具
+      const ta = { id: 'tool-test', task: 't', cwd: __dirname, status: 'done', messages: [], log: [], children: new Set() };
+      const tree = await executeTool(ta, 'list_tree', { path: 'agent-demo', depth: 2 });
+      console.log('[test-agent] list_tree =', tree.replace(/\n/g, ' / ').slice(0, 60));
+      await executeTool(ta, 'write_file', { path: 'agent-demo/search-me.txt', content: 'hello needle world' });
+      const sres = await executeTool(ta, 'search_files', { pattern: 'needle', path: 'agent-demo' });
+      console.log('[test-agent] search_files =', sres.replace(/\n/g, ' ').slice(0, 60));
+      const info = await executeTool(ta, 'get_file_info', { path: 'agent-demo/search-me.txt' });
+      console.log('[test-agent] get_file_info =', info.replace(/\n/g, ' ').slice(0, 60));
+      await executeTool(ta, 'move_file', { from: 'agent-demo/search-me.txt', to: 'agent-demo/moved.txt' });
+      console.log('[test-agent] move_file =', fs.existsSync(path.join(__dirname, 'agent-demo', 'moved.txt')));
+      await executeTool(ta, 'delete_file', { path: 'agent-demo/moved.txt' });
+      console.log('[test-agent] delete_file =', !fs.existsSync(path.join(__dirname, 'agent-demo', 'moved.txt')));
+      // 日志系统
+      console.log('[test-agent] 日志条数 =', logs.length, '(应为 > 0)');
+      console.log('[test-agent] 日志级别覆盖 =', ['debug','info','warning','error'].every((lv) => logs.some((l) => l.level === lv)) ? 'OK(有 error 则 OK，无 error 也正常)' : (logs.some((l)=>l.level==='debug') ? '有 debug/info/warning' : '少'));
     } catch (e) {
       console.error('[test-agent] verify error:', e.message);
     }

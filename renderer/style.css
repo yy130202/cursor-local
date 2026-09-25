@@ -984,3 +984,39 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
   font-family: Consolas, monospace; font-size: 12px; line-height: 1.6;
   color: var(--text); white-space: pre-wrap; word-break: break-word;
 }
+
+/* ==================== 日志面板 ==================== */
+.log-panel {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 260;
+  height: 260px; display: flex; flex-direction: column;
+  background: rgba(15,15,19,0.96);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border-top: 1px solid var(--glass-border);
+  box-shadow: 0 -14px 44px rgba(0,0,0,0.55);
+}
+.log-head {
+  display: flex; align-items: center; gap: 10px; padding: 8px 14px;
+  border-bottom: 1px solid var(--glass-border); flex-shrink: 0;
+}
+.log-title { font-size: 13px; font-weight: 700; color: #fff; }
+.log-filters { display: flex; gap: 4px; }
+.log-filters button {
+  background: transparent; border: 1px solid transparent; color: var(--text-dim);
+  font-size: 11px; padding: 3px 10px; border-radius: 999px; cursor: pointer;
+}
+.log-filters button.active { background: var(--accent); color: var(--accent-contrast); }
+.log-action { background: transparent; border: none; color: var(--text-dim); cursor: pointer; padding: 4px; border-radius: 6px; display: grid; place-items: center; }
+.log-action:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.log-action svg.lucide { width: 14px; height: 14px; }
+#log-list { flex: 1; overflow: auto; padding: 6px 0; font-family: Consolas, monospace; font-size: 11px; }
+.log-item { display: flex; gap: 10px; align-items: baseline; padding: 3px 14px; word-break: break-all; }
+.log-item:hover { background: rgba(255,255,255,0.03); }
+.log-lv { flex-shrink: 0; width: 52px; text-transform: uppercase; font-weight: 700; }
+.log-item.debug .log-lv { color: var(--text-dim); }
+.log-item.info .log-lv { color: #4ea1ff; }
+.log-item.warning .log-lv { color: var(--yellow); }
+.log-item.error .log-lv { color: var(--red); }
+.log-src { flex-shrink: 0; color: var(--accent); }
+.log-msg { flex: 1; color: var(--text); white-space: pre-wrap; }
+.log-time { flex-shrink: 0; color: var(--text-dim); }

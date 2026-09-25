@@ -61,6 +61,8 @@ async function openSettings() {
   document.getElementById('cfg-model').value = cfg.model || '';
   const aiToggle = document.getElementById('cfg-ai-complete');
   if (aiToggle) aiToggle.classList.toggle('on', cfg.aiComplete !== false);
+  const permToggle = document.getElementById('cfg-permission');
+  if (permToggle) permToggle.classList.toggle('on', cfg.permission === 'full');
   modal.classList.remove('hidden');
 }
 
@@ -69,11 +71,13 @@ document.getElementById('settings-close-btn').onclick = () => modal.classList.ad
 document.getElementById('cfg-cancel').onclick = () => modal.classList.add('hidden');
 document.getElementById('cfg-save').onclick = async () => {
   const aiToggle = document.getElementById('cfg-ai-complete');
+  const permToggle = document.getElementById('cfg-permission');
   const cfg = await window.api.setConfig({
     baseUrl: document.getElementById('cfg-baseurl').value.trim(),
     apiKey: document.getElementById('cfg-apikey').value.trim(),
     model: document.getElementById('cfg-model').value.trim(),
-    aiComplete: aiToggle ? aiToggle.classList.contains('on') : true
+    aiComplete: aiToggle ? aiToggle.classList.contains('on') : true,
+    permission: permToggle && permToggle.classList.contains('on') ? 'full' : 'safe'
   });
   window.__aiCompleteEnabled = cfg.aiComplete !== false;
   modal.classList.add('hidden');
@@ -93,6 +97,9 @@ document.querySelectorAll('.snav-item').forEach((el) => {
 // AI 补全开关
 const aiToggleBtn = document.getElementById('cfg-ai-complete');
 if (aiToggleBtn) aiToggleBtn.onclick = () => aiToggleBtn.classList.toggle('on');
+// 完全控制权限开关
+const permToggleBtn = document.getElementById('cfg-permission');
+if (permToggleBtn) permToggleBtn.onclick = () => permToggleBtn.classList.toggle('on');
 
 document.getElementById('open-folder-btn').onclick = () => openFolder();
 

@@ -27,6 +27,10 @@ contextBridge.exposeInMainWorld('api', {
   // AI 辅助
   aiComplete: (code, lang) => ipcRenderer.invoke('ai:complete', { code, lang }),
   aiEdit: (text, instruction) => ipcRenderer.invoke('ai:edit', { text, instruction }),
+  // 日志
+  onLog: (cb) => ipcRenderer.on('log:event', (_e, entry) => cb(entry)),
+  getLogs: () => ipcRenderer.invoke('log:list'),
+  clearLogs: () => ipcRenderer.invoke('log:clear'),
   // 用户系统
   auth: {
     register: (d) => ipcRenderer.invoke('auth:register', d),

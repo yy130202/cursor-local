@@ -22,6 +22,7 @@
     <div id="workdir-label"></div>
     <button id="open-folder-btn" class="action icon-btn" title="打开文件夹"><i data-lucide="folder-open"></i></button>
     <button id="theme-btn" class="action icon-btn" title="主题颜色"><i data-lucide="palette"></i></button>
+    <button id="log-btn" class="action icon-btn" title="日志"><i data-lucide="terminal"></i></button>
     <button id="settings-btn" class="action icon-btn" title="设置"><i data-lucide="settings"></i></button>
     <div id="user-area"></div>
   </header>
@@ -226,6 +227,10 @@
               <div class="srow-main"><div class="srow-label">AI 代码补全</div><div class="srow-desc">输入时灰字补全，Tab 接受（Alt+\ 手动触发）</div></div>
               <button class="toggle" id="cfg-ai-complete"><span class="knob"></span></button>
             </div>
+            <div class="srow">
+              <div class="srow-main"><div class="srow-label">完全控制权限</div><div class="srow-desc">允许 AI 访问任意路径、执行任意命令（磁盘格式化/关机等毁灭性操作仍被拦截，所有操作记录日志）</div></div>
+              <button class="toggle" id="cfg-permission"><span class="knob"></span></button>
+            </div>
           </div>
           <div class="modal-actions"><button id="cfg-cancel">取消</button><button id="cfg-save" class="primary">保存</button></div>
         </div>
@@ -268,6 +273,24 @@
     <button id="logout-btn" class="menu-item"><i data-lucide="log-out"></i>退出登录</button>
   </div>
 
+  <!-- 日志面板（Debug / Info / Warning / Error） -->
+  <div id="log-panel" class="log-panel hidden">
+    <div class="log-head">
+      <span class="log-title">日志</span>
+      <div class="log-filters" id="log-filters">
+        <button data-lv="all" class="active">全部</button>
+        <button data-lv="debug">Debug</button>
+        <button data-lv="info">Info</button>
+        <button data-lv="warning">警告</button>
+        <button data-lv="error">错误</button>
+      </div>
+      <div class="spacer"></div>
+      <button class="log-action" id="log-clear"><i data-lucide="trash-2"></i></button>
+      <button class="log-action" id="log-close"><i data-lucide="x"></i></button>
+    </div>
+    <div id="log-list"></div>
+  </div>
+
   <script src="../node_modules/monaco-editor/min/vs/loader.js"></script>
   <script>
     // Monaco 的 AMD loader 定义了全局 define，会让 lucide UMD 误走 AMD 分支而不设置 window.lucide
@@ -285,6 +308,7 @@
   <script src="theme.js"></script>
   <script src="auth.js"></script>
   <script src="palette.js"></script>
+  <script src="log.js"></script>
   <script src="renderer.js"></script>
 </body>
 </html>
