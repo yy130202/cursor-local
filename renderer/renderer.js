@@ -12,33 +12,24 @@ function switchMode(mode) {
   document.getElementById('home-view').classList.toggle('active', mode === 'home');
   document.getElementById('editor-view').classList.toggle('active', mode === 'editor');
   document.getElementById('agents-view').classList.toggle('active', mode === 'agents');
-  // 主页胶囊分段选中态跟随视图
-  const segEditor = document.getElementById('seg-editor');
-  const segAgents = document.getElementById('seg-agents');
-  if (segEditor && segAgents) {
-    segEditor.classList.toggle('on', mode === 'editor');
-    segAgents.classList.toggle('on', mode === 'agents');
-  }
 }
 
 btnHome.onclick = () => switchMode('home');
 btnEditor.onclick = () => switchMode('editor');
 btnAgents.onclick = () => switchMode('agents');
 
-/* ---- 主页：胶囊分段 + chips + 大输入框 ---- */
-const segEditorBtn = document.getElementById('seg-editor');
-const segAgentsBtn = document.getElementById('seg-agents');
-if (segEditorBtn) segEditorBtn.onclick = () => switchMode('editor');
-if (segAgentsBtn) segAgentsBtn.onclick = () => switchMode('agents');
-
-const chipFolder = document.getElementById('chip-folder');
-if (chipFolder) chipFolder.onclick = () => openFolder();
-const chipHistory = document.getElementById('chip-history');
-if (chipHistory) chipHistory.onclick = () => switchMode('agents');
-const chipTheme = document.getElementById('chip-theme');
-if (chipTheme) chipTheme.onclick = () => document.getElementById('theme-btn').click();
-const chipSettings = document.getElementById('chip-settings');
-if (chipSettings) chipSettings.onclick = openSettings;
+/* ---- 主页：CTA / 特性卡片入口 ---- */
+const ctaStart = document.getElementById('cta-start');
+if (ctaStart) ctaStart.onclick = () => {
+  const i = document.getElementById('home-task-input');
+  if (i) i.focus();
+};
+const lmAgents = document.getElementById('lm-agents');
+if (lmAgents) lmAgents.onclick = () => switchMode('agents');
+const lmAgents2 = document.getElementById('lm-agents2');
+if (lmAgents2) lmAgents2.onclick = () => switchMode('agents');
+const lmEditor = document.getElementById('lm-editor');
+if (lmEditor) lmEditor.onclick = () => switchMode('editor');
 
 async function sendHomeTask() {
   const input = document.getElementById('home-task-input');

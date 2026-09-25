@@ -27,7 +27,7 @@
   </header>
 
   <main>
-    <!-- Home Window（主页，WorkBuddy 风格：hero + 胶囊分段 + chips + 大输入框） -->
+    <!-- Home Window（主页，Vape 产品页风格） -->
     <section id="home-view" class="view active">
       <div class="home-aurora" aria-hidden="true">
         <div class="orb orb-1"></div>
@@ -35,28 +35,68 @@
         <div class="orb orb-3"></div>
       </div>
       <div class="home-content">
-        <div class="hero-center">
-          <div class="hero-mark"><i data-lucide="terminal"></i></div>
-          <h1>Cursor Local</h1>
-          <p class="hero-sub">本地桌面 AI 编程工具 · 复刻 Cursor 核心体验</p>
-        </div>
 
-        <!-- 胶囊分段：快速开始 -->
-        <div class="hero-seg-row">
-          <span class="seg-label">开始</span>
-          <div class="seg-pill">
-            <button id="seg-editor"><i data-lucide="file-code-2"></i><span>写代码</span></button>
-            <button id="seg-agents"><i data-lucide="bot"></i><span>跑 Agent</span></button>
+        <!-- 渐变 Hero 大卡片：左文右 UI 假窗 -->
+        <div class="hero-banner">
+          <div class="hero-left">
+            <div class="icon-tile on-accent"><i data-lucide="terminal"></i></div>
+            <h1>你 7×24 小时的<br>编码伙伴</h1>
+            <p class="hero-desc">Cursor Local 是运行在本地的 AI 编程 Agent：读写代码、执行命令、多任务并行，数据不出你的电脑。</p>
+            <ul class="check-list">
+              <li><span class="ck"><i data-lucide="check"></i></span>并行多 Agent，diff 审阅一键回滚</li>
+              <li><span class="ck"><i data-lucide="check"></i></span>本地安全沙箱，危险命令自动拦截</li>
+              <li><span class="ck"><i data-lucide="check"></i></span>流式输出，OpenAI 兼容任意模型</li>
+            </ul>
+            <button class="cta-btn" id="cta-start"><span>开始使用</span><i data-lucide="chevron-right"></i></button>
           </div>
-          <span class="seg-label">之旅</span>
+          <div class="hero-right">
+            <div class="fake-window">
+              <div class="fw-bar"><span></span><span></span><span></span></div>
+              <div class="fw-line w55"></div>
+              <div class="fw-line w80 accent"></div>
+              <div class="fw-line w70"></div>
+              <div class="fw-line w40"></div>
+              <div class="fw-chips"><span class="fw-chip">Agent</span><span class="fw-chip ghost">diff ✓</span><span class="fw-chip ghost">沙箱</span></div>
+            </div>
+          </div>
         </div>
 
-        <!-- 功能 chips -->
-        <div class="hero-chips">
-          <button class="chip-btn" id="chip-folder"><i data-lucide="folder-open"></i>打开文件夹</button>
-          <button class="chip-btn" id="chip-history"><i data-lucide="history"></i>历史会话</button>
-          <button class="chip-btn" id="chip-theme"><i data-lucide="palette"></i>主题</button>
-          <button class="chip-btn" id="chip-settings"><i data-lucide="settings"></i>设置</button>
+        <!-- 主题：12 套渐变色卡 -->
+        <div class="section-block">
+          <div class="section-head">
+            <div class="icon-tile"><i data-lucide="palette"></i></div>
+            <div><h2>主题</h2><p>12 款渐变配色，一键切换全局强调色</p></div>
+            <input type="color" id="home-theme-color" class="mini-color" title="自定义颜色" value="#7c3aed">
+          </div>
+          <div class="theme-cards theme-grid" id="theme-cards"></div>
+        </div>
+
+        <!-- 特性 3 列卡片 -->
+        <div class="section-block">
+          <div class="section-head">
+            <div class="icon-tile"><i data-lucide="sparkles"></i></div>
+            <div><h2>更多能力</h2><p>为日常编码而生的完整工具链</p></div>
+          </div>
+          <div class="feature-grid">
+            <div class="feature-card">
+              <div class="feature-top"><div class="icon-tile"><i data-lucide="bot"></i></div><span class="fw-chip">Agent</span></div>
+              <h3>并行 Agent 工作台</h3>
+              <p>同时运行多个 Agent，各自读写代码、执行终端命令，流式输出全程可见，还能追加后续任务续跑。</p>
+              <a class="learn-more" id="lm-agents"><span>进入工作台</span><i data-lucide="chevron-right"></i></a>
+            </div>
+            <div class="feature-card">
+              <div class="feature-top"><div class="icon-tile pink"><i data-lucide="git-compare"></i></div><span class="fw-chip pink">diff</span></div>
+              <h3>变更审阅与回滚</h3>
+              <p>每次写文件自动生成行级 diff，新增绿、删除红，看清楚每一行改动，一键撤销任何变更。</p>
+              <a class="learn-more" id="lm-agents2"><span>查看变更</span><i data-lucide="chevron-right"></i></a>
+            </div>
+            <div class="feature-card">
+              <div class="feature-top"><div class="icon-tile"><i data-lucide="shield-check"></i></div><span class="fw-chip ghost">sandbox</span></div>
+              <h3>本地安全沙箱</h3>
+              <p>文件访问锁定在工作目录内，危险命令自动拦截，API Key 加密存储，数据完全留在本机。</p>
+              <a class="learn-more" id="lm-editor"><span>打开编辑器</span><i data-lucide="chevron-right"></i></a>
+            </div>
+          </div>
         </div>
 
         <!-- 大输入框（启动 Agent） -->
@@ -69,12 +109,6 @@
             </div>
             <button class="send-btn" id="home-send" title="启动 Agent（Enter）"><i data-lucide="arrow-up"></i></button>
           </div>
-        </div>
-
-        <!-- 主题卡片行 -->
-        <div class="home-themes">
-          <div class="card-title-sm"><i data-lucide="palette"></i><span>主题颜色</span></div>
-          <div class="theme-cards" id="theme-cards"></div>
         </div>
       </div>
     </section>
@@ -138,16 +172,10 @@
   <!-- 主题面板 -->
   <div id="theme-panel" class="popover hidden">
     <div class="popover-title">主题颜色</div>
-    <div class="theme-presets">
-      <button class="swatch" data-preset="blue" data-color="#3b82f6" title="蓝色"></button>
-      <button class="swatch" data-preset="violet" data-color="#8b5cf6" title="紫色"></button>
-      <button class="swatch" data-preset="emerald" data-color="#10b981" title="绿色"></button>
-      <button class="swatch" data-preset="orange" data-color="#f59e0b" title="橙色"></button>
-      <button class="swatch" data-preset="rose" data-color="#f43f5e" title="粉色"></button>
-    </div>
+    <div class="theme-cards theme-grid" id="theme-cards-popover"></div>
     <div class="theme-custom">
       <span>自定义颜色</span>
-      <input type="color" id="theme-custom-color" value="#3b82f6">
+      <input type="color" id="theme-custom-color" value="#7c3aed">
     </div>
   </div>
 

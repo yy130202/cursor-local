@@ -590,11 +590,134 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
   box-shadow: 0 0 16px var(--glow); transform: translateX(4px);
 }
 
-/* 主页响应式 */
+/* ==================== 主页 v3（Vape 产品页风格） ==================== */
+.home-content { max-width: 1020px; margin: 0 auto; padding: 28px 28px 40px; }
+
+/* 渐变 Hero 大卡片 */
+.hero-banner {
+  position: relative; border-radius: 24px; overflow: hidden;
+  display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 26px; align-items: center;
+  padding: 42px 40px; margin-top: 10px;
+  background:
+    radial-gradient(620px 320px at 88% 15%, rgba(255,255,255,0.18), transparent 60%),
+    radial-gradient(400px 260px at 5% 110%, rgba(0,0,0,0.25), transparent 60%),
+    linear-gradient(130deg, var(--accent), var(--accent-hover) 62%, var(--accent));
+  box-shadow: 0 24px 70px var(--glow), inset 0 1px 0 rgba(255,255,255,0.25);
+  transition: background 0.3s ease;
+}
+.hero-left h1 { font-size: 34px; font-weight: 800; color: #fff; line-height: 1.25; letter-spacing: 0.5px; }
+.hero-desc { font-size: 13px; color: rgba(255,255,255,0.88); line-height: 1.8; margin: 14px 0 4px; }
+.hero-left .icon-tile { margin-bottom: 18px; }
+
+.check-list { margin: 18px 0 24px; display: flex; flex-direction: column; gap: 11px; }
+.check-list li { display: flex; align-items: center; gap: 10px; font-size: 13px; color: rgba(255,255,255,0.94); list-style: none; }
+.ck {
+  width: 19px; height: 19px; border-radius: 50%;
+  background: rgba(255,255,255,0.24); color: #fff;
+  display: grid; place-items: center; flex-shrink: 0;
+}
+.ck svg.lucide { width: 11px; height: 11px; }
+
+.cta-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(10,10,14,0.88); color: #fff;
+  border: 1px solid rgba(255,255,255,0.16); border-radius: 12px;
+  padding: 12px 24px; font-size: 14px; font-weight: 600; cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.cta-btn svg.lucide { width: 15px; height: 15px; }
+.cta-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 34px rgba(0,0,0,0.4); }
+
+/* Hero 右侧假窗 */
+.hero-right { display: flex; justify-content: center; }
+.fake-window {
+  width: 100%; max-width: 340px;
+  transform: rotate(2deg);
+  background: rgba(11,11,15,0.92);
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+}
+.fw-bar { display: flex; gap: 5px; margin-bottom: 14px; }
+.fw-bar span { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.16); }
+.fw-line { height: 8px; border-radius: 4px; background: rgba(255,255,255,0.09); margin-bottom: 10px; }
+.fw-line.accent { background: var(--accent); opacity: 0.75; }
+.w40 { width: 40%; } .w55 { width: 55%; } .w70 { width: 70%; } .w80 { width: 80%; }
+.fw-chips { display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; }
+.fw-chip {
+  font-size: 10px; font-weight: 600; color: #fff;
+  background: var(--accent); padding: 3px 9px; border-radius: 7px;
+}
+.fw-chip.pink { background: #ec4899; }
+.fw-chip.ghost { background: rgba(255,255,255,0.08); color: var(--text-dim); }
+
+/* 图标方块 */
+.icon-tile {
+  width: 42px; height: 42px; border-radius: 13px;
+  background: var(--accent-soft-2); color: var(--accent);
+  display: grid; place-items: center; flex-shrink: 0;
+}
+.icon-tile svg.lucide { width: 20px; height: 20px; }
+.icon-tile.on-accent { background: rgba(255,255,255,0.22); color: #fff; }
+.icon-tile.pink { background: rgba(236,72,153,0.16); color: #ec4899; }
+
+/* 区块 */
+.section-block { margin-top: 30px; }
+.section-head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.section-head h2 { font-size: 20px; font-weight: 700; color: #fff; }
+.section-head p { font-size: 12px; color: var(--text-dim); margin-top: 3px; }
+.mini-color {
+  margin-left: auto; width: 42px; height: 28px;
+  border: 1px solid var(--glass-border); border-radius: 8px;
+  background: transparent; cursor: pointer; padding: 2px;
+}
+
+/* 特性 3 列卡片 */
+.feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.feature-card {
+  background: rgba(20,20,26,0.6);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  border: 1px solid var(--glass-border); border-radius: 18px; padding: 20px;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.feature-card:hover { transform: translateY(-4px); border-color: var(--accent-soft-2); box-shadow: 0 16px 44px rgba(0,0,0,0.4); }
+.feature-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.feature-card h3 { font-size: 15px; font-weight: 700; color: #fff; margin: 16px 0 8px; }
+.feature-card > p { font-size: 12px; color: var(--text-dim); line-height: 1.75; }
+.learn-more {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; font-weight: 600; color: var(--accent);
+  cursor: pointer; margin-top: 14px;
+}
+.learn-more svg.lucide { width: 13px; height: 13px; }
+.learn-more:hover { text-decoration: underline; }
+
+/* 主题色卡网格（色块 + 名称） */
+.theme-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+.theme-card { background: transparent; border: none; padding: 0; cursor: pointer; text-align: left; }
+.swatch-block {
+  display: block; height: 54px; border-radius: 11px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 3px 10px rgba(0,0,0,0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.theme-card:hover .swatch-block { transform: translateY(-3px); }
+.theme-card.active .swatch-block {
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.9), 0 0 18px var(--glow);
+  transform: translateY(-2px);
+}
+.swatch-name {
+  display: block; font-size: 11px; color: var(--text-dim); margin-top: 7px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.theme-card.active .swatch-name { color: #fff; font-weight: 600; }
+.popover .theme-grid { grid-template-columns: repeat(4, 1fr); }
+
 @media (max-width: 900px) {
-  .home-grid { grid-template-columns: 1fr; }
-  .theme-cards { grid-template-columns: repeat(3, 1fr); }
-  .home-content { padding: 20px; }
+  .hero-banner { grid-template-columns: 1fr; padding: 30px 26px; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .theme-grid { grid-template-columns: repeat(4, 1fr); }
+  .home-content { padding: 18px 16px 32px; }
 }
 
 /* ==================== 主页 v2（WorkBuddy 风格：hero + 胶囊分段 + 大输入框） ==================== */

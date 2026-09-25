@@ -1,13 +1,20 @@
-/* Cursor Local - 主题系统（卡片式选择 + 自定义取色器） */
+/* Cursor Local - 主题系统（12 套渐变色卡 + 自定义取色器） */
 const PRESETS = {
-  blue:    { name: '蓝色', color: '#3b82f6', gradient: 'linear-gradient(135deg, #3b82f6, #8b5cf6)' },
-  violet:  { name: '紫色', color: '#8b5cf6', gradient: 'linear-gradient(135deg, #8b5cf6, #d946ef)' },
-  emerald: { name: '绿色', color: '#10b981', gradient: 'linear-gradient(135deg, #10b981, #22d3ee)' },
-  orange:  { name: '橙色', color: '#f59e0b', gradient: 'linear-gradient(135deg, #f59e0b, #f43f5e)' },
-  rose:    { name: '粉色', color: '#f43f5e', gradient: 'linear-gradient(135deg, #f43f5e, #a855f7)' }
+  aurora:   { name: 'Aurora',   color: '#7c3aed', gradient: 'linear-gradient(135deg, #7c3aed, #06b6d4)' },
+  ocean:    { name: 'Ocean',    color: '#3b82f6', gradient: 'linear-gradient(135deg, #3b82f6, #22d3ee)' },
+  blossom:  { name: 'Blossom',  color: '#f472b6', gradient: 'linear-gradient(135deg, #f9a8d4, #f472b6)' },
+  cherry:   { name: 'Cherry',   color: '#e11d48', gradient: 'linear-gradient(135deg, #e11d48, #fb7185)' },
+  coral:    { name: 'Coral',    color: '#fb7185', gradient: 'linear-gradient(135deg, #fb923c, #fb7185)' },
+  emerald:  { name: 'Emerald',  color: '#10b981', gradient: 'linear-gradient(135deg, #059669, #34d399)' },
+  mint:     { name: 'Mint',     color: '#2dd4bf', gradient: 'linear-gradient(135deg, #34d399, #22d3ee)' },
+  sunset:   { name: 'Sunset',   color: '#f59e0b', gradient: 'linear-gradient(135deg, #f59e0b, #f43f5e)' },
+  violet:   { name: 'Violet',   color: '#8b5cf6', gradient: 'linear-gradient(135deg, #8b5cf6, #d946ef)' },
+  cyber:    { name: 'Cyber',    color: '#06b6d4', gradient: 'linear-gradient(135deg, #06b6d4, #a855f7)' },
+  amber:    { name: 'Amber',    color: '#d97706', gradient: 'linear-gradient(135deg, #d97706, #fbbf24)' },
+  horizon:  { name: 'Digital Horizon', color: '#6366f1', gradient: 'linear-gradient(135deg, #6366f1, #ec4899)' }
 };
 
-let currentTheme = { preset: 'blue', custom: null };
+let currentTheme = { preset: 'aurora', custom: null };
 
 function hexToRgb(hex) {
   let h = String(hex).replace('#', '');
@@ -49,23 +56,23 @@ function applyTheme(accentHex) {
 }
 
 async function setTheme(preset, custom) {
-  currentTheme = { preset, custom: custom || null };
-  applyTheme(custom || PRESETS[preset].color);
+  const p = getPreset(preset);
+  currentTheme = { preset: p, custom: custom || null };
+  applyTheme(custom || PRESETS[p].color);
   markActiveCard();
-  markActiveSwatch();
   await window.api.setConfig({ theme: currentTheme });
+}
+
+/* 旧配置/无效名兼容：blue→ocean，未知→aurora */
+function getPreset(name) {
+  if (PRESETS[name]) return name;
+  if (name === 'blue') return 'ocean';
+  return 'aurora';
 }
 
 function markActiveCard() {
   document.querySelectorAll('.theme-card').forEach((el) => {
     el.classList.toggle('active', !currentTheme.custom && el.dataset.preset === currentTheme.preset);
-  });
-}
-
-function markActiveSwatch() {
-  document.querySelectorAll('.swatch').forEach((el) => {
-    const active = !currentTheme.custom && el.dataset.preset === currentTheme.preset;
-    el.classList.toggle('active', active);
   });
 }
 
@@ -81,7 +88,7 @@ window.lucideIcon = function (name) {
   return node ? window.lucide.createElement(node).outerHTML : '';
 };
 
-/* ---- 主题卡片渲染（支持多容器：主页 / 设置页） ---- */
+/* ---- 主题色卡网格（色块 + 名称，对标客户端色卡选择器） ---- */
 function renderThemeCards() {
   document.querySelectorAll('.theme-cards').forEach((container) => {
     container.innerHTML = '';
@@ -89,10 +96,10 @@ function renderThemeCards() {
       const card = document.createElement('button');
       card.className = 'theme-card';
       card.dataset.preset = key;
+      card.title = p.name;
       card.innerHTML =
-        '<span class="theme-preview" style="background:' + p.gradient + '"></span>' +
-        '<span class="theme-meta"><span class="theme-name">' + p.name + '</span>' +
-        '<span class="theme-check">' + (window.lucideIcon('check') || '') + '</span></span>';
+        '<span class="swatch-block" style="background:' + p.gradient + '"></span>' +
+        '<span class="swatch-name">' + p.name + '</span>';
       card.onclick = () => setTheme(key, null);
       container.appendChild(card);
     }
@@ -106,10 +113,7 @@ function bindThemeUI() {
     document.getElementById('theme-panel').classList.toggle('hidden');
     document.getElementById('user-menu').classList.add('hidden');
   };
-  document.querySelectorAll('.swatch').forEach((el) => {
-    el.onclick = () => setTheme(el.dataset.preset, null);
-  });
-  // 两个自定义取色器（popover + 主页）
+  // 自定义取色器（popover + 主页 + 设置页）
   const bindColor = (id) => {
     const input = document.getElementById(id);
     if (input) input.oninput = (e) => setTheme('custom', e.target.value);
@@ -126,16 +130,17 @@ function bindThemeUI() {
 async function initTheme() {
   try {
     const cfg = await window.api.getConfig();
-    if (cfg.theme) currentTheme = { preset: cfg.theme.preset || 'blue', custom: cfg.theme.custom || null };
+    if (cfg.theme) currentTheme = { preset: getPreset(cfg.theme.preset), custom: cfg.theme.custom || null };
   } catch { /* 使用默认 */ }
-  const color = currentTheme.custom || (PRESETS[currentTheme.preset] && PRESETS[currentTheme.preset].color) || PRESETS.blue.color;
+  const color = currentTheme.custom || PRESETS[currentTheme.preset].color;
   applyTheme(color);
   renderThemeCards();
   markActiveCard();
-  markActiveSwatch();
   if (currentTheme.custom) {
-    const el = document.getElementById('theme-custom-color');
-    if (el) el.value = currentTheme.custom;
+    ['theme-custom-color', 'home-theme-color'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.value = currentTheme.custom;
+    });
   }
   bindThemeUI();
 }

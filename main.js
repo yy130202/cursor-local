@@ -614,12 +614,13 @@ async function takeScreenshots() {
     // 1. 主页
     const homeDbg = await win.webContents.executeJavaScript(`JSON.stringify({
       themeCards: document.querySelectorAll('.theme-card').length,
+      heroBanner: !!document.querySelector('.hero-banner'),
+      fakeWindow: !!document.querySelector('.fake-window'),
+      featureCards: document.querySelectorAll('.feature-card').length,
+      iconTiles: document.querySelectorAll('.icon-tile').length,
+      checkList: document.querySelectorAll('.check-list li').length,
       orbs: document.querySelectorAll('.orb').length,
-      segPill: document.querySelectorAll('.seg-pill button').length,
-      chipBtns: document.querySelectorAll('.chip-btn').length,
       composer: !!document.getElementById('home-composer'),
-      sendBtn: !!document.getElementById('home-send'),
-      followup: !!document.getElementById('followup-input'),
       snavItems: document.querySelectorAll('.snav-item').length,
       accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
       homeActive: document.getElementById('home-view').classList.contains('active'),
