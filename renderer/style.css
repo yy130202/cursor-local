@@ -695,9 +695,9 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
 
 /* 主题色卡网格（色块 + 名称） */
 .theme-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
-.theme-card { background: transparent; border: none; padding: 0; cursor: pointer; text-align: left; }
+.theme-card { display: block; width: 100%; background: transparent; border: none; padding: 0; cursor: pointer; text-align: left; }
 .swatch-block {
-  display: block; height: 54px; border-radius: 11px;
+  display: block; width: 100%; height: 54px; border-radius: 11px;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 3px 10px rgba(0,0,0,0.35);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
@@ -707,7 +707,7 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
   transform: translateY(-2px);
 }
 .swatch-name {
-  display: block; font-size: 11px; color: var(--text-dim); margin-top: 7px;
+  display: block; width: 100%; font-size: 11px; color: var(--text-dim); margin-top: 7px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .theme-card.active .swatch-name { color: #fff; font-weight: 600; }
@@ -721,7 +721,8 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
 }
 
 /* ==================== 主页 v2（WorkBuddy 风格：hero + 胶囊分段 + 大输入框） ==================== */
-.home-content { align-items: center; }
+/* flex 列容器内子项禁止收缩：内容超高时滚动，而不是把 hero 压扁 */
+.home-content > * { flex-shrink: 0; }
 .hero-center { text-align: center; margin-top: 5vh; }
 .hero-center .hero-mark { width: 64px; height: 64px; margin: 0 auto 18px; border-radius: 18px; }
 .hero-center h1 { font-size: 38px; font-weight: 700; color: #fff; letter-spacing: 0.5px; }

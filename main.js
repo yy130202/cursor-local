@@ -736,8 +736,58 @@ function createWindow() {
   });
   win.webContents.on('did-finish-load', () => {
     if (process.env.TEST_AGENT) runAgentTest();
+    else if (process.env.DIAG) runDiag();
     else if (process.env.SHOT_MODE) takeScreenshots();
   });
+}
+
+/* 视觉诊断：检查关键元素计算样式 */
+async function runDiag() {
+  try {
+    await sleep(2500);
+    const r = await win.webContents.executeJavaScript(`(async () => {
+      const cs = (sel, props) => {
+        const el = document.querySelector(sel);
+        if (!el) return '元素不存在';
+        const s = getComputedStyle(el);
+        const out = {};
+        for (const p of props) out[p] = s[p];
+        out.__rect = el.offsetWidth + 'x' + el.offsetHeight;
+        return JSON.stringify(out);
+      };
+      // 列出所有匹配选择器的规则（含所在样式表与父规则）
+      const rulesFor = (needle) => {
+        const found = [];
+        for (const sheet of document.styleSheets) {
+          let rules;
+          try { rules = sheet.cssRules; } catch { continue; }
+          const walk = (list, ctx) => {
+            for (const rule of list) {
+              if (rule.cssRules) { walk(rule.cssRules, rule.conditionText || ctx); continue; }
+              if (rule.selectorText && rule.selectorText.includes(needle)) {
+                found.push((ctx ? '[' + ctx + '] ' : '') + rule.selectorText + ' { ' + rule.style.cssText.slice(0, 160) + ' }');
+              }
+            }
+          };
+          walk(rules, '');
+        }
+        return found;
+      };
+      return JSON.stringify({
+        swatchRules: rulesFor('swatch-block'),
+        heroRules: rulesFor('.hero-banner'),
+        heroLeftRules: rulesFor('hero-left'),
+        cardRules: rulesFor('.theme-card'),
+        swatch: cs('.swatch-block', ['display', 'width', 'height', 'alignSelf']),
+        heroLeft: cs('.hero-left', ['display', 'height', 'width']),
+        hero: cs('.hero-banner', ['height', 'gridAutoRows', 'alignItems'])
+      });
+    })()`);
+    console.log('[diag]', r);
+  } catch (e) {
+    console.error('[diag] FAILED', e);
+  }
+  app.quit();
 }
 
 app.whenReady().then(createWindow);
