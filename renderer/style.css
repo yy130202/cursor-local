@@ -1328,3 +1328,44 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
 @media (prefers-reduced-motion: reduce) {
   .view.active, .orb, .recent-card, .feature-card { animation: none !important; transition: none !important; }
 }
+
+/* ==================== 微交互（shimmer / press / glow / skeleton） ==================== */
+/* 主按钮扫光 */
+.cta-btn, .git-commit-btn, .inline-run, .inline-apply.primary {
+  position: relative; overflow: hidden;
+}
+.cta-btn::after, .git-commit-btn::after, .inline-run::after, .inline-apply.primary::after {
+  content: ''; position: absolute; top: 0; left: -80%; width: 50%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,0.42), transparent);
+  transform: skewX(-20deg);
+  animation: shimmer 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes shimmer { 0% { left: -80%; } 55%, 100% { left: 135%; } }
+
+/* 按压反馈 */
+.action, .cta-btn, .git-commit-btn, .inline-run, .inline-apply, .json-btn, .theme-card, .chip-btn, .recent-open, .snav-item, .menu-item, .keybind-btn {
+  transition-property: transform, box-shadow, border-color, background;
+  transition-duration: 0.14s;
+}
+.action:active, .cta-btn:active, .git-commit-btn:active, .inline-run:active, .inline-apply:active,
+.json-btn:active, .chip-btn:active, .recent-open:active, .snav-item:active, .menu-item:active {
+  transform: scale(0.96);
+}
+
+/* 卡片悬停光晕 */
+.recent-card, .feature-card, .theme-card {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.recent-card:hover, .feature-card:hover {
+  box-shadow: 0 16px 44px rgba(0,0,0,0.42), 0 0 0 1px var(--accent-soft-2), 0 0 24px var(--glow);
+}
+
+/* 骨架屏 */
+.skeleton {
+  background: linear-gradient(90deg, var(--hover) 25%, var(--hover-strong) 50%, var(--hover) 75%);
+  background-size: 200% 100%;
+  animation: skeleton 1.4s ease infinite;
+  border-radius: 6px;
+}
+@keyframes skeleton { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
