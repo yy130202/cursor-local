@@ -136,6 +136,7 @@
     <section id="editor-view" class="view">
       <div id="filetree-panel">
         <div class="panel-title"><span>资源管理器</span></div>
+        <div class="tree-filter-wrap"><input id="tree-filter" class="tree-filter" placeholder="搜索文件…" spellcheck="false"></div>
         <div id="filetree">
           <div id="filetree-empty">尚未打开文件夹<br><button class="action" onclick="openFolder()">打开文件夹</button></div>
         </div>
@@ -271,6 +272,21 @@
             <div class="srow">
               <div class="srow-main"><div class="srow-label">高级设置（JSON）</div><div class="srow-desc">直接编辑配置文件（不含 API Key，保存时自动合并到现有配置）</div></div>
               <button class="json-btn" id="json-settings-btn">编辑 settings.json</button>
+            </div>
+          </div>
+          <div class="sgroup">
+            <div class="srow">
+              <div class="srow-main"><div class="srow-label">编辑器字体大小</div><div class="srow-desc">Monaco 编辑器字号</div></div>
+              <select class="cfg-select" id="cfg-font-size">
+                <option value="12">12</option><option value="13">13</option><option value="14">14</option>
+                <option value="16">16</option><option value="18">18</option><option value="20">20</option>
+              </select>
+            </div>
+            <div class="srow">
+              <div class="srow-main"><div class="srow-label">Tab 宽度</div><div class="srow-desc">缩进空格数</div></div>
+              <select class="cfg-select" id="cfg-tab-size">
+                <option value="2">2</option><option value="4">4</option><option value="8">8</option>
+              </select>
             </div>
           </div>
           <div class="sgroup">

@@ -36,10 +36,30 @@
     document.body.appendChild(paletteEl);
     return paletteEl;
   }
+  /* 模糊匹配评分：0 完全 / 1 前缀 / 2 包含 / 3 子序列 / -1 不匹配 */
+  function fuzzyScore(text, kw) {
+    if (!kw) return 0;
+    const t = text.toLowerCase();
+    if (t === kw) return 0;
+    if (t.startsWith(kw)) return 1;
+    if (t.includes(kw)) return 2;
+    let i = 0;
+    for (let j = 0; j < t.length && i < kw.length; j++) if (t[j] === kw[i]) i++;
+    return i === kw.length ? 3 : -1;
+  }
   function renderPalette(q) {
     const list = paletteEl.querySelector('.cp-list');
     const kw = (q || '').trim().toLowerCase();
-    const matched = commands.filter((c) => !kw || c.title.toLowerCase().includes(kw) || c.id.includes(kw));
+    const matched = commands
+      .map((c) => {
+        const s1 = fuzzyScore(c.title, kw);
+        const s2 = fuzzyScore(c.id, kw);
+        const score = s1 === -1 ? s2 : (s2 === -1 ? s1 : Math.min(s1, s2));
+        return { c, score };
+      })
+      .filter((x) => x.score >= 0)
+      .sort((a, b) => a.score - b.score)
+      .map((x) => x.c);
     list.innerHTML = '';
     let lastGroup = null;
     let idx = 0;

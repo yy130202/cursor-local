@@ -30,7 +30,9 @@ function loadConfig() {
     theme: { preset: 'aurora', custom: null },
     aiComplete: true,
     permission: 'safe',
-    keybindings: {}
+    keybindings: {},
+    fontSize: 14,
+    tabSize: 2
   };
   try {
     const raw = JSON.parse(fs.readFileSync(configPath(), 'utf8'));

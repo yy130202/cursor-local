@@ -102,6 +102,10 @@ async function openSettings() {
   if (permToggle) permToggle.classList.toggle('on', cfg.permission === 'full');
   const lightToggle = document.getElementById('cfg-light-mode');
   if (lightToggle) lightToggle.classList.toggle('on', (cfg.theme && cfg.theme.mode) === 'light');
+  const fsSel = document.getElementById('cfg-font-size');
+  if (fsSel) fsSel.value = String(cfg.fontSize || 14);
+  const tsSel = document.getElementById('cfg-tab-size');
+  if (tsSel) tsSel.value = String(cfg.tabSize || 2);
   renderKeybinds();
   modal.classList.remove('hidden');
 }
@@ -185,6 +189,20 @@ const lightToggleBtn = document.getElementById('cfg-light-mode');
 if (lightToggleBtn) lightToggleBtn.onclick = () => {
   const on = lightToggleBtn.classList.toggle('on');
   if (typeof window.setMode === 'function') window.setMode(on ? 'light' : 'dark');
+};
+
+// 编辑器字体大小 / Tab 宽度（即时应用）
+const fsSelBtn = document.getElementById('cfg-font-size');
+if (fsSelBtn) fsSelBtn.onchange = () => {
+  const v = parseInt(fsSelBtn.value, 10);
+  window.api.setConfig({ fontSize: v });
+  if (typeof EditorState !== 'undefined' && EditorState.editor) EditorState.editor.updateOptions({ fontSize: v });
+};
+const tsSelBtn = document.getElementById('cfg-tab-size');
+if (tsSelBtn) tsSelBtn.onchange = () => {
+  const v = parseInt(tsSelBtn.value, 10);
+  window.api.setConfig({ tabSize: v });
+  if (typeof EditorState !== 'undefined' && EditorState.editor) EditorState.editor.updateOptions({ tabSize: v });
 };
 
 /* ---- 高级设置（JSON 编辑） ---- */
@@ -280,5 +298,8 @@ function updateCwdChip() {
   // 主题 + 用户系统初始化
   if (typeof initTheme === 'function') initTheme();
   if (typeof initAuth === 'function') initAuth();
+  // 编辑器选项（供 monaco 创建时读取）
+  window.__editorFontSize = cfg.fontSize || 14;
+  window.__editorTabSize = cfg.tabSize || 2;
   switchMode('home'); // 默认进主页
 })();

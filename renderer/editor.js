@@ -54,18 +54,40 @@ const EditorState = {
 
 /* ---- 文件树 ---- */
 let treeRenderSeq = 0;
+function currentTreeFilter() {
+  const el = document.getElementById('tree-filter');
+  return el ? el.value.trim().toLowerCase() : '';
+}
 async function renderTree() {
   const seq = ++treeRenderSeq;
   const tree = document.getElementById('filetree');
   if (!EditorState.currentFolder) return;
   tree.innerHTML = '';
-  await renderDir(EditorState.currentFolder, tree, 0, seq);
+  const filter = currentTreeFilter();
+  await renderDir(EditorState.currentFolder, tree, 0, seq, filter);
 }
 
-async function renderDir(dirPath, container, depth, seq) {
+/* 目录是否含匹配过滤词的文件（递归，限深） */
+async function dirHasMatch(dirPath, filter, depth = 0) {
+  if (depth > 6) return false;
+  let entries;
+  try { entries = await window.api.readDir(dirPath); } catch { return false; }
+  for (const ent of entries) {
+    if (ent.isDir) { if (await dirHasMatch(ent.path, filter, depth + 1)) return true; }
+    else if (ent.name.toLowerCase().includes(filter)) return true;
+  }
+  return false;
+}
+
+async function renderDir(dirPath, container, depth, seq, filter) {
   const entries = await window.api.readDir(dirPath);
   if (seq !== treeRenderSeq) return; // 已被更新的渲染取代，丢弃过期结果
   for (const ent of entries) {
+    // 过滤模式：文件按名匹配，目录递归判断是否含匹配
+    if (filter) {
+      if (ent.isDir) { if (!(await dirHasMatch(ent.path, filter))) continue; }
+      else if (!ent.name.toLowerCase().includes(filter)) continue;
+    }
     const row = document.createElement('div');
     row.className = 'tree-item';
     if (ent.path === EditorState.activePath) row.classList.add('active');
@@ -89,7 +111,7 @@ async function renderDir(dirPath, container, depth, seq) {
       if (open) {
         const childBox = document.createElement('div');
         container.appendChild(childBox);
-        await renderDir(ent.path, childBox, depth + 1, seq);
+        await renderDir(ent.path, childBox, depth + 1, seq, filter);
       }
     } else {
       const ext = extOf(ent.path);
@@ -216,7 +238,8 @@ require(['vs/editor/editor.main'], function () {
     EditorState.editor = monaco.editor.create(document.getElementById('monaco-container'), {
       theme: 'vs-dark',
       automaticLayout: true,
-      fontSize: 14,
+      fontSize: window.__editorFontSize || 14,
+      tabSize: window.__editorTabSize || 2,
       minimap: { enabled: true },
       scrollBeyondLastLine: false,
       tabCompletion: 'off',          // Tab 用于接受 AI 补全
@@ -368,6 +391,7 @@ function closeTab(path, ev) {
   const idx = EditorState.tabs.findIndex((t) => t.path === path);
   if (idx < 0) return;
   const tab = EditorState.tabs[idx];
+  if (tab.dirty && !confirm('「' + tab.name + '」有未保存的更改，确定关闭吗？')) return;
   tab.model.dispose();
   EditorState.tabs.splice(idx, 1);
   if (EditorState.activePath === path) {
@@ -383,6 +407,8 @@ function closeTab(path, ev) {
 function closeOthers(path) {
   const keep = EditorState.tabs.find((t) => t.path === path);
   if (!keep) return;
+  const dirtyOthers = EditorState.tabs.filter((t) => t !== keep && t.dirty);
+  if (dirtyOthers.length && !confirm('有 ' + dirtyOthers.length + ' 个标签存在未保存更改，确定关闭吗？')) return;
   EditorState.tabs.forEach((t) => { if (t !== keep) t.model.dispose(); });
   EditorState.tabs = [keep];
   EditorState.activePath = path;
@@ -392,6 +418,8 @@ function closeOthers(path) {
 }
 
 function closeAllTabs() {
+  const dirtyCount = EditorState.tabs.filter((t) => t.dirty).length;
+  if (dirtyCount && !confirm('有 ' + dirtyCount + ' 个标签存在未保存更改，确定全部关闭吗？')) return;
   EditorState.tabs.forEach((t) => t.model.dispose());
   EditorState.tabs = [];
   EditorState.activePath = null;
@@ -539,3 +567,12 @@ async function reloadTabContent(tab) {
     renderTabs();
   } catch { /* 文件可能已被删除 */ }
 }
+
+/* 文件树过滤输入 */
+(function bindTreeFilter() {
+  const el = document.getElementById('tree-filter');
+  if (!el) return;
+  let t;
+  el.oninput = () => { clearTimeout(t); t = setTimeout(() => renderTree(), 200); };
+  el.onkeydown = (e) => { if (e.key === 'Escape') { el.value = ''; renderTree(); } };
+})();

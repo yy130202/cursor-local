@@ -208,6 +208,12 @@ main { flex: 1; display: flex; min-height: 0; position: relative; z-index: 1; }
   border: 1px solid var(--accent); border-radius: 4px; padding: 2px 6px;
   font-size: 12px; font-family: inherit; outline: none;
 }
+.tree-filter-wrap { padding: 6px 10px; }
+.tree-filter {
+  width: 100%; box-sizing: border-box; background: var(--input-bg); color: var(--text);
+  border: 1px solid var(--glass-border); border-radius: 6px; padding: 4px 8px; font-size: 12px; font-family: inherit;
+}
+.tree-filter:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
 .icon-dir { color: #dcb67a; }
 .icon-file { color: var(--text-dim); }
 .icon-file.js, .icon-file.ts, .icon-file.jsx { color: #f1e05a; }
@@ -1010,6 +1016,12 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
 }
 .json-box textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 .json-hint { font-size: 11px; color: var(--text-dim); margin-top: 6px; }
+
+.cfg-select {
+  background: var(--input-bg); color: var(--text);
+  border: 1px solid var(--glass-border); border-radius: 7px; padding: 5px 8px; font-size: 12px; flex-shrink: 0; font-family: inherit;
+}
+.cfg-select:focus { outline: none; border-color: var(--accent); }
 
 /* ==================== 命令面板 / 全局搜索 ==================== */
 .cmd-palette {
