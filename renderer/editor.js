@@ -193,6 +193,7 @@ require(['vs/editor/editor.main'], function () {
       scrollBeyondLastLine: false,
       tabCompletion: 'off',          // Tab 用于接受 AI 补全
       inlineSuggest: { enabled: true },
+      unusualLineTerminator: 'off',  // 关闭孤立 \r 的整行红色警告（CRLF 文件常见误报）
       quickSuggestions: { other: true, comments: true, strings: true }
     });
     setupInlineCompletion();  // AI 代码补全（Tab 接受）
@@ -291,8 +292,10 @@ async function openFile(filePath) {
   let tab = EditorState.tabs.find((t) => t.path === filePath);
   if (!tab) {
     const r = await window.api.readFile(filePath);
+    // 统一行尾为 \n：消除 CRLF 中孤立的 \r，避免 Monaco 整行红色「异常行终止符」标记
+    const content = String(r.content).replace(/\r\n?/g, '\n');
     const model = monaco.editor.createModel(
-      r.content,
+      content,
       LANG_BY_EXT[extOf(filePath)] || 'plaintext'
     );
     model.onDidChangeContent(() => {

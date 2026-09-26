@@ -96,6 +96,14 @@ async function takeScreenshots() {
     await sleep(1000);
     const dbg = await win.webContents.executeJavaScript('JSON.stringify(window.__debugState())');
     console.log('[debug editor]', dbg);
+    // 选区颜色诊断：从主题服务读取实际选区颜色值
+    const deco = await win.webContents.executeJavaScript(`(async () => {
+      const ed = EditorState.editor;
+      const theme = ed._themeService && ed._themeService.getColorTheme();
+      const c = theme ? theme.getColor('editor.selectionBackground') : null;
+      return JSON.stringify({ selection: c ? c.toString() : 'none', themeName: ed._themeService ? ed._themeService.getColorTheme().themeName : '?' });
+    })()`);
+    console.log('[debug deco]', deco);
     const themeTest = await win.webContents.executeJavaScript(`(async () => {
       const r = {};
       try {
