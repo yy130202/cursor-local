@@ -187,6 +187,47 @@ if (lightToggleBtn) lightToggleBtn.onclick = () => {
   if (typeof window.setMode === 'function') window.setMode(on ? 'light' : 'dark');
 };
 
+/* ---- 高级设置（JSON 编辑） ---- */
+const jsonSettingsBtn = document.getElementById('json-settings-btn');
+if (jsonSettingsBtn) jsonSettingsBtn.onclick = openJsonSettings;
+
+function openJsonSettings() {
+  let p = document.getElementById('json-panel');
+  if (!p) {
+    p = document.createElement('div');
+    p.className = 'modal';
+    p.innerHTML =
+      '<div class="modal-box json-box">' +
+        '<h3>编辑 settings.json</h3>' +
+        '<textarea id="json-editor" spellcheck="false"></textarea>' +
+        '<div class="json-hint">不含 API Key（已加密存储），保存时自动合并到现有配置</div>' +
+        '<div class="modal-actions"><button id="json-cancel">取消</button><button id="json-save" class="primary">保存</button></div>' +
+      '</div>';
+    document.body.appendChild(p);
+  }
+  window.api.getConfig().then((cfg) => {
+    const safe = {
+      baseUrl: cfg.baseUrl, model: cfg.model, theme: cfg.theme,
+      aiComplete: cfg.aiComplete, permission: cfg.permission, keybindings: cfg.keybindings || {}
+    };
+    p.querySelector('#json-editor').value = JSON.stringify(safe, null, 2);
+  });
+  p.classList.remove('hidden');
+  p.querySelector('#json-cancel').onclick = () => p.classList.add('hidden');
+  p.querySelector('#json-save').onclick = async () => {
+    try {
+      const parsed = JSON.parse(p.querySelector('#json-editor').value);
+      const cfg = await window.api.setConfig(parsed);
+      p.classList.add('hidden');
+      refreshStatusBar(cfg);
+      window.__aiCompleteEnabled = cfg.aiComplete !== false;
+      flashStatus('配置已保存');
+    } catch (e) {
+      flashStatus('JSON 格式错误：' + e.message);
+    }
+  };
+}
+
 document.getElementById('open-folder-btn').onclick = () => openFolder();
 
 function refreshStatusBar(cfg) {

@@ -32,6 +32,12 @@ contextBridge.exposeInMainWorld('api', {
   gitUnstage: (cwd, file) => ipcRenderer.invoke('git:unstage', { cwd, file }),
   gitCommit: (cwd, message) => ipcRenderer.invoke('git:commit', { cwd, message }),
   gitPush: (cwd) => ipcRenderer.invoke('git:push', cwd),
+  // 终端
+  terminalCreate: (cwd) => ipcRenderer.invoke('terminal:create', cwd),
+  terminalInput: (id, data) => ipcRenderer.invoke('terminal:input', { id, data }),
+  terminalKill: (id) => ipcRenderer.invoke('terminal:kill', id),
+  onTerminalData: (cb) => ipcRenderer.on('terminal:data', (_e, d) => cb(d)),
+  onTerminalExit: (cb) => ipcRenderer.on('terminal:exit', (_e, d) => cb(d)),
   // 文件变更通知 + 回滚
   onFsChanged: (cb) => ipcRenderer.on('fs:changed', (_e, data) => cb(data)),
   revertChange: (c) => ipcRenderer.invoke('fs:revert', c),

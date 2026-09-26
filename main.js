@@ -15,6 +15,7 @@ const { createSessionModule } = require('./modules/session');
 const { registerAi } = require('./modules/ai');
 const { registerAuth } = require('./modules/auth');
 const { createGitModule } = require('./modules/git');
+const { createTerminalModule } = require('./modules/terminal');
 
 let win = null;
 const agents = new Map();
@@ -33,6 +34,7 @@ const logs = log.logs;
 const sessionMod = createSessionModule({ winRef, addLog });
 const agentMod = createAgentModule({ winRef, addLog, loadConfig, agents, saveSession: sessionMod.saveSession, rootDir: __dirname });
 const gitMod = createGitModule({ winRef, addLog });
+const terminalMod = createTerminalModule({ winRef, addLog });
 const { executeTool, runAgent, killChildren, emitAgent } = agentMod;
 const { revertFile } = sessionMod;
 
@@ -42,6 +44,7 @@ registerFs(ipcMain, { winRef, addLog, loadConfig, saveConfig });
 agentMod.register(ipcMain);
 sessionMod.register(ipcMain);
 gitMod.register(ipcMain);
+terminalMod.register(ipcMain);
 registerAi(ipcMain, { loadConfig });
 registerAuth(ipcMain, { getUserStore });
 ipcMain.handle('billing:query', (_e, userId) => billing.queryBilling(userId));
@@ -168,6 +171,49 @@ async function takeScreenshots() {
       return JSON.stringify({ ok: r.ok, branch: r.branch, staged: (r.staged||[]).length, unstaged: (r.unstaged||[]).length, panelFn: typeof window.openGitPanel });
     })()`);
     console.log('[debug git]', gitTest);
+    // 终端验证：xterm 渲染 + 终端创建 + 命令往返
+    const termTest = await win.webContents.executeJavaScript(`(async () => {
+      window.openTerminal();
+      await new Promise((r) => setTimeout(r, 1500));
+      const xtermEl = document.querySelector('.term-panel .xterm');
+      let echoed = false;
+      try {
+        const id = await window.api.terminalCreate(null);
+        let acc = '';
+        const off = new Promise((res) => {
+          window.api.onTerminalData(({ id: rid, data }) => {
+            if (rid === id) { acc += data; if (acc.includes('HELLO_TERM')) res(true); }
+          });
+        });
+        await window.api.terminalInput(id, 'echo HELLO_TERM\\r\\n');
+        echoed = await Promise.race([off, new Promise((r) => setTimeout(() => r(false), 3000))]);
+        window.api.terminalKill(id);
+      } catch (e) { /* 忽略 */ }
+      return JSON.stringify({
+        xtermLib: typeof window.Terminal,
+        panelVisible: !document.querySelector('.term-panel').classList.contains('hidden'),
+        xtermRendered: !!xtermEl,
+        echoed
+      });
+    })()`);
+    console.log('[debug term]', termTest);
+    // 命令面板增强断言：分组 + 快捷键提示
+    const cp = await win.webContents.executeJavaScript(`(async () => {
+      window.openPalette();
+      return JSON.stringify({
+        items: document.querySelectorAll('.cp-item').length,
+        groups: document.querySelectorAll('.cp-group').length,
+        withKey: document.querySelectorAll('.cp-item .cp-key').length,
+        jsonBtn: !!document.getElementById('json-settings-btn')
+      });
+    })()`);
+    console.log('[debug palette2]', cp);
+    await win.webContents.executeJavaScript('document.querySelector(".cmd-palette") && document.querySelector(".cmd-palette").classList.add("hidden")');
+    // 终端面板截图
+    await win.webContents.executeJavaScript('window.openTerminal()');
+    await sleep(600);
+    await captureTo(path.join(shotDir, '06-terminal.png'));
+    await win.webContents.executeJavaScript('document.querySelector(".term-panel") && document.querySelector(".term-panel").classList.add("hidden")');
     // 亮色模式验证 + 截图
     const lightTest = await win.webContents.executeJavaScript(`(async () => {
       await window.setMode('light');

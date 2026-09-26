@@ -958,6 +958,21 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
 .toggle.on { background: var(--accent); border-color: var(--accent); }
 .toggle.on .knob { transform: translateX(18px); }
 
+/* JSON 设置编辑 */
+.json-btn {
+  background: var(--hover-strong); border: 1px solid var(--glass-border);
+  color: var(--text); border-radius: 8px; padding: 6px 14px; cursor: pointer; font-size: 12px; flex-shrink: 0;
+}
+.json-btn:hover { border-color: var(--accent); }
+.json-box { width: min(640px, 92vw); }
+.json-box textarea {
+  width: 100%; height: 320px; background: var(--input-bg); color: var(--text);
+  border: 1px solid var(--glass-border); border-radius: 8px; padding: 12px;
+  font-family: Consolas, monospace; font-size: 12px; resize: vertical; line-height: 1.6;
+}
+.json-box textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.json-hint { font-size: 11px; color: var(--text-dim); margin-top: 6px; }
+
 /* ==================== 命令面板 / 全局搜索 ==================== */
 .cmd-palette {
   position: fixed; top: 12%; left: 50%; transform: translateX(-50%);
@@ -983,6 +998,10 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
 .cp-item.active { background: var(--accent); color: var(--accent-contrast); }
 .cp-ico { display: grid; place-items: center; }
 .cp-ico svg.lucide { width: 16px; height: 16px; }
+.cp-group { padding: 8px 12px 4px; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); }
+.cp-title { flex: 1; }
+.cp-key { font-size: 11px; color: var(--text-dim); font-family: Consolas, monospace; }
+.cp-item.active .cp-key { color: inherit; opacity: 0.8; }
 
 .search-panel { top: 8%; }
 .sr-summary { padding: 8px 16px 4px; font-size: 11px; color: var(--text-dim); }
@@ -1054,6 +1073,25 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
 .log-src { flex-shrink: 0; color: var(--accent); }
 .log-msg { flex: 1; color: var(--text); white-space: pre-wrap; }
 .log-time { flex-shrink: 0; color: var(--text-dim); }
+
+/* ==================== 终端面板（xterm.js） ==================== */
+.term-panel {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 255;
+  height: 300px; display: flex; flex-direction: column;
+  background: var(--glass-strong);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border-top: 1px solid var(--glass-border);
+  box-shadow: 0 -14px 44px rgba(0,0,0,0.55);
+}
+.term-head { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid var(--glass-border); flex-shrink: 0; }
+.term-title { font-size: 13px; font-weight: 700; color: var(--title); }
+.term-cwd { flex: 1; font-size: 11px; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: Consolas, monospace; }
+.term-action { background: transparent; border: none; color: var(--text-dim); cursor: pointer; padding: 3px; border-radius: 5px; display: grid; place-items: center; font-size: 15px; }
+.term-action:hover { background: var(--hover-strong); color: var(--text); }
+.term-action svg.lucide { width: 14px; height: 14px; }
+.term-body { flex: 1; overflow: hidden; padding: 4px 10px; background: #1e1e1e; }
+.term-body .xterm { height: 100%; }
 
 /* ==================== 编辑器右键菜单 ==================== */
 .ctx-menu {

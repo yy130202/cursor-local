@@ -5,7 +5,8 @@
   <meta http-equiv="Content-Security-Policy"
         content="default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src https: http://localhost:* http://127.0.0.1:*; img-src 'self' data: blob:; font-src 'self' data:; worker-src blob:; object-src 'none'; base-uri 'none'">
   <title>Cursor Local</title>
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="../node_modules/@xterm/xterm/css/xterm.css">
+  <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
   <header id="topbar">
@@ -22,6 +23,7 @@
     <div id="workdir-label"></div>
     <button id="open-folder-btn" class="action icon-btn" title="打开文件夹"><i data-lucide="folder-open"></i></button>
     <button id="git-btn" class="action icon-btn" title="源代码管理（Git）"><i data-lucide="git-branch"></i></button>
+    <button id="term-btn" class="action icon-btn" title="终端"><i data-lucide="terminal"></i></button>
     <button id="theme-btn" class="action icon-btn" title="主题颜色"><i data-lucide="palette"></i></button>
     <button id="log-btn" class="action icon-btn" title="日志"><i data-lucide="terminal"></i></button>
     <button id="settings-btn" class="action icon-btn" title="设置"><i data-lucide="settings"></i></button>
@@ -260,6 +262,12 @@
             </div>
           </div>
           <div class="sgroup">
+            <div class="srow">
+              <div class="srow-main"><div class="srow-label">高级设置（JSON）</div><div class="srow-desc">直接编辑配置文件（不含 API Key，保存时自动合并到现有配置）</div></div>
+              <button class="json-btn" id="json-settings-btn">编辑 settings.json</button>
+            </div>
+          </div>
+          <div class="sgroup">
             <div class="srow-label" style="padding: 13px 0 6px;">快捷键</div>
             <div class="srow-desc" style="margin-bottom: 6px;">点击右侧按键重新录制自定义快捷键（右键菜单与快捷键同步生效）</div>
             <div id="keybind-list"></div>
@@ -334,6 +342,18 @@
   <script src="diagnose.js"></script>
   <script src="git.js"></script>
   <script src="log.js"></script>
+  <script>
+    // xterm 同样是 UMD，需避开 Monaco 的 define.amd（否则不挂 window.Terminal）
+    window.__amdFlag = (typeof define === 'function' && define.amd) ? define.amd : undefined;
+    if (typeof define === 'function') { try { define.amd = false; } catch (e) {} }
+  </script>
+  <script src="../node_modules/@xterm/xterm/lib/xterm.js"></script>
+  <script src="../node_modules/@xterm/addon-fit/lib/addon-fit.js"></script>
+  <script>
+    if (typeof define === 'function' && window.__amdFlag !== undefined) { try { define.amd = window.__amdFlag; } catch (e) {} }
+    delete window.__amdFlag;
+  </script>
+  <script src="terminal.js"></script>
   <script src="renderer.js"></script>
 </body>
 </html>
