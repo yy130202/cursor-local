@@ -32,7 +32,9 @@ function loadConfig() {
     permission: 'safe',
     keybindings: {},
     fontSize: 14,
-    tabSize: 2
+    tabSize: 2,
+    autoSave: false,
+    wordWrap: 'off'
   };
   try {
     const raw = JSON.parse(fs.readFileSync(configPath(), 'utf8'));

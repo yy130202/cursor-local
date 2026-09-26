@@ -306,8 +306,10 @@ function renderHistory() {
   if (!agentsState.history.length) { section.classList.add('hidden'); return; }
   section.classList.remove('hidden');
   listEl.innerHTML = '';
+  const kw = (document.getElementById('history-filter') && document.getElementById('history-filter').value || '').trim().toLowerCase();
   let lastGroup = null;
   for (const s of agentsState.history) {
+    if (kw && !(s.task || '').toLowerCase().includes(kw)) continue;
     const group = timeGroupOf(s.ts || Date.now());
     if (group !== lastGroup) {
       lastGroup = group;
@@ -423,3 +425,9 @@ window.__demoAgentEntry = function () {
 
 /* ---- 启动时加载历史 ---- */
 loadHistory();
+
+/* 历史会话搜索过滤 */
+(function bindHistoryFilter() {
+  const el = document.getElementById('history-filter');
+  if (el) el.oninput = () => renderHistory();
+})();

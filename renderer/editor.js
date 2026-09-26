@@ -240,6 +240,7 @@ require(['vs/editor/editor.main'], function () {
       automaticLayout: true,
       fontSize: window.__editorFontSize || 14,
       tabSize: window.__editorTabSize || 2,
+      wordWrap: window.__editorWordWrap || 'off',
       minimap: { enabled: true },
       scrollBeyondLastLine: false,
       tabCompletion: 'off',          // Tab 用于接受 AI 补全
@@ -249,6 +250,11 @@ require(['vs/editor/editor.main'], function () {
     });
     setupInlineCompletion();  // AI 代码补全（Tab 接受）
     if (typeof window.setupEditorContextMenu === 'function') window.setupEditorContextMenu(EditorState.editor);
+    // 状态栏：光标行列号实时更新
+    EditorState.editor.onDidChangeCursorPosition((e) => {
+      const el = document.getElementById('status-cursor');
+      if (el) el.textContent = '行 ' + e.position.lineNumber + ', 列 ' + e.position.column;
+    });
     monacoReady = true;
     while (pendingOpens.length) openFile(pendingOpens.shift());
   } catch (err) {
@@ -353,6 +359,16 @@ async function openFile(filePath) {
       if (tab.__suppressDirty) return;
       tab.dirty = true;
       renderTabs();
+      // 自动保存（防抖）
+      if (window.__autoSave) {
+        clearTimeout(tab.__saveTimer);
+        tab.__saveTimer = setTimeout(async () => {
+          await window.api.writeFile(tab.path, tab.model.getValue());
+          tab.dirty = false;
+          renderTabs();
+          flashStatus('已自动保存');
+        }, 1200);
+      }
     });
     tab = { path: filePath, name: filePath.split(/[\\/]/).pop(), model, dirty: false };
     EditorState.tabs.push(tab);
@@ -367,6 +383,14 @@ async function openFile(filePath) {
   renderTabs();
   renderTree();
   applyGitDecorations(tab); // gutter 变更行标记（异步）
+  const langEl = document.getElementById('status-lang');
+  if (langEl) langEl.textContent = langDisplay(LANG_BY_EXT[extOf(filePath)] || 'plaintext');
+}
+
+/* 语言显示名 */
+function langDisplay(id) {
+  const map = { javascript: 'JavaScript', typescript: 'TypeScript', json: 'JSON', html: 'HTML', css: 'CSS', markdown: 'Markdown', python: 'Python', shell: 'Shell', yaml: 'YAML', xml: 'XML', sql: 'SQL', plaintext: '纯文本' };
+  return map[id] || (id ? id : '纯文本');
 }
 
 /* 编辑器 gutter：git 变更行标记（绿条） */

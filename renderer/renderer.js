@@ -106,6 +106,10 @@ async function openSettings() {
   if (fsSel) fsSel.value = String(cfg.fontSize || 14);
   const tsSel = document.getElementById('cfg-tab-size');
   if (tsSel) tsSel.value = String(cfg.tabSize || 2);
+  const asToggle = document.getElementById('cfg-auto-save');
+  if (asToggle) asToggle.classList.toggle('on', !!cfg.autoSave);
+  const wwToggle = document.getElementById('cfg-word-wrap');
+  if (wwToggle) wwToggle.classList.toggle('on', cfg.wordWrap === 'on');
   renderKeybinds();
   modal.classList.remove('hidden');
 }
@@ -204,6 +208,18 @@ if (tsSelBtn) tsSelBtn.onchange = () => {
   window.api.setConfig({ tabSize: v });
   if (typeof EditorState !== 'undefined' && EditorState.editor) EditorState.editor.updateOptions({ tabSize: v });
 };
+const asBtn = document.getElementById('cfg-auto-save');
+if (asBtn) asBtn.onclick = () => {
+  const on = asBtn.classList.toggle('on');
+  window.api.setConfig({ autoSave: on });
+  window.__autoSave = on;
+};
+const wwBtn = document.getElementById('cfg-word-wrap');
+if (wwBtn) wwBtn.onclick = () => {
+  const on = wwBtn.classList.toggle('on');
+  window.api.setConfig({ wordWrap: on ? 'on' : 'off' });
+  if (typeof EditorState !== 'undefined' && EditorState.editor) EditorState.editor.updateOptions({ wordWrap: on ? 'on' : 'off' });
+};
 
 /* ---- 高级设置（JSON 编辑） ---- */
 const jsonSettingsBtn = document.getElementById('json-settings-btn');
@@ -301,5 +317,7 @@ function updateCwdChip() {
   // 编辑器选项（供 monaco 创建时读取）
   window.__editorFontSize = cfg.fontSize || 14;
   window.__editorTabSize = cfg.tabSize || 2;
+  window.__editorWordWrap = cfg.wordWrap || 'off';
+  window.__autoSave = !!cfg.autoSave;
   switchMode('home'); // 默认进主页
 })();

@@ -155,6 +155,7 @@
         <div id="agent-list"></div>
         <div id="history-section" class="hidden">
           <div class="history-title">历史会话</div>
+          <input id="history-filter" class="history-filter" placeholder="搜索会话…" spellcheck="false">
           <div id="history-list"></div>
         </div>
       </div>
@@ -186,6 +187,8 @@
     <span id="status-model">模型: -</span>
     <span id="status-warn" class="warn" style="display:none"><i data-lucide="alert-triangle"></i>未配置 API Key</span>
     <div class="spacer"></div>
+    <span id="status-cursor" class="status-dim">行 1, 列 1</span>
+    <span id="status-lang" class="status-dim">纯文本</span>
     <span id="status-right"></span>
   </footer>
 
@@ -287,6 +290,14 @@
               <select class="cfg-select" id="cfg-tab-size">
                 <option value="2">2</option><option value="4">4</option><option value="8">8</option>
               </select>
+            </div>
+            <div class="srow">
+              <div class="srow-main"><div class="srow-label">自动保存</div><div class="srow-desc">编辑后自动保存文件</div></div>
+              <button class="toggle" id="cfg-auto-save"><span class="knob"></span></button>
+            </div>
+            <div class="srow">
+              <div class="srow-main"><div class="srow-label">自动换行</div><div class="srow-desc">长行自动折行显示</div></div>
+              <button class="toggle" id="cfg-word-wrap"><span class="knob"></span></button>
             </div>
           </div>
           <div class="sgroup">
