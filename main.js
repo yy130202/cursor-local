@@ -168,7 +168,9 @@ async function takeScreenshots() {
     // Git 面板断言
     const gitTest = await win.webContents.executeJavaScript(`(async () => {
       const r = await window.api.gitStatus(${JSON.stringify(__dirname)});
-      return JSON.stringify({ ok: r.ok, branch: r.branch, staged: (r.staged||[]).length, unstaged: (r.unstaged||[]).length, panelFn: typeof window.openGitPanel });
+      let sb = { ok: false };
+      try { const d = await window.api.gitSideBySide(${JSON.stringify(__dirname)}, 'main.js', false); sb = { ok: typeof d.old === 'string' && typeof d.new === 'string', oldLen: (d.old||'').length, newLen: (d.new||'').length }; } catch (e) { sb.err = String(e); }
+      return JSON.stringify({ ok: r.ok, branch: r.branch, staged: (r.staged||[]).length, unstaged: (r.unstaged||[]).length, panelFn: typeof window.openGitPanel, sideBySide: sb });
     })()`);
     console.log('[debug git]', gitTest);
     // 终端验证：xterm 渲染 + 终端创建 + 命令往返

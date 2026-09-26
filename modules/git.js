@@ -1,4 +1,6 @@
 /* Cursor Local - Git 模块（status / diff / stage / commit / push） */
+const path = require('path');
+const fs = require('fs');
 const { spawn } = require('child_process');
 
 function createGitModule({ winRef, addLog }) {
@@ -50,6 +52,37 @@ function createGitModule({ winRef, addLog }) {
     return r.stdout || '[无差异]';
   }
 
+  /* 并排 diff：返回 old / new 两端文本（IDEA 式 side-by-side） */
+  async function gitSideBySide(cwd, file, staged) {
+    let oldText = '', newText = '';
+    // old = HEAD 版本（未跟踪/新文件则为空）
+    const head = await runGit(cwd, ['show', 'HEAD:' + file]);
+    oldText = head.code === 0 ? head.stdout : '';
+    if (staged) {
+      // 已暂存：new = 暂存区（index）版本
+      const idx = await runGit(cwd, ['show', ':' + file]);
+      newText = idx.code === 0 ? idx.stdout : '';
+    } else {
+      // 未暂存/未跟踪：new = 工作区文件内容
+      try { newText = fs.readFileSync(path.join(cwd, file), 'utf8'); } catch { newText = ''; }
+    }
+    return { old: oldText, new: newText };
+  }
+
+  /* 选择性提交：只提交指定文件列表 */
+  async function gitCommitFiles(cwd, files, message) {
+    const list = (files || []).filter(Boolean);
+    if (!list.length) return { ok: false, error: '未选择要提交的文件' };
+    const msg = String(message || '').trim();
+    if (!msg) return { ok: false, error: '提交信息不能为空' };
+    const a = await runGit(cwd, ['add', '--', ...list]);
+    if (a.code !== 0) return { ok: false, error: a.stderr || 'git add 失败' };
+    const c = await runGit(cwd, ['commit', '-m', msg]);
+    if (c.code !== 0) return { ok: false, error: c.stderr || c.stdout || 'git commit 失败' };
+    addLog('info', 'git', '提交 ' + list.length + ' 个文件：' + msg.slice(0, 60));
+    return { ok: true, output: (c.stdout + c.stderr).trim() };
+  }
+
   async function gitStage(cwd, file) {
     const r = await runGit(cwd, ['add', '--', file]);
     addLog('info', 'git', '暂存 ' + file);
@@ -83,9 +116,11 @@ function createGitModule({ winRef, addLog }) {
   function register(ipcMain) {
     ipcMain.handle('git:status', (_e, cwd) => gitStatus(cwd));
     ipcMain.handle('git:diff', (_e, { cwd, file, staged }) => gitDiff(cwd, file, staged));
+    ipcMain.handle('git:sideBySide', (_e, { cwd, file, staged }) => gitSideBySide(cwd, file, staged));
     ipcMain.handle('git:stage', (_e, { cwd, file }) => gitStage(cwd, file));
     ipcMain.handle('git:unstage', (_e, { cwd, file }) => gitUnstage(cwd, file));
     ipcMain.handle('git:commit', (_e, { cwd, message }) => gitCommit(cwd, message));
+    ipcMain.handle('git:commitFiles', (_e, { cwd, files, message }) => gitCommitFiles(cwd, files, message));
     ipcMain.handle('git:push', (_e, cwd) => gitPush(cwd));
   }
 

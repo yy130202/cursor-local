@@ -1,8 +1,11 @@
-/* Cursor Local - Git 面板（源代码管理：status / diff / commit / push） */
+/* Cursor Local - Git 面板（IDEA 式版本控制：勾选文件 + 并排 diff + 选择性提交） */
 (function () {
   let panelEl = null;
+  let diffEditor = null;
+  let diffModels = [];
   let currentCwd = null;
   let statusCache = null;
+  const selected = new Set(); // 勾选的文件
 
   function ensurePanel() {
     if (panelEl) return panelEl;
@@ -12,27 +15,29 @@
       '<div class="git-head">' +
         '<span class="git-branch" id="git-branch">-</span>' +
         '<button class="git-action" id="git-refresh" title="刷新">' + (window.lucideIcon('refresh-cw') || '') + '</button>' +
+        '<button class="git-action" id="git-push" title="推送到远端">' + (window.lucideIcon('arrow-up') || '') + '</button>' +
         '<button class="git-action" id="git-close">×</button>' +
       '</div>' +
       '<div class="git-commit-row">' +
-        '<textarea class="git-msg" id="git-msg" placeholder="提交信息（提交到本地仓库）"></textarea>' +
+        '<textarea class="git-msg" id="git-msg" placeholder="提交信息（仅提交勾选的文件）"></textarea>' +
         '<div class="git-commit-btns">' +
-          '<button class="git-commit-btn" id="git-commit" title="提交全部更改">提交</button>' +
-          '<button class="git-push-btn" id="git-push" title="推送到远端">推送</button>' +
+          '<span class="git-count" id="git-count">0 个文件</span>' +
+          '<button class="git-commit-btn" id="git-commit" title="提交勾选的文件">提交</button>' +
         '</div>' +
       '</div>' +
-      '<div class="git-list" id="git-list"></div>' +
-      '<div class="git-diff hidden" id="git-diff">' +
-        '<div class="git-diff-head" id="git-diff-head"></div>' +
-        '<div class="git-diff-body" id="git-diff-body"></div>' +
+      '<div class="git-body">' +
+        '<div class="git-list" id="git-list"></div>' +
+        '<div class="git-diff hidden" id="git-diff">' +
+          '<div class="git-diff-head" id="git-diff-head"></div>' +
+          '<div class="git-diff-body" id="git-diff-body"></div>' +
+        '</div>' +
       '</div>';
     document.body.appendChild(panelEl);
     return panelEl;
   }
 
   function resolveCwd() {
-    if (typeof EditorState !== 'undefined' && EditorState.currentFolder) return EditorState.currentFolder;
-    return null;
+    return (typeof EditorState !== 'undefined' && EditorState.currentFolder) || null;
   }
 
   async function openGitPanel() {
@@ -50,46 +55,46 @@
     if (!r.ok) { document.getElementById('git-list').innerHTML = '<div class="git-empty">' + escapeHtml(r.error || '不是 git 仓库') + '</div>'; return; }
     statusCache = r;
     document.getElementById('git-branch').textContent = r.branch || '-';
+    // 默认勾选所有变更
+    selected.clear();
+    [...r.staged, ...r.unstaged].forEach((f) => selected.add(f.file));
     renderList(r);
   }
 
   function renderList(r) {
     const list = document.getElementById('git-list');
     const total = r.staged.length + r.unstaged.length;
+    document.getElementById('git-count').textContent = selected.size + ' 个文件';
     if (!total) { list.innerHTML = '<div class="git-empty">无更改，工作区干净 ✓</div>'; return; }
+    const statusMeta = { added: ['A', 'git-a'], modified: ['M', 'git-m'], deleted: ['D', 'git-d'], untracked: ['U', 'git-u'], renamed: ['R', 'git-m'], conflict: ['!', 'git-d'] };
     let html = '';
-    const fileIcon = (s) => {
-      const map = { added: 'file-plus', modified: 'file', deleted: 'file-minus', untracked: 'file-plus', renamed: 'file', conflict: 'alert-triangle' };
-      return window.lucideIcon(map[s] || 'file') || '';
-    };
-    const fileLabel = (s) => {
-      const map = { added: 'A', modified: 'M', deleted: 'D', untracked: 'U', renamed: 'R', conflict: '!' };
-      return map[s] || '?';
-    };
     const group = (title, items) => {
       if (!items.length) return '';
       let g = '<div class="git-group-label">' + title + '（' + items.length + '）</div>';
       for (const it of items) {
+        const [ch, cls] = statusMeta[it.status] || ['?', 'git-m'];
         g += '<div class="git-item" data-file="' + escapeHtml(it.file) + '" data-staged="' + (it.staged ? '1' : '0') + '">' +
-          '<span class="git-file-icon">' + fileIcon(it.status) + '</span>' +
+          '<input type="checkbox" class="git-check" checked>' +
+          '<span class="git-status ' + cls + '">' + ch + '</span>' +
           '<span class="git-file">' + escapeHtml(it.file) + '</span>' +
-          '<span class="git-file-status">' + fileLabel(it.status) + '</span>' +
-          (it.staged
-            ? '<button class="git-stage-btn" title="取消暂存">' + (window.lucideIcon('minus') || '') + '</button>'
-            : '<button class="git-stage-btn" title="暂存">' + (window.lucideIcon('plus') || '') + '</button>') +
+          '<button class="git-stage-btn" title="' + (it.staged ? '取消暂存' : '暂存') + '">' + (window.lucideIcon(it.staged ? 'minus' : 'plus') || '') + '</button>' +
         '</div>';
       }
       return g;
     };
-    html = group('暂存的更改', r.staged) + group('更改', r.unstaged);
+    html = group('更改', r.unstaged) + group('暂存的更改', r.staged);
     list.innerHTML = html;
 
     list.querySelectorAll('.git-item').forEach((el) => {
       const file = el.dataset.file;
       const staged = el.dataset.staged === '1';
-      el.onclick = () => showDiff(file, staged);
-      const btn = el.querySelector('.git-stage-btn');
-      btn.onclick = async (e) => {
+      const check = el.querySelector('.git-check');
+      check.onchange = () => {
+        if (check.checked) selected.add(file); else selected.delete(file);
+        document.getElementById('git-count').textContent = selected.size + ' 个文件';
+      };
+      el.onclick = (e) => { if (e.target !== check) showDiff(file, staged); };
+      el.querySelector('.git-stage-btn').onclick = async (e) => {
         e.stopPropagation();
         if (staged) await window.api.gitUnstage(currentCwd, file);
         else await window.api.gitStage(currentCwd, file);
@@ -99,21 +104,25 @@
   }
 
   async function showDiff(file, staged) {
-    const diff = await window.api.gitDiff(currentCwd, file, staged);
+    const d = await window.api.gitSideBySide(currentCwd, file, staged);
+    const lang = (typeof LANG_BY_EXT !== 'undefined' && LANG_BY_EXT[extOf(file)]) || 'plaintext';
     document.getElementById('git-diff-head').textContent = file;
-    document.getElementById('git-diff-body').innerHTML = renderDiff(diff);
     document.getElementById('git-diff').classList.remove('hidden');
-  }
-
-  function renderDiff(text) {
-    return String(text).split('\n').map((line) => {
-      let cls = 'ud-line';
-      if (line.startsWith('@@')) cls += ' ud-hunk';
-      else if (line.startsWith('+') && !line.startsWith('+++')) cls += ' ud-add';
-      else if (line.startsWith('-') && !line.startsWith('---')) cls += ' ud-del';
-      else if (/^(diff |index |new file|deleted file|similarity|---|\+\+\+)/.test(line)) cls += ' ud-meta';
-      return '<div class="' + cls + '">' + (escapeHtml(line) || '&nbsp;') + '</div>';
-    }).join('');
+    const body = document.getElementById('git-diff-body');
+    if (!diffEditor && typeof monaco !== 'undefined') {
+      diffEditor = monaco.editor.createDiffEditor(body, {
+        theme: 'cursor-theme', readOnly: true, renderSideBySide: true,
+        automaticLayout: true, enableSplitViewResizing: true, minimap: { enabled: false }
+      });
+    }
+    if (!diffEditor) return;
+    // 释放旧 model，避免泄漏
+    diffModels.forEach((m) => { try { m.dispose(); } catch { /* ignore */ } });
+    diffModels = [];
+    const original = monaco.editor.createModel(d.old || '', lang);
+    const modified = monaco.editor.createModel(d.new || '', lang);
+    diffModels = [original, modified];
+    diffEditor.setModel({ original, modified });
   }
 
   function closePanel() { if (panelEl) panelEl.classList.add('hidden'); }
@@ -123,16 +132,17 @@
     document.getElementById('git-btn').onclick = openGitPanel;
     p.querySelector('#git-close').onclick = closePanel;
     p.querySelector('#git-refresh').onclick = refresh;
-    p.querySelector('#git-commit').onclick = async () => {
-      const msg = p.querySelector('#git-msg').value.trim();
-      const r = await window.api.gitCommit(currentCwd, msg);
-      if (r.ok) { p.querySelector('#git-msg').value = ''; flashStatus('已提交'); await refresh(); }
-      else flashStatus(r.error || '提交失败');
-    };
     p.querySelector('#git-push').onclick = async () => {
       const r = await window.api.gitPush(currentCwd);
       if (r.ok) flashStatus('已推送到远端');
       else flashStatus(r.error || '推送失败');
+    };
+    p.querySelector('#git-commit').onclick = async () => {
+      const msg = p.querySelector('#git-msg').value.trim();
+      const files = [...selected];
+      const r = await window.api.gitCommitFiles(currentCwd, files, msg);
+      if (r.ok) { p.querySelector('#git-msg').value = ''; flashStatus('已提交 ' + files.length + ' 个文件'); await refresh(); }
+      else flashStatus(r.error || '提交失败');
     };
   })();
 
