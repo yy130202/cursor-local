@@ -53,6 +53,7 @@ document.getElementById('followup-input').addEventListener('keydown', (e) => {
 function closeStreaming(a) {
   const last = a.entries[a.entries.length - 1];
   if (last && last.streaming) last.streaming = false;
+  a.__streamNode = null;
 }
 
 /* ---- Agent 事件流 ---- */
@@ -79,6 +80,7 @@ window.api.onAgentEvent((ev) => {
       } else {
         a.entries.push({ kind: 'agent-msg', text: ev.text, streaming: true });
       }
+      a.__streamDelta = true; // 标记为流式增量，可跳过整树重建
       break;
     }
     case 'text':
@@ -108,13 +110,31 @@ window.api.onAgentEvent((ev) => {
       break;
     case 'status':
       a.status = ev.status;
-      if (ev.status !== 'running') closeStreaming(a);
+      if (ev.status !== 'running') {
+        closeStreaming(a);
+        // 完成后截断 entries，防超长会话内存累积
+        if (a.entries.length > 200) a.entries.splice(0, a.entries.length - 200);
+      }
       if (typeof window.updateIsland === 'function') {
         if (ev.status === 'done') window.updateIsland('done', 'Agent 任务完成');
         else if (ev.status === 'error') window.updateIsland('error', 'Agent 执行出错');
         else if (ev.status === 'stopped') window.updateIsland('idle');
       }
       break;
+  }
+  // 流式增量：只更新当前流式节点的文本，避免每个 delta 都整树重建
+  if (a.__streamDelta) {
+    a.__streamDelta = false;
+    const node = a.__streamNode;
+    if (node && ev.id === agentsState.selectedId) {
+      const body = node.querySelector('.body');
+      const last = a.entries[a.entries.length - 1];
+      if (body && last && last.streaming) {
+        body.innerHTML = escapeHtml(last.text) + '<span class="caret">▍</span>';
+        transcriptEl.scrollTop = transcriptEl.scrollHeight;
+        return;
+      }
+    }
   }
   renderAgentList();
   if (ev.id === agentsState.selectedId) renderTranscript();
@@ -161,7 +181,7 @@ function argsSummary(name, args) {
 function lineDiff(before, after) {
   const a = (before == null ? '' : before).split('\n');
   const b = (after == null ? '' : after).split('\n');
-  if (a.length > 2000 || b.length > 2000) {
+  if (a.length > 500 || b.length > 500) {
     // 过大文件退回并排展示
     return { tooBig: true, before: a, after: b };
   }
@@ -254,6 +274,7 @@ function renderTranscript() {
       d.className = 'entry entry-text agent-msg' + (en.streaming ? ' streaming' : '');
       d.innerHTML = '<span class="who">Agent</span><span class="body">' + escapeHtml(en.text) + (en.streaming ? '<span class="caret">▍</span>' : '') + '</span>';
       transcriptEl.appendChild(d);
+      if (en.streaming) a.__streamNode = d; // 记录流式节点，供增量更新
     } else if (en.kind === 'tool') {
       const d = document.createElement('div');
       d.className = 'entry';

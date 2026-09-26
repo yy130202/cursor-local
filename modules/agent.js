@@ -436,6 +436,9 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
       emitAgent(agent, 'error', { text: String(err.message || err) });
       addLog('error', 'agent', `Agent 出错：${String(err.message || err).slice(0, 200)}`);
     } finally {
+      // 收尾：清理子进程 + 截断日志（防常驻/长任务内存累积）
+      killChildren(agent);
+      if (agent.log.length > 200) agent.log = agent.log.slice(-200);
       saveSession(agent);
     }
   }
@@ -469,6 +472,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
       if (a) {
         a.status = 'stopped';
         killChildren(a);
+        if (a.log.length > 200) a.log = a.log.slice(-200);
         emitAgent(a, 'status', { status: 'stopped' });
       }
       return true;

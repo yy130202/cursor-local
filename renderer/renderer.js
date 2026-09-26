@@ -138,6 +138,7 @@ function startKeyRecord(id) {
   const btn = document.querySelector('.keybind-btn[data-id="' + id + '"]');
   if (btn) { btn.classList.add('recording'); btn.textContent = '按下组合键…'; }
   window.__keyRecordHandler = (e) => {
+    if (e.key === 'Escape') { cancelKeyRecord(); return; }
     e.preventDefault(); e.stopPropagation();
     const combo = window.formatKeyEvent(e);
     if (!combo) return;
@@ -146,18 +147,27 @@ function startKeyRecord(id) {
   window.addEventListener('keydown', window.__keyRecordHandler, true);
 }
 
+function cancelKeyRecord() {
+  if (window.__keyRecordHandler) window.removeEventListener('keydown', window.__keyRecordHandler, true);
+  window.__keyRecordHandler = null;
+  recordingId = null;
+  renderKeybinds();
+}
+
 async function finishKeyRecord(combo) {
   const id = recordingId;
   recordingId = null;
-  window.removeEventListener('keydown', window.__keyRecordHandler, true);
+  if (window.__keyRecordHandler) window.removeEventListener('keydown', window.__keyRecordHandler, true);
+  window.__keyRecordHandler = null;
   if (id && combo) await window.setKeybinding(id, combo);
   renderKeybinds();
 }
 
 document.getElementById('settings-btn').onclick = openSettings;
-document.getElementById('settings-close-btn').onclick = () => modal.classList.add('hidden');
-document.getElementById('cfg-cancel').onclick = () => modal.classList.add('hidden');
+document.getElementById('settings-close-btn').onclick = () => { cancelKeyRecord(); modal.classList.add('hidden'); };
+document.getElementById('cfg-cancel').onclick = () => { cancelKeyRecord(); modal.classList.add('hidden'); };
 document.getElementById('cfg-save').onclick = async () => {
+  cancelKeyRecord();
   const aiToggle = document.getElementById('cfg-ai-complete');
   const permToggle = document.getElementById('cfg-permission');
   const cfg = await window.api.setConfig({
@@ -319,5 +329,6 @@ function updateCwdChip() {
   window.__editorTabSize = cfg.tabSize || 2;
   window.__editorWordWrap = cfg.wordWrap || 'off';
   window.__autoSave = !!cfg.autoSave;
+  window.__largeFileThreshold = cfg.largeFileThreshold || 1048576;
   switchMode('home'); // 默认进主页
 })();

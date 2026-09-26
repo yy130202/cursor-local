@@ -82,7 +82,14 @@ async function dirHasMatch(dirPath, filter, depth = 0) {
 async function renderDir(dirPath, container, depth, seq, filter) {
   const entries = await window.api.readDir(dirPath);
   if (seq !== treeRenderSeq) return; // 已被更新的渲染取代，丢弃过期结果
-  for (const ent of entries) {
+  const BATCH = 50; // 每帧渲染条数，避免大目录一次性 append 卡顿
+  for (let i = 0; i < entries.length; i++) {
+    if (seq !== treeRenderSeq) return; // 渲染中被取代则中止
+    if (i > 0 && i % BATCH === 0) {
+      await new Promise((r) => requestAnimationFrame(r));
+      if (seq !== treeRenderSeq) return;
+    }
+    const ent = entries[i];
     // 过滤模式：文件按名匹配，目录递归判断是否含匹配
     if (filter) {
       if (ent.isDir) { if (!(await dirHasMatch(ent.path, filter))) continue; }
@@ -351,10 +358,11 @@ async function openFile(filePath) {
     const r = await window.api.readFile(filePath);
     // 统一行尾为 \n：消除 CRLF 中孤立的 \r，避免 Monaco 整行红色「异常行终止符」标记
     const content = String(r.content).replace(/\r\n?/g, '\n');
-    const model = monaco.editor.createModel(
-      content,
-      LANG_BY_EXT[extOf(filePath)] || 'plaintext'
-    );
+    // 大文件降级：超过阈值用 plaintext（跳过 tokenization），并关闭 minimap
+    const threshold = window.__largeFileThreshold ?? 1048576;
+    const isLarge = (typeof r.size === 'number' ? r.size : content.length) > threshold;
+    const lang = isLarge ? 'plaintext' : (LANG_BY_EXT[extOf(filePath)] || 'plaintext');
+    const model = monaco.editor.createModel(content, lang);
     model.onDidChangeContent(() => {
       if (tab.__suppressDirty) return;
       tab.dirty = true;
@@ -370,13 +378,15 @@ async function openFile(filePath) {
         }, 1200);
       }
     });
-    tab = { path: filePath, name: filePath.split(/[\\/]/).pop(), model, dirty: false };
+    tab = { path: filePath, name: filePath.split(/[\\/]/).pop(), model, dirty: false, large: isLarge };
     EditorState.tabs.push(tab);
   }
   EditorState.activePath = filePath;
   const ed = getEditor();
   if (ed) {
     ed.setModel(tab.model);
+    // 大文件关 minimap，小文件恢复
+    ed.updateOptions({ minimap: { enabled: !tab.large } });
     ed.focus();
   }
   document.getElementById('editor-empty').classList.add('hidden');
@@ -384,7 +394,7 @@ async function openFile(filePath) {
   renderTree();
   applyGitDecorations(tab); // gutter 变更行标记（异步）
   const langEl = document.getElementById('status-lang');
-  if (langEl) langEl.textContent = langDisplay(LANG_BY_EXT[extOf(filePath)] || 'plaintext');
+  if (langEl) langEl.textContent = langDisplay(tab.large ? 'plaintext' : (LANG_BY_EXT[extOf(filePath)] || 'plaintext'));
 }
 
 /* 语言显示名 */
@@ -410,13 +420,21 @@ async function applyGitDecorations(tab) {
   } catch { /* 忽略（非 git 目录等） */ }
 }
 
+/* 释放单个 tab 的全部资源（saveTimer + git decoration + model） */
+function disposeTab(tab) {
+  if (!tab) return;
+  if (tab.__saveTimer) { clearTimeout(tab.__saveTimer); tab.__saveTimer = null; }
+  if (tab.gitDecos && tab.gitDecos.clear) { try { tab.gitDecos.clear(); } catch { /* ignore */ } tab.gitDecos = null; }
+  if (tab.model) { try { tab.model.dispose(); } catch { /* ignore */ } tab.model = null; }
+}
+
 function closeTab(path, ev) {
   if (ev) ev.stopPropagation();
   const idx = EditorState.tabs.findIndex((t) => t.path === path);
   if (idx < 0) return;
   const tab = EditorState.tabs[idx];
   if (tab.dirty && !confirm('「' + tab.name + '」有未保存的更改，确定关闭吗？')) return;
-  tab.model.dispose();
+  disposeTab(tab);
   EditorState.tabs.splice(idx, 1);
   if (EditorState.activePath === path) {
     const next = EditorState.tabs[idx - 1] || EditorState.tabs[idx] || null;
@@ -433,7 +451,7 @@ function closeOthers(path) {
   if (!keep) return;
   const dirtyOthers = EditorState.tabs.filter((t) => t !== keep && t.dirty);
   if (dirtyOthers.length && !confirm('有 ' + dirtyOthers.length + ' 个标签存在未保存更改，确定关闭吗？')) return;
-  EditorState.tabs.forEach((t) => { if (t !== keep) t.model.dispose(); });
+  EditorState.tabs.forEach((t) => { if (t !== keep) disposeTab(t); });
   EditorState.tabs = [keep];
   EditorState.activePath = path;
   const ed = getEditor();
@@ -444,7 +462,7 @@ function closeOthers(path) {
 function closeAllTabs() {
   const dirtyCount = EditorState.tabs.filter((t) => t.dirty).length;
   if (dirtyCount && !confirm('有 ' + dirtyCount + ' 个标签存在未保存更改，确定全部关闭吗？')) return;
-  EditorState.tabs.forEach((t) => t.model.dispose());
+  EditorState.tabs.forEach((t) => disposeTab(t));
   EditorState.tabs = [];
   EditorState.activePath = null;
   const ed = getEditor();
@@ -535,6 +553,14 @@ async function openFolder() {
 function setWorkdir(dir) {
   EditorState.currentFolder = dir;
   EditorState.treeOpenDirs = new Set();
+  // 切换文件夹：释放旧目录所有已打开标签的 model，避免内存常驻
+  EditorState.tabs.forEach((t) => disposeTab(t));
+  EditorState.tabs = [];
+  EditorState.activePath = null;
+  const ed = getEditor();
+  if (ed) ed.setModel(null);
+  document.getElementById('editor-empty').classList.remove('hidden');
+  renderTabs();
   document.getElementById('workdir-label').textContent = dir;
   document.getElementById('status-right').textContent = '工作目录: ' + dir;
   renderTree();

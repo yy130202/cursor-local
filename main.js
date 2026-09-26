@@ -279,16 +279,14 @@ async function takeScreenshots() {
       });
     })()`);
     console.log('[debug ide]', ide);
-    // 当前行高亮验证（此前因 Monaco rgba 解析 bug 变纯红，已改 #RRGGBBAA）
+    // 当前行高亮验证：直接查主题值（不依赖 DOM 渲染时机，更稳定）
     const red = await win.webContents.executeJavaScript(`(async () => {
       const ed = EditorState.editor;
-      ed.setPosition({ lineNumber: 1, column: 1 });
-      ed.focus();
-      await new Promise((r) => setTimeout(r, 200));
-      const cl = document.querySelector('.view-overlays .current-line');
-      const bg = cl ? getComputedStyle(cl).backgroundColor : 'not-found';
-      const ok = bg.startsWith('rgba(59, 130, 246') || bg === 'rgba(0, 0, 0, 0)';
-      return JSON.stringify({ currentLineBg: bg, ok });
+      const th = ed._themeService && ed._themeService.getColorTheme();
+      const c = th ? th.getColor('editor.lineHighlightBackground') : null;
+      const lineBg = c ? c.toString() : 'none';
+      const ok = lineBg.startsWith('rgba(59, 130, 246') || lineBg === 'rgba(59, 130, 246, 0.05)';
+      return JSON.stringify({ hasModel: !!ed.getModel(), lineHighlight: lineBg, ok });
     })()`);
     console.log('[debug redline]', red);
   } catch (err) {
@@ -316,6 +314,8 @@ function runAgentTest() {
   runAgent(agent).then(async () => {
     try {
       console.log('[test-agent] status =', agent.status);
+      console.log('[test-agent] 子进程已清理 =', agent.children.size === 0 ? 'OK(应为 true)' : 'FAIL(' + agent.children.size + ')');
+      console.log('[test-agent] 日志截断 =', agent.log.length <= 200 ? 'OK(' + agent.log.length + ')' : 'FAIL(' + agent.log.length + ')');
       console.log('[test-agent] file written =', fs.existsSync(testFile));
       if (fs.existsSync(testFile)) console.log('[test-agent] file content =', JSON.stringify(fs.readFileSync(testFile, 'utf8')));
       agent.log.filter((l) => l.kind === 'tool_result').forEach((l) =>

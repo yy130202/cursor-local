@@ -24,9 +24,11 @@ function registerFs(ipcMain, { winRef, addLog, loadConfig, saveConfig }) {
     const stat = await fsp.stat(filePath);
     const buf = await fsp.readFile(filePath);
     let content = buf.toString('utf8');
-    const truncated = content.length > 800000;
-    if (truncated) content = content.slice(0, 800000);
-    return { content, truncated };
+    // 兜底上限 50MB（防读到超大文件撑爆内存）；实际降级由渲染进程按阈值判断
+    const LIMIT = 50 * 1024 * 1024;
+    const truncated = content.length > LIMIT;
+    if (truncated) content = content.slice(0, LIMIT);
+    return { content, truncated, size: stat.size };
   });
 
   ipcMain.handle('fs:writeFile', async (_e, filePath, content) => {

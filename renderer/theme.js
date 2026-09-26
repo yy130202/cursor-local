@@ -174,10 +174,16 @@ function bindThemeUI() {
     document.getElementById('theme-panel').classList.toggle('hidden');
     document.getElementById('user-menu').classList.add('hidden');
   };
-  // 自定义取色器（popover + 主页 + 设置页）
+  // 自定义取色器（popover + 主页 + 设置页），防抖避免拖动时高频 defineTheme
   const bindColor = (id) => {
     const input = document.getElementById(id);
-    if (input) input.oninput = (e) => setTheme('custom', e.target.value);
+    if (input) {
+      let t;
+      input.oninput = (e) => {
+        clearTimeout(t);
+        t = setTimeout(() => setTheme('custom', e.target.value), 120);
+      };
+    }
   };
   bindColor('theme-custom-color');
   bindColor('home-theme-color');
