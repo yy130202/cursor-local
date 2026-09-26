@@ -66,6 +66,7 @@ window.api.onAgentEvent((ev) => {
     case 'meta':
       a.task = ev.task; a.cwd = ev.cwd; a.ts = ev.ts || Date.now();
       a.entries.push({ kind: 'user', text: ev.task });
+      if (typeof window.updateIsland === 'function') window.updateIsland('running', 'Agent 运行中 · ' + (ev.task || '').slice(0, 24));
       break;
     case 'user_msg':
       closeStreaming(a);
@@ -108,6 +109,11 @@ window.api.onAgentEvent((ev) => {
     case 'status':
       a.status = ev.status;
       if (ev.status !== 'running') closeStreaming(a);
+      if (typeof window.updateIsland === 'function') {
+        if (ev.status === 'done') window.updateIsland('done', 'Agent 任务完成');
+        else if (ev.status === 'error') window.updateIsland('error', 'Agent 执行出错');
+        else if (ev.status === 'stopped') window.updateIsland('idle');
+      }
       break;
   }
   renderAgentList();

@@ -209,6 +209,20 @@ async function takeScreenshots() {
     })()`);
     console.log('[debug palette2]', cp);
     await win.webContents.executeJavaScript('document.querySelector(".cmd-palette") && document.querySelector(".cmd-palette").classList.add("hidden")');
+    // 灵动岛 + 网格背景验证
+    const island = await win.webContents.executeJavaScript(`(async () => {
+      window.updateIsland('running', 'Agent 运行中 · 测试');
+      await new Promise((r) => setTimeout(r, 200));
+      const el = document.querySelector('.island');
+      const grid = getComputedStyle(document.body, '::before').backgroundImage;
+      return JSON.stringify({
+        islandVisible: el && !el.classList.contains('hidden'),
+        islandClass: el ? el.className : 'none',
+        gridApplied: grid.includes('linear-gradient')
+      });
+    })()`);
+    console.log('[debug island]', island);
+    await win.webContents.executeJavaScript('window.updateIsland("idle")');
     // 终端面板截图
     await win.webContents.executeJavaScript('window.openTerminal()');
     await sleep(600);
