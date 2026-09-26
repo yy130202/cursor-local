@@ -1,9 +1,10 @@
 // Cursor Local - 主进程（模块化：窗口/截图/测试 + 组装各功能模块）
 // 复刻 Cursor 核心体验的本地 AI 编程工具
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, protocol, net } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const fsp = fs.promises;
+const { pathToFileURL } = require('url');
 const { LocalUserStore } = require('./store/user-store');
 const billing = require('./store/billing');
 
@@ -252,6 +253,32 @@ async function takeScreenshots() {
     await sleep(500);
     await captureTo(path.join(shotDir, '05-git.png'));
     await win.webContents.executeJavaScript('document.querySelector(".git-panel") && document.querySelector(".git-panel").classList.add("hidden")');
+    // IDE 体验验证（在 git 面板打开后）：ts worker / 文件树 git 标记 / gutter 标记 / monaco 协议
+    const ide = await win.webContents.executeJavaScript(`(async () => {
+      let monacoFetch = false;
+      try { const resp = await fetch('monaco://vs/base/worker/workerMain.js'); monacoFetch = resp.ok; } catch (e) { monacoFetch = false; }
+      let workerErr = '';
+      try {
+        const w = new Worker('monaco://vs/base/worker/workerMain.js');
+        workerErr = await new Promise((resolve) => {
+          w.onerror = (e) => resolve('onerror: ' + (e.message || 'unknown') + ' @' + (e.filename || ''));
+          w.onmessage = () => resolve('ok: got message');
+          setTimeout(() => resolve('no-error-no-message (1.5s)'), 1500);
+        });
+        w.terminate();
+      } catch (e) { workerErr = 'throw: ' + String(e.message || e); }
+      let tswErr = '';
+      try { await monaco.languages.typescript.getJavaScriptWorker(); tswErr = 'resolved'; }
+      catch (e) { tswErr = String(e && e.message || e); }
+      const map = window.__gitStatusMap;
+      return JSON.stringify({
+        monacoFetch, workerErr, tswErr,
+        gitMapSize: map ? map.size : 0,
+        treeGitMarks: document.querySelectorAll('.tree-git').length,
+        gutterMarks: document.querySelectorAll('.git-gutter-change').length
+      });
+    })()`);
+    console.log('[debug ide]', ide);
   } catch (err) {
     console.error('[shot] FAILED:', err);
   }
@@ -374,7 +401,25 @@ async function runDiag() {
   app.quit();
 }
 
-app.whenReady().then(createWindow);
+// monaco:// 协议：让 worker 以同源方式加载 Monaco 语言服务（file:// 的 opaque origin 会禁 importScripts）
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'monaco', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true } }
+]);
+
+app.whenReady().then(() => {
+  protocol.handle('monaco', (request) => {
+    try {
+      const u = new URL(request.url);
+      const rel = decodeURIComponent(u.pathname).replace(/^\/+/, '');
+      const safe = path.normalize(rel).replace(/^(\.\.[\/\\])+/, '');
+      const filePath = path.join(__dirname, 'node_modules', 'monaco-editor', 'min', 'vs', safe);
+      return net.fetch(pathToFileURL(filePath).toString());
+    } catch {
+      return new Response('not found', { status: 404 });
+    }
+  });
+  createWindow();
+});
 app.on('window-all-closed', () => app.quit());
 app.on('before-quit', () => {
   for (const a of agents.values()) killChildren(a);

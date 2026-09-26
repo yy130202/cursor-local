@@ -2,12 +2,13 @@
 
 /* ---- Monaco 初始化 ---- */
 const MONACO_BASE = new URL('../node_modules/monaco-editor/min/vs/', location.href).href;
+const MONACO_SCHEME = 'monaco://vs/'; // 主进程 protocol.handle 服务 Monaco 文件（worker 同源加载）
 window.MonacoEnvironment = {
-  // 在 file:// 下无法加载后台 worker，返回空 worker 让 Monaco 回退到主线程语法高亮
-  getWorker: function () {
-    return new Worker(URL.createObjectURL(new Blob(
-      ['self.onmessage = function(){};'], { type: 'text/javascript' }
-    )));
+  baseUrl: MONACO_SCHEME,
+  // worker 直接以 monaco:// 协议创建（CSP 已放行 monaco:），worker origin = monaco://vs/
+  // 语言服务 = IDEA/VS Code 式智能补全：符号图标 + 签名提示 + 诊断
+  getWorkerUrl: function () {
+    return MONACO_SCHEME + 'base/worker/workerMain.js';
   }
 };
 
@@ -69,12 +70,15 @@ async function renderDir(dirPath, container, depth, seq) {
     row.className = 'tree-item';
     if (ent.path === EditorState.activePath) row.classList.add('active');
     row.style.paddingLeft = 10 + depth * 16 + 'px';
+    // git 状态标记（VS Code 风：M蓝 / A/U 绿 / D 红，目录含变更显示圆点）
+    const g = gitMarkOf(ent.path, ent.isDir);
+    const gSuffix = g ? '<span class="tree-git">' + g.ch + '</span>' : '';
     if (ent.isDir) {
       const open = EditorState.treeOpenDirs.has(ent.path);
       row.innerHTML =
         '<span class="twist">' + (open ? '▾' : '▸') + '</span>' +
         '<span class="icon icon-dir">' + (window.lucideIcon ? window.lucideIcon(open ? 'folder-open' : 'folder') : '') + '</span>' +
-        '<span class="name">' + escapeHtml(ent.name) + '</span>';
+        '<span class="name' + (g ? ' git-name-' + g.cls : '') + '">' + escapeHtml(ent.name) + '</span>' + gSuffix;
       row.onclick = () => {
         if (EditorState.treeOpenDirs.has(ent.path)) EditorState.treeOpenDirs.delete(ent.path);
         else EditorState.treeOpenDirs.add(ent.path);
@@ -92,12 +96,36 @@ async function renderDir(dirPath, container, depth, seq) {
       row.innerHTML =
         '<span class="twist"></span>' +
         '<span class="icon icon-file ' + ext + '">' + (window.lucideIcon ? window.lucideIcon(fileIconName(ext)) : '') + '</span>' +
-        '<span class="name">' + escapeHtml(ent.name) + '</span>';
+        '<span class="name' + (g ? ' git-name-' + g.cls : '') + '">' + escapeHtml(ent.name) + '</span>' + gSuffix;
       row.onclick = () => openFile(ent.path);
       row.oncontextmenu = (ev) => { ev.preventDefault(); ev.stopPropagation(); showFileTreeMenu(ev.clientX, ev.clientY, ent, dirPath); };
       container.appendChild(row);
     }
   }
+}
+
+/* git 状态缓存（由 git 面板刷新时更新）→ 文件树标记 */
+function relTreePath(absPath) {
+  const cwd = EditorState.currentFolder;
+  if (!cwd || !absPath.startsWith(cwd)) return absPath.replace(/\\/g, '/');
+  return absPath.slice(cwd.length + 1).replace(/\\/g, '/');
+}
+function gitMarkOf(absPath, isDir) {
+  const map = window.__gitStatusMap;
+  if (!map || !map.size) return null;
+  const rel = relTreePath(absPath);
+  if (isDir) {
+    // 目录：任一子文件有变更 → 标记 modified 样式圆点
+    for (const key of map.keys()) {
+      if (key === rel || key.startsWith(rel + '/')) return { ch: '●', cls: 'm' };
+    }
+    return null;
+  }
+  const hit = map.get(rel);
+  if (!hit) return null;
+  const table = { added: ['A', 'a'], modified: ['M', 'm'], deleted: ['D', 'd'], untracked: ['U', 'u'], renamed: ['R', 'm'], conflict: ['!', 'd'] };
+  const [ch, cls] = table[hit.status] || ['M', 'm'];
+  return { ch, cls };
 }
 
 /* ---- 文件树右键菜单 + 内联新建/重命名 ---- */
@@ -315,6 +343,24 @@ async function openFile(filePath) {
   document.getElementById('editor-empty').classList.add('hidden');
   renderTabs();
   renderTree();
+  applyGitDecorations(tab); // gutter 变更行标记（异步）
+}
+
+/* 编辑器 gutter：git 变更行标记（绿条） */
+async function applyGitDecorations(tab) {
+  try {
+    const cwd = EditorState.currentFolder;
+    if (!cwd || !tab || !window.api.gitChangedLines) return;
+    const rel = relTreePath(tab.path);
+    const r = await window.api.gitChangedLines(cwd, rel);
+    if (!r.ok || !r.lines.length) return;
+    const decos = r.lines.map((l) => ({
+      range: new monaco.Range(l, 1, l, 1),
+      options: { isWholeLine: true, linesDecorationsClassName: 'git-gutter-change' }
+    }));
+    if (tab.gitDecos && tab.gitDecos.clear) tab.gitDecos.clear();
+    tab.gitDecos = EditorState.editor.createDecorationsCollection(decos);
+  } catch { /* 忽略（非 git 目录等） */ }
 }
 
 function closeTab(path, ev) {

@@ -55,6 +55,10 @@
     if (!r.ok) { document.getElementById('git-list').innerHTML = '<div class="git-empty">' + escapeHtml(r.error || '不是 git 仓库') + '</div>'; return; }
     statusCache = r;
     document.getElementById('git-branch').textContent = r.branch || '-';
+    // 同步 git 状态缓存 → 文件树着色
+    window.__gitStatusMap = new Map();
+    [...r.staged, ...r.unstaged].forEach((f) => window.__gitStatusMap.set(f.file, { status: f.status, staged: f.staged }));
+    if (typeof renderTree === 'function') renderTree();
     // 默认勾选所有变更
     selected.clear();
     [...r.staged, ...r.unstaged].forEach((f) => selected.add(f.file));

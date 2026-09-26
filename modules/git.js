@@ -69,6 +69,25 @@ function createGitModule({ winRef, addLog }) {
     return { old: oldText, new: newText };
   }
 
+  /* 文件变更行号（新侧）：解析 git diff -U0，供编辑器 gutter 标记 */
+  async function gitChangedLines(cwd, file) {
+    const r = await runGit(cwd, ['diff', '-U0', '--', file]);
+    if (r.code !== 0) return { ok: false, lines: [] };
+    const lines = [];
+    let cur = 0;
+    for (const line of r.stdout.split('\n')) {
+      if (line.startsWith('@@')) {
+        const m = line.match(/\+(\d+)/);
+        cur = m ? parseInt(m[1], 10) : 0;
+        continue;
+      }
+      if (line.startsWith('+')) { lines.push(cur); cur++; }
+      else if (line.startsWith(' ')) { cur++; }
+      // - 开头（旧侧行）与空行/元信息忽略
+    }
+    return { ok: true, lines };
+  }
+
   /* 选择性提交：只提交指定文件列表 */
   async function gitCommitFiles(cwd, files, message) {
     const list = (files || []).filter(Boolean);
@@ -117,6 +136,7 @@ function createGitModule({ winRef, addLog }) {
     ipcMain.handle('git:status', (_e, cwd) => gitStatus(cwd));
     ipcMain.handle('git:diff', (_e, { cwd, file, staged }) => gitDiff(cwd, file, staged));
     ipcMain.handle('git:sideBySide', (_e, { cwd, file, staged }) => gitSideBySide(cwd, file, staged));
+    ipcMain.handle('git:changedLines', (_e, { cwd, file }) => gitChangedLines(cwd, file));
     ipcMain.handle('git:stage', (_e, { cwd, file }) => gitStage(cwd, file));
     ipcMain.handle('git:unstage', (_e, { cwd, file }) => gitUnstage(cwd, file));
     ipcMain.handle('git:commit', (_e, { cwd, message }) => gitCommit(cwd, message));
