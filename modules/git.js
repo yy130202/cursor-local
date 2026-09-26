@@ -52,7 +52,7 @@ function createGitModule({ winRef, addLog }) {
     return r.stdout || '[无差异]';
   }
 
-  /* 并排 diff：返回 old / new 两端文本（IDEA 式 side-by-side） */
+  /* 并排 diff：返回 old / new 两端文本（IDEA 式 side-by-side），统一行尾防异常行终止符标记 */
   async function gitSideBySide(cwd, file, staged) {
     let oldText = '', newText = '';
     // old = HEAD 版本（未跟踪/新文件则为空）
@@ -66,7 +66,8 @@ function createGitModule({ winRef, addLog }) {
       // 未暂存/未跟踪：new = 工作区文件内容
       try { newText = fs.readFileSync(path.join(cwd, file), 'utf8'); } catch { newText = ''; }
     }
-    return { old: oldText, new: newText };
+    const norm = (s) => String(s).replace(/\r\n?/g, '\n');
+    return { old: norm(oldText), new: norm(newText) };
   }
 
   /* 文件变更行号（新侧）：解析 git diff -U0，供编辑器 gutter 标记 */

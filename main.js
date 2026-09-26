@@ -279,6 +279,18 @@ async function takeScreenshots() {
       });
     })()`);
     console.log('[debug ide]', ide);
+    // 当前行高亮验证（此前因 Monaco rgba 解析 bug 变纯红，已改 #RRGGBBAA）
+    const red = await win.webContents.executeJavaScript(`(async () => {
+      const ed = EditorState.editor;
+      ed.setPosition({ lineNumber: 1, column: 1 });
+      ed.focus();
+      await new Promise((r) => setTimeout(r, 200));
+      const cl = document.querySelector('.view-overlays .current-line');
+      const bg = cl ? getComputedStyle(cl).backgroundColor : 'not-found';
+      const ok = bg.startsWith('rgba(59, 130, 246') || bg === 'rgba(0, 0, 0, 0)';
+      return JSON.stringify({ currentLineBg: bg, ok });
+    })()`);
+    console.log('[debug redline]', red);
   } catch (err) {
     console.error('[shot] FAILED:', err);
   }

@@ -34,6 +34,13 @@ function rgba(hex, a) {
   return `rgba(${r}, ${g}, ${b}, ${a})`;
 }
 
+/* Monaco defineTheme 专用：rgba() 字符串在该版本解析异常（会变纯红），必须用 #RRGGBBAA */
+function hexa(hex, a) {
+  const { r, g, b } = hexToRgb(hex);
+  const aa = Math.round(Math.max(0, Math.min(1, a)) * 255).toString(16).padStart(2, '0');
+  return '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('') + aa;
+}
+
 function luminance(hex) {
   const { r, g, b } = hexToRgb(hex);
   return 0.299 * r + 0.587 * g + 0.114 * b;
@@ -89,16 +96,18 @@ function updateMonacoTheme(accentHex) {
       'editor.background': dark ? '#1e1e1e' : '#ffffff',
       'editor.foreground': dark ? '#d4d4d4' : '#1f1f1f',
       'editorCursor.foreground': accentHex,
-      'editor.lineHighlightBackground': rgba(accentHex, dark ? 0.05 : 0.07),
+      // 兜底：异常行终止符标记整行鲜红，强制透明（unusualLineTerminator:'off' 之外的第二道保险）
+      'editorUnusualLineTerminators': '#00000000',
+      'editor.lineHighlightBackground': hexa(accentHex, dark ? 0.05 : 0.07),
       // 选区用中性蓝灰（不跟随主题色，避免红色主题下选区像错误标记）
       'editor.selectionBackground': dark ? '#264f78' : '#b3d4fc',
       'editor.selectionHighlightBackground': dark ? '#1f3d5c' : '#d0e5ff',
-      'editor.wordHighlightBackground': rgba(accentHex, 0.10),
-      'editor.findMatchBackground': rgba(accentHex, 0.35),
-      'editor.findMatchHighlightBackground': rgba(accentHex, 0.18),
-      'editorSuggestWidget.selectedBackground': rgba(accentHex, 0.30),
+      'editor.wordHighlightBackground': hexa(accentHex, 0.10),
+      'editor.findMatchBackground': hexa(accentHex, 0.35),
+      'editor.findMatchHighlightBackground': hexa(accentHex, 0.18),
+      'editorSuggestWidget.selectedBackground': hexa(accentHex, 0.30),
       'editor.inlineSuggest.foreground': dark ? '#888888' : '#888888',
-      'editor.inlineSuggest.background': rgba(accentHex, 0.08)
+      'editor.inlineSuggest.background': hexa(accentHex, 0.08)
     }
   });
   if (typeof EditorState !== 'undefined' && EditorState.editor) {
