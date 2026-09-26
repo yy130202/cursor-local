@@ -725,7 +725,15 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
 }
 
 /* 特性 3 列卡片 */
-.feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+/* Bento 网格：大卡跨 2 行 + 右侧两小卡 */
+.feature-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  grid-auto-rows: 1fr;
+  gap: 16px;
+}
+.feature-card:first-child { grid-row: span 2; display: flex; flex-direction: column; }
+.feature-card:first-child > p { flex: 1; }
 .feature-card {
   background: var(--glass-strong);
   backdrop-filter: blur(14px) saturate(1.3);
@@ -737,6 +745,18 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
 .feature-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
 .feature-card h3 { font-size: 15px; font-weight: 700; color: var(--title); margin: 16px 0 8px; }
 .feature-card > p { font-size: 12px; color: var(--text-dim); line-height: 1.75; }
+/* bento 大卡内的 mini 代码预览 */
+.mini-preview {
+  margin: 14px 0; padding: 12px 14px;
+  background: var(--code-bg); border: 1px solid var(--glass-border); border-radius: 10px;
+  display: flex; flex-direction: column; gap: 7px;
+}
+.mp-line { height: 6px; border-radius: 3px; background: var(--hover); }
+.mp-line.w90 { width: 90%; }
+.mp-line.w70 { width: 70%; }
+.mp-line.w50 { width: 50%; }
+.mp-line.w40 { width: 40%; }
+.mp-line.accent { background: var(--accent-soft-2); }
 .learn-more {
   display: inline-flex; align-items: center; gap: 4px;
   font-size: 12px; font-weight: 600; color: var(--accent);
