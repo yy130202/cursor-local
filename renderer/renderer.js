@@ -392,3 +392,18 @@ async function refreshStats() {
   if (t) t.textContent = DAILY_TIPS[new Date().getDate() % DAILY_TIPS.length];
 }
 window.refreshStats = refreshStats;
+
+/* 自绘标题栏窗口控制 + 双击顶栏最大化 */
+(function bindWinControls() {
+  const min = document.getElementById('win-min');
+  const max = document.getElementById('win-max');
+  const close = document.getElementById('win-close');
+  if (min) min.onclick = () => window.api.minimizeWindow();
+  if (max) max.onclick = () => window.api.maximizeWindow();
+  if (close) close.onclick = () => window.api.closeWindow();
+  const topbar = document.getElementById('topbar');
+  if (topbar) topbar.ondblclick = (e) => {
+    if (e.target.closest('button, #user-area')) return;
+    window.api.maximizeWindow();
+  };
+})();

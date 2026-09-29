@@ -55,6 +55,22 @@ ipcMain.handle('window:toggleFullscreen', () => {
   if (w && !w.isDestroyed()) w.setFullScreen(!w.isFullScreen());
   return true;
 });
+// 窗口控制（自绘标题栏）
+ipcMain.handle('window:minimize', () => {
+  const w = BrowserWindow.getFocusedWindow() || (winRef ? winRef() : null);
+  if (w && !w.isDestroyed()) w.minimize();
+  return true;
+});
+ipcMain.handle('window:maximize', () => {
+  const w = BrowserWindow.getFocusedWindow() || (winRef ? winRef() : null);
+  if (w && !w.isDestroyed()) { if (w.isMaximized()) w.unmaximize(); else w.maximize(); }
+  return true;
+});
+ipcMain.handle('window:close', () => {
+  const w = BrowserWindow.getFocusedWindow() || (winRef ? winRef() : null);
+  if (w && !w.isDestroyed()) w.close();
+  return true;
+});
 
 /* ---------------- 截图验证（SHOT_MODE） ---------------- */
 function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
@@ -376,8 +392,9 @@ function createWindow() {
     height: 900,
     minWidth: 960,
     minHeight: 600,
-    backgroundColor: '#1e1e1e80', // 半透明深色 tint（暗色毛玻璃，透出桌面壁纸）
-    backgroundMaterial: 'acrylic', // 亚克力毛玻璃（Win10 1809+ 也生效，透出桌面壁纸+模糊；mica 仅 Win11）
+    frame: false, // 无边框（自绘标题栏 + 透明窗口，Win10 也透出桌面）
+    transparent: !process.env.SHOT_MODE, // 透明窗口透出桌面；截图模式非透明（transparent 窗口 Windows 截图会 0 字节）
+    backgroundColor: process.env.SHOT_MODE ? '#1e1e1e' : '#00000000',
     title: 'Cursor Local',
     webPreferences: {
       nodeIntegration: false,

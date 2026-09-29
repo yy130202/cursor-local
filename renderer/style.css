@@ -71,6 +71,20 @@
 
 html, body { height: 100%; overflow: hidden; }
 html { background: transparent; }
+
+/* ==================== 自绘标题栏（无边框窗口） ==================== */
+#topbar { -webkit-app-region: drag; } /* 整个顶栏可拖拽移动窗口 */
+#topbar button, #topbar #user-area, #topbar .mode-switch { -webkit-app-region: no-drag; }
+.win-controls { display: flex; align-items: center; margin-left: 6px; -webkit-app-region: no-drag; }
+.win-controls button {
+  width: 42px; height: 30px; display: grid; place-items: center;
+  background: transparent; border: none; color: var(--text-dim); cursor: pointer;
+  border-radius: 6px;
+}
+.win-controls button:hover { background: var(--hover-strong); color: var(--text); }
+.win-controls .win-close:hover { background: #e81123; color: #fff; }
+.win-controls svg.lucide { width: 14px; height: 14px; }
+
 body {
   font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
   font-size: 13px;
