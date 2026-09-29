@@ -110,6 +110,8 @@ async function openSettings() {
   if (asToggle) asToggle.classList.toggle('on', !!cfg.autoSave);
   const wwToggle = document.getElementById('cfg-word-wrap');
   if (wwToggle) wwToggle.classList.toggle('on', cfg.wordWrap === 'on');
+  const lsToggle = document.getElementById('cfg-lockscreen');
+  if (lsToggle) lsToggle.classList.toggle('on', cfg.lockscreen !== false);
   renderKeybinds();
   modal.classList.remove('hidden');
 }
@@ -230,6 +232,11 @@ if (wwBtn) wwBtn.onclick = () => {
   window.api.setConfig({ wordWrap: on ? 'on' : 'off' });
   if (typeof EditorState !== 'undefined' && EditorState.editor) EditorState.editor.updateOptions({ wordWrap: on ? 'on' : 'off' });
 };
+const lsBtn = document.getElementById('cfg-lockscreen');
+if (lsBtn) lsBtn.onclick = () => {
+  const on = lsBtn.classList.toggle('on');
+  window.api.setConfig({ lockscreen: on });
+};
 
 /* ---- 高级设置（JSON 编辑） ---- */
 const jsonSettingsBtn = document.getElementById('json-settings-btn');
@@ -330,5 +337,12 @@ function updateCwdChip() {
   window.__editorWordWrap = cfg.wordWrap || 'off';
   window.__autoSave = !!cfg.autoSave;
   window.__largeFileThreshold = cfg.largeFileThreshold || 1048576;
+  // 锁屏启动页（Windows 13 式）
+  window.__lockscreenEnabled = cfg.lockscreen !== false;
+  if (window.__lockscreenEnabled && typeof window.showLockscreen === 'function') {
+    window.showLockscreen();
+    const st = document.getElementById('ls-status');
+    if (st) st.textContent = cfg.apiKey ? ('模型 ' + (cfg.model || '-')) : '未配置 API Key';
+  }
   switchMode('home'); // 默认进主页
 })();

@@ -35,7 +35,8 @@ function loadConfig() {
     tabSize: 2,
     autoSave: false,
     wordWrap: 'off',
-    largeFileThreshold: 1048576
+    largeFileThreshold: 1048576,
+    lockscreen: true
   };
   try {
     const raw = JSON.parse(fs.readFileSync(configPath(), 'utf8'));

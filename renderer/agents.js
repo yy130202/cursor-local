@@ -56,6 +56,44 @@ function closeStreaming(a) {
   a.__streamNode = null;
 }
 
+/* ---- 运行时长表盘（UI 灵感风：SVG 圆环） ---- */
+let dialTimer = null, dialAgentId = null;
+function startDial(a) {
+  const dial = document.getElementById('agent-run-dial');
+  if (!dial) return;
+  if (dialAgentId !== a.id && dialTimer) { clearInterval(dialTimer); dialTimer = null; }
+  dial.style.display = '';
+  dial.classList.remove('done');
+  if (!a.__startTs) a.__startTs = a.ts || Date.now();
+  if (dialTimer) return;
+  dialAgentId = a.id;
+  const ring = document.getElementById('agent-run-ring');
+  const txt = document.getElementById('agent-run-time');
+  const C = 2 * Math.PI * 15.5;
+  if (ring) ring.style.strokeDasharray = C;
+  const update = () => {
+    const sec = Math.max(0, Math.floor((Date.now() - a.__startTs) / 1000));
+    if (txt) txt.textContent = sec < 60 ? sec + 's' : Math.floor(sec / 60) + 'm' + String(sec % 60).padStart(2, '0');
+    if (ring) ring.style.strokeDashoffset = C * (1 - (sec % 60) / 60); // 60s 一圈循环
+  };
+  update();
+  dialTimer = setInterval(update, 1000);
+}
+function stopDial(success) {
+  if (dialTimer) { clearInterval(dialTimer); dialTimer = null; }
+  const dial = document.getElementById('agent-run-dial');
+  if (!dial) return;
+  if (success) {
+    dial.classList.add('done');
+    const ring = document.getElementById('agent-run-ring');
+    if (ring) ring.style.strokeDashoffset = 0;
+    const txt = document.getElementById('agent-run-time');
+    if (txt) txt.textContent = '✓';
+  } else {
+    dial.style.display = 'none';
+  }
+}
+
 /* ---- Agent 事件流 ---- */
 window.api.onAgentEvent((ev) => {
   let a = agentsState.agents.get(ev.id);
@@ -259,6 +297,8 @@ function renderTranscript() {
   document.getElementById('agent-head-dot').className = 'dot ' + a.status;
   const badge = document.getElementById('agent-head-status');
   badge.textContent = statusLabel(a.status);
+  // 运行时长表盘
+  if (a.status === 'running') startDial(a); else stopDial(a.status === 'done');
   document.getElementById('agent-stop-btn').style.display =
     (a.status === 'running' && !a.readonly) ? '' : 'none';
 

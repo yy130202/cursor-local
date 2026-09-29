@@ -41,6 +41,36 @@ function hexa(hex, a) {
   return '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('') + aa;
 }
 
+/* 色相旋转（多彩渐变用）：hex → HSL 旋转 → hex */
+function rotateHue(hex, deg) {
+  let { r, g, b } = hexToRgb(hex);
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  const d = max - min;
+  const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+  let h = 0;
+  if (d !== 0) {
+    if (max === r) h = ((g - b) / d) % 6;
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h *= 60; if (h < 0) h += 360;
+  }
+  h = (h + deg + 360) % 360;
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = l - c / 2;
+  let rr = 0, gg = 0, bb = 0;
+  if (h < 60) { rr = c; gg = x; }
+  else if (h < 120) { rr = x; gg = c; }
+  else if (h < 180) { gg = c; bb = x; }
+  else if (h < 240) { gg = x; bb = c; }
+  else if (h < 300) { rr = x; bb = c; }
+  else { rr = c; bb = x; }
+  const to = (v) => Math.round(Math.max(0, Math.min(1, v + m)) * 255).toString(16).padStart(2, '0');
+  return '#' + to(rr) + to(gg) + to(bb);
+}
+
 function luminance(hex) {
   const { r, g, b } = hexToRgb(hex);
   return 0.299 * r + 0.587 * g + 0.114 * b;
@@ -75,6 +105,9 @@ function applyTheme(accentHex) {
   root.style.setProperty('--orb-1', rgba(accentHex, 0.55));
   root.style.setProperty('--orb-2', rgba(mix(accentHex, 'white', 0.3), 0.4));
   root.style.setProperty('--orb-3', rgba(mix(accentHex, 'black', 0.3), 0.55));
+  // 多彩漂移色（hero 渐变 / 3D 球 / 锁屏）
+  root.style.setProperty('--accent-2', rotateHue(accentHex, 38));
+  root.style.setProperty('--accent-3', rotateHue(accentHex, -46));
   updateMonacoTheme(accentHex);
 }
 

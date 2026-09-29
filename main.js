@@ -91,6 +91,17 @@ async function takeScreenshots() {
       });
     })()`);
     console.log('[debug home]', homeDbg);
+    // 锁屏断言：boot 后应显示锁屏页，点击后退场
+    const ls = await win.webContents.executeJavaScript(`(async () => {
+      const el = document.getElementById('lockscreen');
+      const before = el ? !el.classList.contains('leaving') : false;
+      const clock = document.getElementById('ls-clock');
+      if (el) el.click();
+      await new Promise((r) => setTimeout(r, 800));
+      const after = !!document.getElementById('lockscreen');
+      return JSON.stringify({ shown: before, clockText: clock ? clock.textContent : 'none', removed: !after });
+    })()`);
+    console.log('[debug lockscreen]', ls);
     await captureTo(path.join(shotDir, '01-home.png'));
 
     // 2. Editor

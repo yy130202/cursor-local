@@ -42,6 +42,9 @@
 
         <!-- 渐变 Hero 大卡片：左文右 UI 假窗 -->
         <div class="hero-banner">
+          <div class="hero-orb3d o1" aria-hidden="true"></div>
+          <div class="hero-orb3d o2" aria-hidden="true"></div>
+          <div class="hero-orb3d o3" aria-hidden="true"></div>
           <div class="hero-left">
             <div class="icon-tile on-accent"><i data-lucide="terminal"></i></div>
             <h1>你 7×24 小时的<br>编码伙伴</h1>
@@ -161,6 +164,11 @@
       </div>
       <div id="agents-main">
         <div id="agents-main-head" class="hidden">
+          <svg class="run-dial" id="agent-run-dial" viewBox="0 0 36 36" width="30" height="30" style="display:none">
+            <circle class="rd-bg" cx="18" cy="18" r="15.5" fill="none"></circle>
+            <circle class="rd-ring" id="agent-run-ring" cx="18" cy="18" r="15.5" fill="none" transform="rotate(-90 18 18)"></circle>
+            <text class="rd-text" id="agent-run-time" x="18" y="22" text-anchor="middle">0s</text>
+          </svg>
           <span id="agent-head-dot" class="dot"></span>
           <span class="task-text" id="agent-head-task"></span>
           <span class="badge" id="agent-head-status"></span>
@@ -299,6 +307,10 @@
               <div class="srow-main"><div class="srow-label">自动换行</div><div class="srow-desc">长行自动折行显示</div></div>
               <button class="toggle" id="cfg-word-wrap"><span class="knob"></span></button>
             </div>
+            <div class="srow">
+              <div class="srow-main"><div class="srow-label">启动锁屏</div><div class="srow-desc">启动时显示时钟锁屏页</div></div>
+              <button class="toggle" id="cfg-lockscreen"><span class="knob"></span></button>
+            </div>
           </div>
           <div class="sgroup">
             <div class="srow-label" style="padding: 13px 0 6px;">快捷键</div>
@@ -388,6 +400,7 @@
   </script>
   <script src="terminal.js"></script>
   <script src="island.js"></script>
+  <script src="lockscreen.js"></script>
   <script src="renderer.js"></script>
 </body>
 </html>
