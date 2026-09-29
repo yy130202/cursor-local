@@ -46,7 +46,7 @@
     term = new window.Terminal({
       cursorBlink: true,
       fontSize: 13,
-      fontFamily: 'Consolas, "Courier New", monospace',
+      fontFamily: 'Consolas, "Microsoft YaHei", "Courier New", monospace',
       theme: {
         background: dark ? '#1e1e1e' : '#ffffff',
         foreground: dark ? '#cccccc' : '#333333',
@@ -60,7 +60,40 @@
     try { fitAddon.fit(); } catch { /* ignore */ }
     const cwd = resolveCwd();
     document.getElementById('term-cwd').textContent = cwd || '当前目录';
-    term.onData((data) => { if (termId) window.api.terminalInput(termId, data); });
+    // 行缓冲回显：管道模式 cmd 无控制台回显，由前端模拟（打字可见、退格、回车执行）
+    let inputBuf = '';
+    const handleKey = (c) => {
+      if (c === '\r') {
+        term.write('\r\n');
+        window.api.terminalInput(termId, inputBuf + '\r\n');
+        inputBuf = '';
+        return;
+      }
+      if (c === '\x7f' || c === '\b') {
+        const arr = Array.from(inputBuf);
+        if (!arr.length) return;
+        const removed = arr.pop();
+        inputBuf = arr.join('');
+        term.write('\b \b');
+        if (removed.charCodeAt(0) > 0x2e80) term.write('\b'); // 全角字符占两列
+        return;
+      }
+      if (c === '\x03') { // Ctrl+C
+        term.write('^C\r\n');
+        window.api.terminalInput(termId, '\r\n');
+        inputBuf = '';
+        return;
+      }
+      if (c < ' ') return; // 其余控制字符忽略
+      inputBuf += c;
+      term.write(c); // 回显
+    };
+    term.onData((data) => {
+      if (!termId) return;
+      if (data.startsWith('\x1b')) return; // 方向键等转义序列忽略
+      for (const c of data) handleKey(c);
+    });
+    container.addEventListener('click', () => { if (term) term.focus(); });
     termId = await window.api.terminalCreate(cwd);
     term.write('\x1b[1;36mCursor Local 终端\x1b[0m（输入命令回车执行，exit 退出）\r\n');
     term.focus();
