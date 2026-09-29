@@ -465,6 +465,8 @@ function openHistory(s) {
 async function loadHistory() {
   agentsState.history = await window.api.listSessions();
   renderHistory();
+  const el = document.getElementById('stat-sessions');
+  if (el) el.textContent = String(agentsState.history.length);
 }
 
 /* ---- 截图演示 ---- */

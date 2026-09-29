@@ -69,6 +69,20 @@
           </div>
         </div>
 
+        <!-- 快捷操作卡片 -->
+        <div class="section-block">
+          <div class="section-head">
+            <div class="icon-tile"><i data-lucide="zap"></i></div>
+            <div><h2>快捷操作</h2><p>常用功能，一键直达</p></div>
+          </div>
+          <div class="quick-grid">
+            <div class="quick-card" id="qc-file"><div class="qc-icon"><i data-lucide="file-plus-2"></i></div><div class="qc-body"><div class="qc-title">新建文件</div><div class="qc-hint">Ctrl+N</div></div></div>
+            <div class="quick-card" id="qc-folder"><div class="qc-icon"><i data-lucide="folder-open"></i></div><div class="qc-body"><div class="qc-title">打开文件夹</div><div class="qc-hint">Ctrl+O</div></div></div>
+            <div class="quick-card" id="qc-terminal"><div class="qc-icon"><i data-lucide="square-terminal"></i></div><div class="qc-body"><div class="qc-title">新开终端</div><div class="qc-hint">Ctrl+`</div></div></div>
+            <div class="quick-card" id="qc-palette"><div class="qc-icon"><i data-lucide="command"></i></div><div class="qc-body"><div class="qc-title">命令面板</div><div class="qc-hint">Ctrl+P</div></div></div>
+          </div>
+        </div>
+
         <!-- 主题：12 套渐变色卡 -->
         <div class="section-block">
           <div class="section-head">
@@ -110,6 +124,16 @@
               <p>文件访问锁定在工作目录内，危险命令自动拦截，API Key 加密存储，数据完全留在本机。</p>
               <a class="learn-more" id="lm-editor"><span>打开编辑器</span><i data-lucide="chevron-right"></i></a>
             </div>
+          </div>
+        </div>
+
+        <!-- 统计概览：大数字 + 每日提示 -->
+        <div class="section-block">
+          <div class="stat-grid">
+            <div class="stat-card"><div class="stat-num" id="stat-files">—</div><div class="stat-label"><i data-lucide="files"></i>项目文件</div></div>
+            <div class="stat-card"><div class="stat-num" id="stat-sessions">—</div><div class="stat-label"><i data-lucide="history"></i>历史会话</div></div>
+            <div class="stat-card"><div class="stat-num stat-num-sm" id="stat-model">—</div><div class="stat-label"><i data-lucide="cpu"></i>当前模型</div></div>
+            <div class="stat-card stat-tip-card"><div class="stat-tip-emoji">💡</div><div class="stat-tip-text" id="stat-tip">按 Ctrl+P 打开命令面板</div></div>
           </div>
         </div>
 

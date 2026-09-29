@@ -345,6 +345,7 @@ function updateCwdChip() {
     if (st) st.textContent = cfg.apiKey ? ('模型 ' + (cfg.model || '-')) : '未配置 API Key';
   }
   switchMode('home'); // 默认进主页
+  if (typeof refreshStats === 'function') refreshStats();
 })();
 
 /* 输入聚焦环境光（Aura） */
@@ -355,3 +356,39 @@ function updateCwdChip() {
     el.addEventListener('blur', () => document.body.classList.remove('aura-input'));
   }
 })();
+
+/* 快捷操作卡片绑定 */
+(function bindQuickCards() {
+  const bind = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
+  bind('qc-folder', () => { if (typeof openFolder === 'function') openFolder(); });
+  bind('qc-terminal', () => { if (typeof window.openTerminal === 'function') window.openTerminal(); });
+  bind('qc-palette', () => { if (typeof window.openPalette === 'function') window.openPalette(); });
+  bind('qc-file', () => {
+    const cwd = (typeof EditorState !== 'undefined' && EditorState.currentFolder) || null;
+    if (!cwd) { if (typeof openFolder === 'function') openFolder(); return; }
+    if (typeof switchMode === 'function') switchMode('editor');
+    if (typeof window.startInlineCreate === 'function') window.startInlineCreate(cwd, false);
+  });
+})();
+
+/* 统计卡：模型 + 每日提示 */
+const DAILY_TIPS = [
+  '按 Ctrl+P 打开命令面板，快速执行任意功能',
+  '按 Ctrl+I 内联改写选中的代码',
+  'Agent 做的每一次改动都能一键回滚',
+  '按 F11 全屏，专注编码',
+  '光标停在代码上按 Ctrl+Alt+E，让 AI 解释它',
+  '按 Alt+\\ 手动触发 AI 补全',
+  '文件树顶部搜索框可快速定位文件',
+  '危险命令会被自动拦截，放心让 Agent 干活'
+];
+async function refreshStats() {
+  try {
+    const cfg = await window.api.getConfig();
+    const m = document.getElementById('stat-model');
+    if (m) m.textContent = cfg.model || '未配置';
+  } catch { /* ignore */ }
+  const t = document.getElementById('stat-tip');
+  if (t) t.textContent = DAILY_TIPS[new Date().getDate() % DAILY_TIPS.length];
+}
+window.refreshStats = refreshStats;

@@ -1574,3 +1574,57 @@ body.aura-done #aura {
     scroll-behavior: auto !important;
   }
 }
+
+/* ==================== 快捷操作卡片 ==================== */
+.quick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.quick-card {
+  display: flex; align-items: center; gap: 12px; padding: 16px;
+  background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--r-lg);
+  cursor: pointer;
+  transition: transform 0.2s var(--spring), box-shadow 0.2s var(--ease), border-color 0.2s var(--ease), background 0.2s var(--ease);
+}
+.quick-card:hover { transform: translateY(-4px); border-color: var(--accent-soft-2); box-shadow: var(--shadow-2); }
+.quick-card:active { transform: scale(0.97); }
+.qc-icon {
+  width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center;
+  background: var(--accent-soft); color: var(--accent); flex-shrink: 0;
+  transition: transform 0.2s var(--spring);
+}
+.quick-card:hover .qc-icon { transform: scale(1.14) rotate(-5deg); }
+.qc-icon svg.lucide { width: 20px; height: 20px; }
+.qc-body { min-width: 0; }
+.qc-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.qc-hint { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+/* ==================== 统计大数字卡 ==================== */
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.stat-card {
+  padding: 20px 18px; background: var(--glass); border: 1px solid var(--glass-border);
+  border-radius: var(--r-lg);
+  transition: transform 0.2s var(--spring), border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.stat-card:hover { transform: translateY(-3px); border-color: var(--accent-soft-2); box-shadow: var(--shadow-2); }
+.stat-num {
+  font-size: 40px; font-weight: 200; line-height: 1; color: var(--title);
+  font-variant-numeric: tabular-nums; letter-spacing: -1px;
+}
+.stat-num-sm { font-size: 22px; font-weight: 300; padding-top: 9px; line-height: 1.3; word-break: break-all; }
+.stat-label { margin-top: 10px; font-size: 12px; color: var(--text-dim); display: flex; align-items: center; gap: 6px; }
+.stat-label svg.lucide { width: 14px; height: 14px; }
+.stat-tip-card {
+  display: flex; align-items: center; gap: 12px;
+  background: linear-gradient(135deg, var(--accent-soft), transparent 70%);
+}
+.stat-tip-emoji { font-size: 26px; }
+.stat-tip-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+
+/* 卡片错落入场（灵动有趣） */
+.quick-card, .stat-card { animation: cardIn 0.5s var(--spring-out) both; }
+.quick-card:nth-child(2), .stat-card:nth-child(2) { animation-delay: 0.06s; }
+.quick-card:nth-child(3), .stat-card:nth-child(3) { animation-delay: 0.12s; }
+.quick-card:nth-child(4), .stat-card:nth-child(4) { animation-delay: 0.18s; }
+@keyframes cardIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 900px) {
+  .quick-grid, .stat-grid { grid-template-columns: repeat(2, 1fr); }
+}

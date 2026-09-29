@@ -571,9 +571,15 @@ function setWorkdir(dir) {
   document.getElementById('workdir-label').textContent = dir;
   document.getElementById('status-right').textContent = '工作目录: ' + dir;
   renderTree();
+  // 统计项目文件数（顶层条目）
+  window.api.readDir(dir).then((list) => {
+    const el = document.getElementById('stat-files');
+    if (el) el.textContent = list ? String(list.length) : '—';
+  });
 }
 
 window.openFolder = openFolder;
+window.startInlineCreate = startInlineCreate;
 
 /* 供截图脚本调用 */
 window.__debugState = function () {
