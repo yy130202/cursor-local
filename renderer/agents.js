@@ -311,22 +311,25 @@ function renderTranscript() {
   document.getElementById('agent-stop-btn').style.display =
     (a.status === 'running' && !a.readonly) ? '' : 'none';
 
-  for (const en of a.entries) {
+  for (let i = 0; i < a.entries.length; i++) {
+    const en = a.entries[i];
+    const isLast = i === a.entries.length - 1;
+    const inCls = isLast ? ' entry-in' : ''; // 仅最新消息播放入场动效，避免整树重播
     if (en.kind === 'user') {
       // Cursor 式用户气泡
       const d = document.createElement('div');
-      d.className = 'entry user-row';
+      d.className = 'entry user-row' + inCls;
       d.innerHTML = '<div class="user-bubble">' + escapeHtml(en.text) + '</div>';
       transcriptEl.appendChild(d);
     } else if (en.kind === 'agent-msg') {
       const d = document.createElement('div');
-      d.className = 'entry entry-text agent-msg' + (en.streaming ? ' streaming' : '');
+      d.className = 'entry entry-text agent-msg' + (en.streaming ? ' streaming' : '') + inCls;
       d.innerHTML = '<span class="who">Agent</span><span class="body">' + escapeHtml(en.text) + (en.streaming ? '<span class="caret">▍</span>' : '') + '</span>';
       transcriptEl.appendChild(d);
       if (en.streaming) a.__streamNode = d; // 记录流式节点，供增量更新
     } else if (en.kind === 'tool') {
       const d = document.createElement('div');
-      d.className = 'entry';
+      d.className = 'entry' + inCls;
       const card = document.createElement('div');
       card.className = 'tool-card';
       const summary = escapeHtml(argsSummary(en.name, en.args));
@@ -347,14 +350,24 @@ function renderTranscript() {
       transcriptEl.appendChild(d);
     } else if (en.kind === 'change') {
       const d = document.createElement('div');
-      d.className = 'entry';
+      d.className = 'entry' + inCls;
       d.appendChild(buildChangeCard(en, a));
       transcriptEl.appendChild(d);
     } else if (en.kind === 'error') {
       const d = document.createElement('div');
-      d.className = 'entry entry-error';
+      d.className = 'entry entry-error' + inCls;
       d.innerHTML = '<span class="err-ico">' + (window.lucideIcon('alert-triangle') || '') + '</span> ' + escapeHtml(en.text);
       transcriptEl.appendChild(d);
+    }
+  }
+  // 思考指示器：运行中且非流式打字时，显示三点跳动（AI 思考中）
+  if (a.status === 'running' && !a.readonly) {
+    const last = a.entries[a.entries.length - 1];
+    if (!last || !last.streaming) {
+      const t = document.createElement('div');
+      t.className = 'thinking entry-in';
+      t.innerHTML = '<span class="t-dot"></span><span class="t-dot"></span><span class="t-dot"></span>';
+      transcriptEl.appendChild(t);
     }
   }
   transcriptEl.scrollTop = transcriptEl.scrollHeight;
