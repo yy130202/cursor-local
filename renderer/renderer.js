@@ -346,3 +346,12 @@ function updateCwdChip() {
   }
   switchMode('home'); // 默认进主页
 })();
+
+/* 输入聚焦环境光（Aura） */
+(function bindAuraInput() {
+  const el = document.getElementById('home-task-input');
+  if (el) {
+    el.addEventListener('focus', () => document.body.classList.add('aura-input'));
+    el.addEventListener('blur', () => document.body.classList.remove('aura-input'));
+  }
+})();

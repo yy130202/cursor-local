@@ -1521,6 +1521,22 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
 .ctx-menu, .user-menu, .theme-popover { transform-origin: top left; }
 .git-panel, .term-panel, .log-panel, .ai-panel { transform-origin: top right; }
 
+/* ==================== 环境光反馈（Aura）：Agent 运行辉光呼吸 / 完成脉冲 ==================== */
+#aura {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(1000px 640px at 50% 42%, rgba(var(--accent-rgb), 0.13), transparent 70%);
+  opacity: 0; transition: opacity 0.9s var(--ease);
+}
+body.aura-running #aura { opacity: 1; animation: auraPulse 3.4s ease-in-out infinite; }
+body.aura-input #aura { opacity: 0.45; }
+body.aura-done #aura {
+  opacity: 1;
+  background: radial-gradient(1000px 640px at 50% 42%, rgba(78, 201, 176, 0.16), transparent 70%);
+  animation: auraDone 1.1s var(--ease) forwards;
+}
+@keyframes auraPulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+@keyframes auraDone { 0% { opacity: 0.15; } 30% { opacity: 1; } 100% { opacity: 0; } }
+
 /* ==================== 无障碍与细节打磨 ==================== */
 /* 文字选中色跟随主题 */
 ::selection { background: rgba(var(--accent-rgb), 0.32); }

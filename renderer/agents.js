@@ -148,6 +148,15 @@ window.api.onAgentEvent((ev) => {
       break;
     case 'status':
       a.status = ev.status;
+      // 环境光反馈：运行辉光呼吸 / 完成绿色脉冲
+      if (ev.status === 'running') document.body.classList.add('aura-running');
+      else {
+        document.body.classList.remove('aura-running');
+        if (ev.status === 'done') {
+          document.body.classList.add('aura-done');
+          setTimeout(() => document.body.classList.remove('aura-done'), 1200);
+        }
+      }
       if (ev.status !== 'running') {
         closeStreaming(a);
         // 完成后截断 entries，防超长会话内存累积
