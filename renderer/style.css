@@ -41,7 +41,7 @@
   --input-bg: rgba(0, 0, 0, 0.3);
   --code-bg: #1a1a1a;
   --title: #ffffff;
-  --body-bg: rgba(17, 17, 22, 0.55);
+  --body-bg: rgba(17, 17, 22, 0.35);
 }
 
 /* 亮色主题覆盖 */
@@ -62,7 +62,7 @@
   --input-bg: rgba(0, 0, 0, 0.04);
   --code-bg: #f5f5f5;
   --title: #111111;
-  --body-bg: rgba(246, 247, 250, 0.5);
+  --body-bg: rgba(246, 247, 250, 0.35);
   /* 亮色阴影带蓝灰色调且更轻（Windows 13 式） */
   --shadow-1: 0 2px 8px rgba(31, 38, 63, 0.1);
   --shadow-2: 0 8px 28px rgba(31, 38, 63, 0.13), 0 2px 8px rgba(31, 38, 63, 0.08);

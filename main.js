@@ -376,8 +376,8 @@ function createWindow() {
     height: 900,
     minWidth: 960,
     minHeight: 600,
-    backgroundColor: '#1e1e1e',
-    backgroundMaterial: 'mica',
+    backgroundColor: '#1e1e1e80', // 半透明深色 tint（暗色毛玻璃，透出桌面壁纸）
+    backgroundMaterial: 'acrylic', // 亚克力毛玻璃（Win10 1809+ 也生效，透出桌面壁纸+模糊；mica 仅 Win11）
     title: 'Cursor Local',
     webPreferences: {
       nodeIntegration: false,
