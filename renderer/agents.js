@@ -491,4 +491,12 @@ loadHistory();
 (function bindHistoryFilter() {
   const el = document.getElementById('history-filter');
   if (el) el.oninput = () => renderHistory();
+  const clearBtn = document.getElementById('history-clear');
+  if (clearBtn) clearBtn.onclick = async () => {
+    if (!agentsState.history.length) return;
+    if (!confirm('确定清空全部历史会话？此操作不可恢复。')) return;
+    await window.api.clearSessions();
+    await loadHistory();
+    flashStatus('已清空全部会话');
+  };
 })();

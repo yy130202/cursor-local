@@ -9,6 +9,8 @@
   --shadow-3: 0 20px 60px rgba(0,0,0,0.42), 0 4px 16px rgba(0,0,0,0.2);
   --blur-sm: 16px; --blur-md: 20px; --blur-lg: 24px;
   --spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --spring-soft: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --spring-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
 
   --bg: #1e1e1e;
@@ -382,9 +384,10 @@ main { flex: 1; display: flex; min-height: 0; position: relative; z-index: 1; }
   border: 1px solid transparent;
   border-radius: var(--r-lg); padding: 22px;
   box-shadow: var(--shadow-3), inset 0 1px 0 rgba(255,255,255,0.06);
-  animation: pop 0.18s ease;
+  animation: popUp 0.28s var(--spring-soft);
 }
-@keyframes pop { from { transform: scale(0.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes pop { from { transform: scale(0.92) translateY(8px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+@keyframes popUp { from { transform: scale(0.9) translateY(14px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
 .modal-box h3 { margin-bottom: 16px; font-size: 16px; }
 .modal-box label { display: block; margin-bottom: 12px; color: var(--text-dim); font-size: 12px; }
 .modal-box input {
@@ -439,7 +442,7 @@ main { flex: 1; display: flex; min-height: 0; position: relative; z-index: 1; }
   border: 1px solid var(--glass-border);
   border-radius: 12px; padding: 12px;
   box-shadow: 0 16px 40px rgba(0,0,0,0.5);
-  animation: pop 0.16s ease;
+  animation: pop 0.22s var(--spring-soft);
 }
 .popover-title { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px; }
 .theme-presets { display: flex; gap: 10px; margin-bottom: 12px; }
@@ -971,7 +974,7 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
   border: 1px solid var(--glass-border); border-radius: 16px;
   display: flex; overflow: hidden; position: relative;
   box-shadow: 0 24px 70px rgba(0,0,0,0.55);
-  animation: pop 0.18s ease;
+  animation: popUp 0.28s var(--spring-soft);
 }
 .settings-nav {
   width: 190px; flex-shrink: 0;
@@ -1069,6 +1072,12 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
   border: 1px solid var(--glass-border); border-radius: 6px; padding: 4px 8px; font-size: 12px; font-family: inherit;
 }
 .history-filter:focus { outline: none; border-color: var(--accent); }
+.history-title { display: flex; align-items: center; justify-content: space-between; }
+.history-clear {
+  background: transparent; border: 1px solid var(--glass-border); color: var(--text-dim);
+  font-size: 11px; padding: 2px 9px; border-radius: var(--r-sm); cursor: pointer; font-family: inherit;
+}
+.history-clear:hover { color: var(--red); border-color: var(--red); }
 .status-dim { color: var(--text-dim); font-size: 12px; }
 
 /* Agent 运行时长表盘 */
@@ -1126,7 +1135,7 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
   border: 1px solid var(--glass-border); border-radius: 14px;
   box-shadow: 0 24px 70px rgba(0,0,0,0.55);
   overflow: hidden;
-  animation: pop 0.15s ease;
+  animation: pop 0.2s var(--spring-soft);
 }
 .cp-input {
   width: 100%; background: rgba(0,0,0,0.25); border: none; outline: none;
@@ -1245,7 +1254,7 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
   border: 1px solid var(--glass-border); border-radius: 12px;
   padding: 6px;
   box-shadow: 0 16px 50px rgba(0,0,0,0.55);
-  animation: pop 0.12s ease;
+  animation: pop 0.18s var(--spring-soft);
 }
 .ctx-item {
   display: flex; align-items: center; gap: 10px;
@@ -1278,7 +1287,7 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
   -webkit-backdrop-filter: blur(var(--blur-md)) saturate(1.5);
   border: 1px solid var(--glass-border); border-radius: 14px;
   padding: 14px; box-shadow: 0 24px 70px rgba(0,0,0,0.55);
-  animation: pop 0.15s ease;
+  animation: pop 0.2s var(--spring-soft);
 }
 .inline-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .inline-title { font-size: 13px; font-weight: 700; color: var(--title); }
@@ -1313,7 +1322,7 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
   -webkit-backdrop-filter: blur(var(--blur-md)) saturate(1.5);
   border: 1px solid var(--glass-border); border-radius: 14px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.5); overflow: hidden;
-  animation: pop 0.15s ease;
+  animation: pop 0.2s var(--spring-soft);
 }
 .diag-head { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--glass-border); flex-shrink: 0; }
 .diag-title { font-size: 13px; font-weight: 700; color: var(--title); flex: 1; }
@@ -1345,7 +1354,7 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
   -webkit-backdrop-filter: blur(var(--blur-md)) saturate(1.5);
   border: 1px solid var(--glass-border); border-radius: 14px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.5); overflow: hidden;
-  animation: pop 0.15s ease;
+  animation: pop 0.2s var(--spring-soft);
 }
 .git-head { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--glass-border); flex-shrink: 0; }
 .git-branch { font-size: 13px; font-weight: 700; color: var(--accent); flex: 1; font-family: Consolas, monospace; }
@@ -1472,11 +1481,13 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
 .cta-btn::after, .git-commit-btn::after, .inline-run::after, .inline-apply.primary::after {
   content: ''; position: absolute; top: 0; left: -80%; width: 50%; height: 100%;
   background: linear-gradient(100deg, transparent, rgba(255,255,255,0.42), transparent);
-  transform: skewX(-20deg);
   animation: shimmer 3.2s ease-in-out infinite;
   pointer-events: none;
 }
-@keyframes shimmer { 0% { left: -80%; } 55%, 100% { left: 135%; } }
+@keyframes shimmer {
+  0% { transform: translateX(0) skewX(-20deg); }
+  55%, 100% { transform: translateX(430%) skewX(-20deg); }
+}
 
 /* 按压反馈 */
 .action, .cta-btn, .git-commit-btn, .inline-run, .inline-apply, .json-btn, .theme-card, .chip-btn, .recent-open, .snav-item, .menu-item, .keybind-btn {
@@ -1504,3 +1515,26 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
   border-radius: 6px;
 }
 @keyframes skeleton { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ==================== 动效细节：浮层锚点缩放 ==================== */
+.cmd-palette, .popover { transform-origin: top center; }
+.ctx-menu, .user-menu, .theme-popover { transform-origin: top left; }
+.git-panel, .term-panel, .log-panel, .ai-panel { transform-origin: top right; }
+
+/* ==================== 无障碍与细节打磨 ==================== */
+/* 文字选中色跟随主题 */
+::selection { background: rgba(var(--accent-rgb), 0.32); }
+/* 键盘焦点态 */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* 平滑滚动 */
+#filetree, #transcript, .git-list, .git-diff-body { scroll-behavior: smooth; }
+
+/* 全局 reduced-motion：尊重系统「减少动态效果」设置 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

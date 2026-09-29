@@ -24,6 +24,7 @@ contextBridge.exposeInMainWorld('api', {
   // 会话持久化
   listSessions: () => ipcRenderer.invoke('session:list'),
   deleteSession: (id) => ipcRenderer.invoke('session:delete', id),
+  clearSessions: () => ipcRenderer.invoke('session:clear'),
   exportSession: (id) => ipcRenderer.invoke('session:export', id),
   // Git
   gitStatus: (cwd) => ipcRenderer.invoke('git:status', cwd),

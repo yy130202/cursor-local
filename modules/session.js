@@ -58,6 +58,15 @@ function createSessionModule({ winRef, addLog }) {
         return true;
       } catch (e) { return false; }
     });
+    ipcMain.handle('session:clear', () => {
+      try {
+        for (const f of fs.readdirSync(sessionsDir())) {
+          if (f.endsWith('.json')) fs.rmSync(path.join(sessionsDir(), f), { force: true });
+        }
+        addLog('info', 'session', '清空全部会话');
+        return true;
+      } catch (e) { return false; }
+    });
     ipcMain.handle('session:export', (_e, id) => {
       try {
         const data = JSON.parse(fs.readFileSync(path.join(sessionsDir(), id + '.json'), 'utf8'));
