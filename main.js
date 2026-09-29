@@ -49,6 +49,12 @@ terminalMod.register(ipcMain);
 registerAi(ipcMain, { loadConfig });
 registerAuth(ipcMain, { getUserStore });
 ipcMain.handle('billing:query', (_e, userId) => billing.queryBilling(userId));
+// 窗口全屏切换（F11）
+ipcMain.handle('window:toggleFullscreen', () => {
+  const w = BrowserWindow.getFocusedWindow() || (winRef ? winRef() : null);
+  if (w && !w.isDestroyed()) w.setFullScreen(!w.isFullScreen());
+  return true;
+});
 
 /* ---------------- 截图验证（SHOT_MODE） ---------------- */
 function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }

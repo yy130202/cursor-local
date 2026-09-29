@@ -25,6 +25,7 @@ contextBridge.exposeInMainWorld('api', {
   listSessions: () => ipcRenderer.invoke('session:list'),
   deleteSession: (id) => ipcRenderer.invoke('session:delete', id),
   clearSessions: () => ipcRenderer.invoke('session:clear'),
+  toggleFullscreen: () => ipcRenderer.invoke('window:toggleFullscreen'),
   exportSession: (id) => ipcRenderer.invoke('session:export', id),
   // Git
   gitStatus: (cwd) => ipcRenderer.invoke('git:status', cwd),

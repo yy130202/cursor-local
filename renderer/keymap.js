@@ -11,7 +11,8 @@
     { id: 'ai.test', label: 'AI 编写测试', icon: 'test-tube', key: 'Ctrl+Alt+T', action: () => window.applyAiEdit && window.applyAiEdit('test') },
     { id: 'ai.complete', label: '触发 AI 补全', icon: 'sparkles', key: 'Alt+\\', action: () => window.triggerAiComplete && window.triggerAiComplete() },
     { id: 'inline.chat', label: '内联改写', icon: 'message-square', key: 'Ctrl+I', action: () => window.openInlineChat && window.openInlineChat() },
-    { id: 'ai.diagnose', label: 'AI 代码诊断', icon: 'stethoscope', key: 'Ctrl+Alt+D', action: () => window.openDiagnose && window.openDiagnose() }
+    { id: 'ai.diagnose', label: 'AI 代码诊断', icon: 'stethoscope', key: 'Ctrl+Alt+D', action: () => window.openDiagnose && window.openDiagnose() },
+    { id: 'view.fullscreen', label: '切换全屏', icon: 'maximize', key: 'F11', action: () => window.api && window.api.toggleFullscreen && window.api.toggleFullscreen() }
   ];
 
   let customKeybindings = {}; // id -> combo（用户自定义覆盖默认）

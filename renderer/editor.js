@@ -67,6 +67,12 @@ async function renderTree() {
   await renderDir(EditorState.currentFolder, tree, 0, seq, filter);
 }
 
+/* 轻量更新选中高亮（点文件时用，避免整树重建导致滚动跳动） */
+function updateTreeActive() {
+  const rows = document.querySelectorAll('#filetree .tree-item');
+  rows.forEach((r) => r.classList.toggle('active', r.dataset.path === EditorState.activePath));
+}
+
 /* 目录是否含匹配过滤词的文件（递归，限深） */
 async function dirHasMatch(dirPath, filter, depth = 0) {
   if (depth > 6) return false;
@@ -97,6 +103,7 @@ async function renderDir(dirPath, container, depth, seq, filter) {
     }
     const row = document.createElement('div');
     row.className = 'tree-item';
+    row.dataset.path = ent.path;
     if (ent.path === EditorState.activePath) row.classList.add('active');
     row.style.paddingLeft = 10 + depth * 16 + 'px';
     // git 状态标记（VS Code 风：M蓝 / A/U 绿 / D 红，目录含变更显示圆点）
@@ -391,7 +398,7 @@ async function openFile(filePath) {
   }
   document.getElementById('editor-empty').classList.add('hidden');
   renderTabs();
-  renderTree();
+  updateTreeActive(); // 只更新当前选中高亮，不重建文件树（避免滚动跳动）
   applyGitDecorations(tab); // gutter 变更行标记（异步）
   const langEl = document.getElementById('status-lang');
   if (langEl) langEl.textContent = langDisplay(tab.large ? 'plaintext' : (LANG_BY_EXT[extOf(filePath)] || 'plaintext'));
@@ -625,4 +632,29 @@ async function reloadTabContent(tab) {
   let t;
   el.oninput = () => { clearTimeout(t); t = setTimeout(() => renderTree(), 200); };
   el.onkeydown = (e) => { if (e.key === 'Escape') { el.value = ''; renderTree(); } };
+})();
+
+/* 文件树面板横向拖拽调整宽度 */
+(function bindTreeResize() {
+  const panel = document.getElementById('filetree-panel');
+  const resizer = document.getElementById('tree-resizer');
+  if (!panel || !resizer) return;
+  let startX = 0, startW = 0;
+  resizer.onmousedown = (e) => {
+    e.preventDefault();
+    startX = e.clientX; startW = panel.offsetWidth;
+    resizer.classList.add('dragging');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  };
+  window.addEventListener('mousemove', (e) => {
+    if (!resizer.classList.contains('dragging')) return;
+    const w = Math.max(160, Math.min(560, startW + (e.clientX - startX)));
+    panel.style.width = w + 'px';
+  });
+  window.addEventListener('mouseup', () => {
+    resizer.classList.remove('dragging');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  });
 })();
