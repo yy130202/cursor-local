@@ -260,7 +260,13 @@ require(['vs/editor/editor.main'], function () {
       tabCompletion: 'off',          // Tab 用于接受 AI 补全
       inlineSuggest: { enabled: true },
       unusualLineTerminator: 'off',  // 关闭孤立 \r 的整行红色警告（CRLF 文件常见误报）
-      quickSuggestions: { other: true, comments: true, strings: true }
+      quickSuggestions: { other: true, comments: true, strings: true },
+      // VS Code 式增强：括号对着色 / 缩进指南 / 粘滞滚动 / 折叠图标
+      bracketPairColorization: { enabled: true },
+      guides: { indentation: true, bracketPairs: true, highlightActiveIndentation: true },
+      stickyScroll: { enabled: true },
+      folding: true,
+      showFoldingControls: 'always'
     });
     setupInlineCompletion();  // AI 代码补全（Tab 接受）
     if (typeof window.setupEditorContextMenu === 'function') window.setupEditorContextMenu(EditorState.editor);
@@ -268,6 +274,9 @@ require(['vs/editor/editor.main'], function () {
     EditorState.editor.onDidChangeCursorPosition((e) => {
       const el = document.getElementById('status-cursor');
       if (el) el.textContent = '行 ' + e.position.lineNumber + ', 列 ' + e.position.column;
+      // 面包屑符号节流更新
+      clearTimeout(breadcrumbTimer);
+      breadcrumbTimer = setTimeout(() => updateBreadcrumb(), 250);
     });
     monacoReady = true;
     while (pendingOpens.length) openFile(pendingOpens.shift());
@@ -399,6 +408,7 @@ async function openFile(filePath) {
   document.getElementById('editor-empty').classList.add('hidden');
   renderTabs();
   updateTreeActive(); // 只更新当前选中高亮，不重建文件树（避免滚动跳动）
+  updateBreadcrumb();
   applyGitDecorations(tab); // gutter 变更行标记（异步）
   const langEl = document.getElementById('status-lang');
   if (langEl) langEl.textContent = langDisplay(tab.large ? 'plaintext' : (LANG_BY_EXT[extOf(filePath)] || 'plaintext'));
@@ -664,3 +674,103 @@ async function reloadTabContent(tab) {
     document.body.style.userSelect = '';
   });
 })();
+
+/* ---- 面包屑导航 + 符号导航（VS Code 式） ---- */
+const SYMBOL_KIND_LABEL = { 0:'文件',1:'模块',2:'命名空间',3:'包',4:'类',5:'方法',6:'属性',7:'字段',8:'构造',9:'枚举',10:'接口',11:'函数',12:'变量',13:'常量',14:'字符串',15:'数字',16:'布尔',17:'数组',18:'对象',19:'键',20:'空',21:'枚举成员',22:'结构',23:'事件',24:'操作符',25:'类型参数' };
+function symbolKindLabel(k) { return SYMBOL_KIND_LABEL[k] || '符号'; }
+
+async function fetchSymbols(model) {
+  try {
+    if (monaco.languages.DocumentSymbolProvider && monaco.languages.DocumentSymbolProvider.all) {
+      const all = monaco.languages.DocumentSymbolProvider.all();
+      for (const p of all) {
+        const syms = await p.provideDocumentSymbols(model, new monaco.CancellationTokenSource().token);
+        if (syms && syms.length) return syms;
+      }
+    }
+  } catch (e) { /* ignore */ }
+  return [];
+}
+
+function findSymbolPath(syms, line, path) {
+  for (const s of syms || []) {
+    if (line >= s.range.startLineNumber && line <= s.range.endLineNumber) {
+      path.push(s);
+      if (s.children && s.children.length) findSymbolPath(s.children, line, path);
+      return;
+    }
+  }
+}
+
+function flattenSymbols(syms, depth, out) {
+  for (const s of syms || []) {
+    out.push({ name: s.name, kind: s.kind, line: s.range.startLineNumber, col: s.range.startColumn, depth });
+    if (s.children && s.children.length) flattenSymbols(s.children, depth + 1, out);
+  }
+}
+
+let breadcrumbTimer = null;
+function updateBreadcrumb() {
+  const el = document.getElementById('breadcrumb');
+  if (!el) return;
+  const ed = EditorState.editor;
+  const model = ed && ed.getModel();
+  const tab = EditorState.tabs.find((t) => t.path === EditorState.activePath);
+  if (!model || !tab) { el.innerHTML = ''; return; }
+  const cwd = EditorState.currentFolder || '';
+  let rel = tab.path;
+  if (cwd && tab.path.startsWith(cwd)) rel = tab.path.slice(cwd.length).replace(/^[\\/]/, '');
+  const parts = rel.split(/[\\/]/);
+  let html = '<span class="bc-seg bc-file"><span class="bc-icon">' + (window.lucideIcon ? window.lucideIcon(fileIconName(extOf(tab.path))) : '') + '</span>' + escapeHtml(parts[parts.length - 1] || rel) + '</span>';
+  el.innerHTML = html;
+  // 符号（异步）：光标所在作用域链
+  const line = (ed.getPosition() || { lineNumber: 1 }).lineNumber;
+  fetchSymbols(model).then((syms) => {
+    const path = [];
+    findSymbolPath(syms, line, path);
+    let sh = '';
+    for (const s of path) sh += '<span class="bc-sep">›</span><span class="bc-seg bc-symbol" data-line="' + s.range.startLineNumber + '">' + escapeHtml(s.name) + '</span>';
+    const fileSeg = el.querySelector('.bc-file');
+    if (fileSeg) fileSeg.insertAdjacentHTML('afterend', sh);
+    el.querySelectorAll('.bc-symbol').forEach((n) => {
+      n.onclick = () => { ed.setPosition({ lineNumber: +n.dataset.line, column: 1 }); ed.revealLineInCenter(+n.dataset.line); ed.focus(); };
+    });
+  });
+}
+
+/* 符号搜索（Ctrl+Shift+O）：下拉面板 */
+window.openSymbols = function () {
+  const ed = EditorState.editor;
+  const model = ed && ed.getModel();
+  if (!model) return;
+  const existing = document.getElementById('symbols-panel');
+  if (existing) { existing.remove(); return; }
+  const panel = document.createElement('div');
+  panel.id = 'symbols-panel';
+  panel.innerHTML = '<input class="sym-search" id="sym-search" placeholder="搜索符号…" spellcheck="false"><div class="sym-list" id="sym-list"></div>';
+  document.body.appendChild(panel);
+  panel.style.top = '80px'; panel.style.right = '24px';
+  let flat = [];
+  fetchSymbols(model).then((syms) => { flattenSymbols(syms, 0, flat); renderSymList(flat); });
+  function renderSymList(list) {
+    const box = document.getElementById('sym-list');
+    if (!box) return;
+    if (!list.length) { box.innerHTML = '<div class="sym-empty">此文件无符号（或语言不支持）</div>'; return; }
+    box.innerHTML = list.map((s) =>
+      '<div class="sym-item" data-line="' + s.line + '">' +
+        '<span class="sym-kind">' + symbolKindLabel(s.kind) + '</span>' +
+        '<span class="sym-name" style="padding-left:' + (s.depth * 14) + 'px">' + escapeHtml(s.name) + '</span>' +
+        '<span class="sym-line">' + s.line + '</span>' +
+      '</div>'
+    ).join('');
+    box.querySelectorAll('.sym-item').forEach((n) => {
+      n.onclick = () => { ed.setPosition({ lineNumber: +n.dataset.line, column: 1 }); ed.revealLineInCenter(+n.dataset.line); ed.focus(); panel.remove(); };
+    });
+  }
+  const search = document.getElementById('sym-search');
+  search.oninput = () => { const q = search.value.toLowerCase(); renderSymList(flat.filter((s) => s.name.toLowerCase().includes(q))); };
+  search.focus();
+  const close = (e) => { if (!panel.contains(e.target)) panel.remove(); };
+  setTimeout(() => document.addEventListener('mousedown', close), 0);
+  panel.addEventListener('keydown', (e) => { if (e.key === 'Escape') panel.remove(); });
+};

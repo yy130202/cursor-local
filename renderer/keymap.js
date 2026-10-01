@@ -12,7 +12,11 @@
     { id: 'ai.complete', label: '触发 AI 补全', icon: 'sparkles', key: 'Alt+\\', action: () => window.triggerAiComplete && window.triggerAiComplete() },
     { id: 'inline.chat', label: '内联改写', icon: 'message-square', key: 'Ctrl+I', action: () => window.openInlineChat && window.openInlineChat() },
     { id: 'ai.diagnose', label: 'AI 代码诊断', icon: 'stethoscope', key: 'Ctrl+Alt+D', action: () => window.openDiagnose && window.openDiagnose() },
-    { id: 'view.fullscreen', label: '切换全屏', icon: 'maximize', key: 'F11', action: () => window.api && window.api.toggleFullscreen && window.api.toggleFullscreen() }
+    { id: 'view.fullscreen', label: '切换全屏', icon: 'maximize', key: 'F11', action: () => window.api && window.api.toggleFullscreen && window.api.toggleFullscreen() },
+    { id: 'editor.format', label: '格式化文档', icon: 'align-left', key: 'Shift+Alt+F', action: () => { const ed = (typeof EditorState !== 'undefined' && EditorState.editor); if (ed) ed.getAction('editor.action.formatDocument').run(); } },
+    { id: 'editor.foldAll', label: '折叠所有区域', icon: 'fold-vertical', key: '', action: () => { const ed = (typeof EditorState !== 'undefined' && EditorState.editor); if (ed) ed.getAction('editor.foldAll').run(); } },
+    { id: 'editor.unfoldAll', label: '展开所有区域', icon: 'unfold-vertical', key: '', action: () => { const ed = (typeof EditorState !== 'undefined' && EditorState.editor); if (ed) ed.getAction('editor.unfoldAll').run(); } },
+    { id: 'editor.gotoSymbol', label: '转到文件中的符号', icon: 'list-tree', key: 'Ctrl+Shift+O', action: () => window.openSymbols && window.openSymbols() }
   ];
 
   let customKeybindings = {}; // id -> combo（用户自定义覆盖默认）
