@@ -288,6 +288,8 @@
         <div class="settings-nav-title">设置</div>
         <button class="snav-item active" data-page="general"><i data-lucide="settings"></i><span>通用</span></button>
         <button class="snav-item" data-page="appearance"><i data-lucide="palette"></i><span>外观</span></button>
+        <button class="snav-item" data-page="memory"><i data-lucide="brain"></i><span>记忆</span></button>
+        <button class="snav-item" data-page="rules"><i data-lucide="scroll-text"></i><span>规则</span></button>
         <button class="snav-item" data-page="about"><i data-lucide="info"></i><span>关于</span></button>
       </aside>
       <div class="settings-body">
@@ -373,6 +375,26 @@
             <div class="srow-label" style="padding: 13px 0 6px;">快捷键</div>
             <div class="srow-desc" style="margin-bottom: 6px;">点击右侧按键重新录制自定义快捷键（右键菜单与快捷键同步生效）</div>
             <div id="keybind-list"></div>
+          </div>
+        </div>
+        <div class="spage" data-page="memory">
+          <div class="spage-title">记忆</div>
+          <div class="sgroup">
+            <div class="srow-label">全局记忆（跨项目共享的用户偏好，Agent 每次都会读取）</div>
+            <div class="mem-add-row"><input id="mem-add-input" placeholder="新增记忆，如：我习惯用简体中文注释，函数命名用 camelCase…" spellcheck="false"><button class="action" id="mem-add-btn">添加</button></div>
+            <div id="mem-global-list" class="mem-list"></div>
+            <div class="srow-label" style="margin-top:14px">项目记忆（仅当前项目生效）</div>
+            <div id="mem-project-list" class="mem-list"></div>
+          </div>
+        </div>
+        <div class="spage" data-page="rules">
+          <div class="spage-title">规则</div>
+          <div class="sgroup">
+            <div class="srow-label">用户规则（所有项目生效）</div>
+            <textarea id="rules-user" class="rules-textarea" rows="5" placeholder="给 AI 的通用规则，例如：&#10;- 优先使用 TypeScript&#10;- 函数式风格，避免类&#10;- 注释用简体中文"></textarea>
+            <div class="srow-label" style="margin-top:12px">项目规则（仅当前项目生效）</div>
+            <textarea id="rules-project" class="rules-textarea" rows="5" placeholder="仅当前项目的规则…"></textarea>
+            <button class="action" id="rules-save" style="margin-top:10px">保存规则</button>
           </div>
         </div>
         <div class="spage" data-page="about">

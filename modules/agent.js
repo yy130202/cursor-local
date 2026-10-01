@@ -3,7 +3,7 @@ const path = require('path');
 const fsp = require('fs').promises;
 const { spawn } = require('child_process');
 
-function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, rootDir }) {
+function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, rootDir, memory }) {
   const win = () => winRef();
 
   /* ---- 终端命令执行 ---- */
@@ -410,9 +410,21 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
       '用简体中文简要说明每一步在做什么。写文件时必须给出完整最终内容。',
       agent.mode === 'plan' ? '【计划模式】只输出实施计划（步骤、涉及文件、风险点），不要调用任何工具、不要修改任何文件。' : '',
       agent.mode === 'ask' ? '【问答模式】只回答问题与解释代码，不要调用修改类工具。' : ''
-    ].filter(Boolean).join('\n');
+    ].filter(Boolean);
+    // 注入记忆与规则（跨会话共享的用户偏好 / 项目规则）
+    if (memory) {
+      try {
+        const mem = memory.getMemory(agent.cwd) || { global: [], project: [] };
+        const rules = memory.getRules(agent.cwd) || { user: '', project: '' };
+        if (mem.global && mem.global.length) sys.push('【用户长期偏好】\n' + mem.global.map((m) => '- ' + m.text).join('\n'));
+        if (mem.project && mem.project.length) sys.push('【项目偏好】\n' + mem.project.map((m) => '- ' + m.text).join('\n'));
+        if (rules.user && rules.user.trim()) sys.push('【用户规则】\n' + rules.user.trim());
+        if (rules.project && rules.project.trim()) sys.push('【项目规则】\n' + rules.project.trim());
+      } catch { /* ignore */ }
+    }
+    const sysText = sys.join('\n');
     agent.messages = [
-      { role: 'system', content: sys },
+      { role: 'system', content: sysText },
       { role: 'user', content: agent.task }
     ];
     agent.status = 'running';

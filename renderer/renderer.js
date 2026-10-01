@@ -425,3 +425,52 @@ window.refreshStats = refreshStats;
     if (input) { input.focus(); input.placeholder = '描述新任务…（Enter 发送）'; }
   };
 })();
+
+/* ---- 记忆 / 规则页（参考 CodeBuddy，本地 JSON/Markdown 存储） ---- */
+function currentCwd() { return (typeof EditorState !== 'undefined' && EditorState.currentFolder) || ''; }
+
+async function renderMemory() {
+  const cwd = currentCwd();
+  const data = await window.api.memoryGet(cwd);
+  const render = (list, box, scope) => {
+    if (!list.length) { box.innerHTML = '<div class="mem-empty">暂无记忆，输入后点击「添加」</div>'; return; }
+    box.innerHTML = list.map((m) =>
+      '<div class="mem-item"><span class="mem-text">' + escapeHtml(m.text) + '</span>' +
+      '<button class="mem-del" data-scope="' + scope + '" data-id="' + m.id + '" title="删除">' + (window.lucideIcon('x') || '×') + '</button></div>'
+    ).join('');
+    box.querySelectorAll('.mem-del').forEach((b) => {
+      b.onclick = async () => { await window.api.memoryRemove(cwd, b.dataset.scope, b.dataset.id); renderMemory(); };
+    });
+  };
+  render(data.global, document.getElementById('mem-global-list'), 'global');
+  render(data.project, document.getElementById('mem-project-list'), 'project');
+}
+
+async function renderRules() {
+  const cwd = currentCwd();
+  const data = await window.api.rulesGet(cwd);
+  document.getElementById('rules-user').value = data.user || '';
+  document.getElementById('rules-project').value = data.project || '';
+}
+
+(function bindMemoryRules() {
+  document.getElementById('mem-add-btn').onclick = async () => {
+    const input = document.getElementById('mem-add-input');
+    const text = input.value.trim();
+    if (!text) return;
+    await window.api.memoryAdd(currentCwd(), 'global', text);
+    input.value = '';
+    renderMemory();
+    flashStatus('已添加全局记忆');
+  };
+  document.getElementById('rules-save').onclick = async () => {
+    const cwd = currentCwd();
+    await window.api.rulesSet(cwd, 'user', document.getElementById('rules-user').value);
+    await window.api.rulesSet(cwd, 'project', document.getElementById('rules-project').value);
+    flashStatus('规则已保存');
+  };
+  // 打开设置时加载
+  const origOpen = window.__origOpenSettings;
+  const settingsBtn = document.getElementById('settings-btn');
+  settingsBtn.addEventListener('click', () => { setTimeout(() => { renderMemory(); renderRules(); }, 100); });
+})();

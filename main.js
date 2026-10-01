@@ -10,6 +10,7 @@ const billing = require('./store/billing');
 
 const { loadConfig, saveConfig, configPath, registerConfig } = require('./modules/config');
 const { createLog, registerLog } = require('./modules/log');
+const { createMemoryModule } = require('./modules/memory');
 const { registerFs } = require('./modules/fs');
 const { createAgentModule } = require('./modules/agent');
 const { createSessionModule } = require('./modules/session');
@@ -33,7 +34,8 @@ const addLog = log.addLog;
 const logs = log.logs;
 
 const sessionMod = createSessionModule({ winRef, addLog });
-const agentMod = createAgentModule({ winRef, addLog, loadConfig, agents, saveSession: sessionMod.saveSession, rootDir: __dirname });
+const memoryMod = createMemoryModule();
+const agentMod = createAgentModule({ winRef, addLog, loadConfig, agents, saveSession: sessionMod.saveSession, rootDir: __dirname, memory: memoryMod });
 const gitMod = createGitModule({ winRef, addLog });
 const terminalMod = createTerminalModule({ winRef, addLog });
 const { executeTool, runAgent, killChildren, emitAgent } = agentMod;
@@ -46,6 +48,7 @@ agentMod.register(ipcMain);
 sessionMod.register(ipcMain);
 gitMod.register(ipcMain);
 terminalMod.register(ipcMain);
+memoryMod.register(ipcMain);
 registerAi(ipcMain, { loadConfig });
 registerAuth(ipcMain, { getUserStore });
 ipcMain.handle('billing:query', (_e, userId) => billing.queryBilling(userId));

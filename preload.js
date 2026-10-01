@@ -41,6 +41,13 @@ contextBridge.exposeInMainWorld('api', {
   gitClone: (url, dest) => ipcRenderer.invoke('git:clone', { url, dest }),
   pickFolder: () => ipcRenderer.invoke('dialog:pickFolder'),
   agentApproval: (callId, allowed) => ipcRenderer.invoke('agent:approval', { callId, allowed }),
+  // 记忆与规则
+  memoryGet: (cwd) => ipcRenderer.invoke('memory:get', cwd),
+  memoryAdd: (cwd, scope, text) => ipcRenderer.invoke('memory:add', { cwd, scope, text }),
+  memoryRemove: (cwd, scope, id) => ipcRenderer.invoke('memory:remove', { cwd, scope, id }),
+  memoryClear: (cwd, scope) => ipcRenderer.invoke('memory:clear', { cwd, scope }),
+  rulesGet: (cwd) => ipcRenderer.invoke('rules:get', cwd),
+  rulesSet: (cwd, scope, text) => ipcRenderer.invoke('rules:set', { cwd, scope, text }),
   gitCommitFiles: (cwd, files, message) => ipcRenderer.invoke('git:commitFiles', { cwd, files, message }),
   gitPush: (cwd) => ipcRenderer.invoke('git:push', cwd),
   gitBranch: (cwd) => ipcRenderer.invoke('git:branch', cwd),
