@@ -1,6 +1,6 @@
 // Cursor Local - 主进程（模块化：窗口/截图/测试 + 组装各功能模块）
 // 复刻 Cursor 核心体验的本地 AI 编程工具
-const { app, BrowserWindow, ipcMain, protocol, net } = require('electron');
+const { app, BrowserWindow, ipcMain, protocol, net, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const fsp = fs.promises;
@@ -70,6 +70,13 @@ ipcMain.handle('window:close', () => {
   const w = BrowserWindow.getFocusedWindow() || (winRef ? winRef() : null);
   if (w && !w.isDestroyed()) w.close();
   return true;
+});
+// 选择文件夹（克隆仓库等）
+ipcMain.handle('dialog:pickFolder', async () => {
+  const w = winRef ? winRef() : null;
+  const opts = { properties: ['openDirectory', 'createDirectory'] };
+  const r = w && !w.isDestroyed() ? await dialog.showOpenDialog(w, opts) : await dialog.showOpenDialog(opts);
+  return r.canceled ? null : r.filePaths[0];
 });
 
 /* ---------------- 截图验证（SHOT_MODE） ---------------- */

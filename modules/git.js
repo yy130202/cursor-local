@@ -146,6 +146,12 @@ function createGitModule({ winRef, addLog }) {
     return { ok: r.code === 0, error: r.stderr };
   }
 
+  async function gitClone(url, destParent) {
+    addLog('info', 'git', '克隆 ' + url + ' → ' + destParent);
+    const r = await runGit(destParent, ['clone', url], 300000);
+    return { ok: r.code === 0, error: (r.stderr || '').trim() };
+  }
+
   async function gitPush(cwd) {
     const r = await runGit(cwd, ['push'], 60000);
     if (r.code !== 0) return { ok: false, error: r.stderr || r.stdout || 'git push 失败' };
@@ -211,6 +217,7 @@ function createGitModule({ winRef, addLog }) {
     ipcMain.handle('git:unstage', (_e, { cwd, file }) => gitUnstage(cwd, file));
     ipcMain.handle('git:stageAll', (_e, cwd) => gitStageAll(cwd));
     ipcMain.handle('git:unstageAll', (_e, cwd) => gitUnstageAll(cwd));
+    ipcMain.handle('git:clone', (_e, { url, dest }) => gitClone(url, dest));
     ipcMain.handle('git:commitFiles', (_e, { cwd, files, message }) => gitCommitFiles(cwd, files, message));
     ipcMain.handle('git:push', (_e, cwd) => gitPush(cwd));
     ipcMain.handle('git:branch', (_e, cwd) => gitBranch(cwd));

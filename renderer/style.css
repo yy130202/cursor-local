@@ -74,7 +74,30 @@ html { background: transparent; }
 
 /* ==================== 自绘标题栏（无边框窗口） ==================== */
 #topbar { -webkit-app-region: drag; } /* 整个顶栏可拖拽移动窗口 */
-#topbar button, #topbar #user-area, #topbar .mode-switch { -webkit-app-region: no-drag; }
+#topbar button, #topbar #user-area, #topbar .mode-switch, #topbar #menubar { -webkit-app-region: no-drag; }
+
+/* ==================== 菜单栏（VS Code 式） ==================== */
+#menubar { display: flex; align-items: center; gap: 2px; margin-right: 6px; }
+.mb-top {
+  background: transparent; border: none; color: var(--text); cursor: pointer;
+  font-size: 12.5px; padding: 4px 9px; border-radius: 6px; font-family: inherit;
+}
+.mb-top:hover, .mb-top.open { background: var(--hover-strong); }
+.mb-dropdown {
+  position: fixed; z-index: 600; min-width: 230px; padding: 5px;
+  background: var(--glass-strong); backdrop-filter: blur(var(--blur-lg));
+  -webkit-backdrop-filter: blur(var(--blur-lg));
+  border: 1px solid var(--glass-border); border-radius: 10px;
+  box-shadow: var(--shadow-3);
+  animation: pop 0.16s var(--spring-soft);
+}
+.mb-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 12.5px; color: var(--text);
+}
+.mb-item:hover { background: var(--accent-soft); }
+.mb-key { color: var(--text-dim); font-size: 11px; }
+.mb-sep { height: 1px; margin: 5px 8px; background: var(--glass-border); }
 .win-controls { display: flex; align-items: center; margin-left: 6px; -webkit-app-region: no-drag; }
 .win-controls button {
   width: 42px; height: 30px; display: grid; place-items: center;
@@ -1715,3 +1738,25 @@ body.aura-done #aura {
 #symbols-panel .sym-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #symbols-panel .sym-line { color: var(--text-dim); font-size: 11px; }
 #symbols-panel .sym-empty { padding: 14px; text-align: center; color: var(--text-dim); font-size: 12px; }
+
+/* ==================== 底部面板 Tab（终端/问题，参考 VS Code Panel） ==================== */
+.term-tabs { display: flex; gap: 2px; margin-right: 10px; }
+.term-tab {
+  background: transparent; border: none; color: var(--text-dim); cursor: pointer;
+  font-size: 12px; padding: 3px 10px; border-radius: 6px; border-bottom: 2px solid transparent;
+}
+.term-tab:hover { color: var(--text); }
+.term-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+.problems-body { flex: 1; overflow: auto; padding: 6px; min-height: 80px; }
+.pb-empty { padding: 20px; text-align: center; color: var(--text-dim); font-size: 12px; }
+.pb-item {
+  display: flex; align-items: center; gap: 8px; padding: 4px 10px;
+  border-radius: 6px; cursor: pointer; font-size: 12px; color: var(--text);
+}
+.pb-item:hover { background: var(--hover); }
+.pb-ico { flex-shrink: 0; width: 16px; text-align: center; font-size: 11px; }
+.pb-item.err .pb-ico { color: var(--red); }
+.pb-item.warn .pb-ico { color: var(--yellow); }
+.pb-item.info .pb-ico { color: #4ea1ff; }
+.pb-msg { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pb-pos { flex-shrink: 0; color: var(--text-dim); font-size: 11px; font-family: Consolas, monospace; }

@@ -11,15 +11,64 @@
     panelEl.className = 'term-panel hidden';
     panelEl.innerHTML =
       '<div class="term-head">' +
-        '<span class="term-title">终端</span>' +
+        '<div class="term-tabs">' +
+          '<button class="term-tab active" data-tab="term">终端</button>' +
+          '<button class="term-tab" data-tab="problems">问题</button>' +
+        '</div>' +
         '<span class="term-cwd" id="term-cwd"></span>' +
         '<button class="term-action" id="term-new" title="新终端">' + (window.lucideIcon('plus') || '') + '</button>' +
         '<button class="term-action" id="term-close">×</button>' +
       '</div>' +
-      '<div class="term-body" id="term-container"></div>';
+      '<div class="term-body" id="term-container"></div>' +
+      '<div class="problems-body hidden" id="problems-container"></div>';
     document.body.appendChild(panelEl);
+    // Tab 切换
+    panelEl.querySelectorAll('.term-tab').forEach((tab) => {
+      tab.onclick = () => switchTab(tab.dataset.tab);
+    });
     return panelEl;
   }
+
+  function switchTab(name) {
+    panelEl.querySelectorAll('.term-tab').forEach((t) => t.classList.toggle('active', t.dataset.tab === name));
+    document.getElementById('term-container').classList.toggle('hidden', name !== 'term');
+    document.getElementById('problems-container').classList.toggle('hidden', name !== 'problems');
+    if (name === 'problems') renderProblems();
+  }
+
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  function renderProblems() {
+    const box = document.getElementById('problems-container');
+    if (!box || typeof monaco === 'undefined') return;
+    const e = (typeof EditorState !== 'undefined') ? EditorState.editor : null;
+    const model = e && e.getModel();
+    const tab = (typeof EditorState !== 'undefined' && EditorState.tabs) ? EditorState.tabs.find((t) => t.path === EditorState.activePath) : null;
+    if (!model || !tab) { box.innerHTML = '<div class="pb-empty">无打开的文件</div>'; return; }
+    const ms = monaco.editor.getModelMarkers({ resource: model.uri });
+    if (!ms.length) { box.innerHTML = '<div class="pb-empty">未在当前文件检测到问题 ✓</div>'; return; }
+    const fname = tab.path.split(/[\\/]/).pop();
+    box.innerHTML = ms.map((m) => {
+      const ico = m.severity === 8 ? '✖' : (m.severity === 4 ? '⚠' : 'ℹ');
+      const cls = m.severity === 8 ? 'err' : (m.severity === 4 ? 'warn' : 'info');
+      return '<div class="pb-item ' + cls + '" data-line="' + m.startLineNumber + '" data-col="' + m.startColumn + '">' +
+        '<span class="pb-ico">' + ico + '</span>' +
+        '<span class="pb-msg">' + esc(m.message) + '</span>' +
+        '<span class="pb-pos">' + esc(fname) + ':' + m.startLineNumber + ':' + m.startColumn + '</span>' +
+      '</div>';
+    }).join('');
+    box.querySelectorAll('.pb-item').forEach((n) => {
+      n.onclick = () => {
+        e.setPosition({ lineNumber: +n.dataset.line, column: +n.dataset.col });
+        e.revealLineInCenter(+n.dataset.line);
+        e.focus();
+      };
+    });
+  }
+  window.openProblems = function () {
+    openTerminal();
+    switchTab('problems');
+    renderProblems();
+  };
 
   function resolveCwd() {
     return (typeof EditorState !== 'undefined' && EditorState.currentFolder) || null;

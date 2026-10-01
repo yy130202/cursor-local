@@ -38,6 +38,8 @@ contextBridge.exposeInMainWorld('api', {
   gitUnstage: (cwd, file) => ipcRenderer.invoke('git:unstage', { cwd, file }),
   gitStageAll: (cwd) => ipcRenderer.invoke('git:stageAll', cwd),
   gitUnstageAll: (cwd) => ipcRenderer.invoke('git:unstageAll', cwd),
+  gitClone: (url, dest) => ipcRenderer.invoke('git:clone', { url, dest }),
+  pickFolder: () => ipcRenderer.invoke('dialog:pickFolder'),
   gitCommitFiles: (cwd, files, message) => ipcRenderer.invoke('git:commitFiles', { cwd, files, message }),
   gitPush: (cwd) => ipcRenderer.invoke('git:push', cwd),
   gitBranch: (cwd) => ipcRenderer.invoke('git:branch', cwd),

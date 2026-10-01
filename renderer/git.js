@@ -57,13 +57,17 @@
     if (!r.ok) {
       document.getElementById('git-branch').textContent = '-';
       document.getElementById('git-list').innerHTML =
-        '<div class="git-empty">此文件夹不是 Git 仓库<br><br><button class="git-init-btn" id="git-init-btn">初始化仓库</button></div>';
+        '<div class="git-empty">此文件夹不是 Git 仓库<br><br>' +
+        '<button class="git-init-btn" id="git-init-btn">初始化仓库</button><br><br>' +
+        '<button class="git-init-btn" id="git-clone-empty-btn">克隆仓库…</button></div>';
       const btn = document.getElementById('git-init-btn');
       if (btn) btn.onclick = async () => {
         const res = await window.api.gitInit(currentCwd);
         if (res.ok) { flashStatus('已初始化 Git 仓库'); await refresh(); }
         else flashStatus(res.error || '初始化失败');
       };
+      const cb = document.getElementById('git-clone-empty-btn');
+      if (cb) cb.onclick = () => cloneDialog();
       updateCommitBtn(0);
       return;
     }
@@ -224,9 +228,52 @@
 
   function closePanel() { if (panelEl) panelEl.classList.add('hidden'); }
 
+  /* 克隆仓库弹窗（参考 CodeBuddy 空状态引导） */
+  function cloneDialog() {
+    const mask = document.createElement('div');
+    mask.className = 'modal';
+    mask.innerHTML =
+      '<div class="modal-box">' +
+        '<h3>克隆仓库</h3>' +
+        '<label>仓库 URL</label>' +
+        '<input id="clone-url" placeholder="https://github.com/user/repo.git" spellcheck="false">' +
+        '<label style="margin-top:12px">克隆到</label>' +
+        '<div style="display:flex;gap:8px"><input id="clone-dest" readonly placeholder="选择目标文件夹" style="flex:1"><button class="action" id="clone-pick">选择…</button></div>' +
+        '<div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end">' +
+          '<button class="action" id="clone-cancel">取消</button>' +
+          '<button class="git-commit-btn" id="clone-go">克隆</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(mask);
+    let dest = null;
+    mask.querySelector('#clone-pick').onclick = async () => {
+      const p = await window.api.pickFolder();
+      if (p) { dest = p; mask.querySelector('#clone-dest').value = p; }
+    };
+    mask.querySelector('#clone-cancel').onclick = () => mask.remove();
+    mask.addEventListener('mousedown', (e) => { if (e.target === mask) mask.remove(); });
+    mask.querySelector('#clone-go').onclick = async () => {
+      const url = mask.querySelector('#clone-url').value.trim();
+      if (!url) { flashStatus('请输入仓库 URL'); return; }
+      if (!dest) { flashStatus('请选择克隆位置'); return; }
+      flashStatus('克隆中，请稍候…');
+      const r = await window.api.gitClone(url, dest);
+      mask.remove();
+      if (r.ok) {
+        flashStatus('克隆完成');
+        const name = url.replace(/\/+$/, '').replace(/\.git$/, '').split(/[\\/]/).pop();
+        if (typeof setWorkdir === 'function' && name) setWorkdir(dest + '/' + name);
+      } else flashStatus(r.error || '克隆失败');
+    };
+    mask.querySelector('#clone-url').focus();
+  }
+  window.cloneRepoFlow = cloneDialog;
+
   (function bind() {
     const p = ensurePanel();
     document.getElementById('git-btn').onclick = openGitPanel;
+    const treeClone = document.getElementById('tree-clone-btn');
+    if (treeClone) treeClone.onclick = () => cloneDialog();
     p.querySelector('#git-close').onclick = closePanel;
     p.querySelector('#git-refresh').onclick = () => { viewMode = 'changes'; refresh(); };
     p.querySelector('#git-branch').onclick = toggleBranchMenu;
