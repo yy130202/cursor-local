@@ -32,7 +32,7 @@ async function sendFollowup() {
     input.value = '';
   } else {
     const cwd = EditorState.currentFolder || '';
-    const r = await window.api.createAgent({ task, cwd });
+    const r = await window.api.createAgent({ task, cwd, mode: window.__agentMode || 'craft' });
     input.value = '';
     selectAgent(r.id);
   }
@@ -128,6 +128,10 @@ window.api.onAgentEvent((ev) => {
     case 'tool_call':
       closeStreaming(a);
       a.entries.push({ kind: 'tool', name: ev.name, args: ev.args });
+      break;
+    case 'approval':
+      closeStreaming(a);
+      a.entries.push({ kind: 'approval', callId: ev.callId, tool: ev.tool, args: ev.args });
       break;
     case 'tool_result': {
       for (let i = a.entries.length - 1; i >= 0; i--) {
@@ -348,6 +352,21 @@ function renderTranscript() {
       card.querySelector('.head').onclick = () => card.classList.toggle('open');
       d.appendChild(card);
       transcriptEl.appendChild(d);
+    } else if (en.kind === 'approval') {
+      // 手动审批确认卡（参考 CodeBuddy 三档权限）
+      const d = document.createElement('div');
+      d.className = 'entry approval-card' + (en.resolved ? ' resolved' : '') + inCls;
+      d.innerHTML =
+        '<div class="ap-head"><span class="ap-ico">⏳</span>待审批 · ' + escapeHtml(en.tool) + '</div>' +
+        '<pre class="ap-args">' + escapeHtml(JSON.stringify(en.args || {}, null, 2).slice(0, 400)) + '</pre>' +
+        (en.resolved
+          ? '<div class="ap-state ' + (en.allowed ? 'ok' : 'deny') + '">' + (en.allowed ? '✓ 已允许执行' : '✖ 已拒绝') + '</div>'
+          : '<div class="ap-actions"><button class="ap-allow">允许执行</button><button class="ap-deny">拒绝</button></div>');
+      if (!en.resolved) {
+        d.querySelector('.ap-allow').onclick = () => { en.resolved = true; en.allowed = true; window.api.agentApproval(en.callId, true); renderTranscript(); };
+        d.querySelector('.ap-deny').onclick = () => { en.resolved = true; en.allowed = false; window.api.agentApproval(en.callId, false); renderTranscript(); };
+      }
+      transcriptEl.appendChild(d);
     } else if (en.kind === 'change') {
       const d = document.createElement('div');
       d.className = 'entry' + inCls;
@@ -440,6 +459,7 @@ function logToEntries(log) {
         break;
       }
       case 'tool_call': entries.push({ kind: 'tool', name: ev.name, args: ev.args }); break;
+      case 'approval': entries.push({ kind: 'approval', callId: ev.callId, tool: ev.tool, args: ev.args }); break;
       case 'tool_result': {
         for (let i = entries.length - 1; i >= 0; i--) {
           if (entries[i].kind === 'tool' && entries[i].name === ev.name && !entries[i].result) { entries[i].result = ev.result; break; }

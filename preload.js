@@ -40,6 +40,7 @@ contextBridge.exposeInMainWorld('api', {
   gitUnstageAll: (cwd) => ipcRenderer.invoke('git:unstageAll', cwd),
   gitClone: (url, dest) => ipcRenderer.invoke('git:clone', { url, dest }),
   pickFolder: () => ipcRenderer.invoke('dialog:pickFolder'),
+  agentApproval: (callId, allowed) => ipcRenderer.invoke('agent:approval', { callId, allowed }),
   gitCommitFiles: (cwd, files, message) => ipcRenderer.invoke('git:commitFiles', { cwd, files, message }),
   gitPush: (cwd) => ipcRenderer.invoke('git:push', cwd),
   gitBranch: (cwd) => ipcRenderer.invoke('git:branch', cwd),

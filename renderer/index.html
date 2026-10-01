@@ -156,6 +156,7 @@
           <textarea id="home-task-input" rows="3" placeholder="描述任务，让 Agent 替你写代码、改文件、跑命令…"></textarea>
           <div class="composer-bar">
             <div class="composer-left">
+              <button class="mini-chip mode-chip" id="home-mode-chip" title="选择工作模式"><i data-lucide="hammer"></i><span id="home-mode-text">Craft</span><i data-lucide="chevron-down" class="chev"></i></button>
               <span class="mini-chip" id="home-cwd-chip" title="工作目录"><i data-lucide="folder"></i><span id="home-cwd-text">未选择文件夹</span></span>
               <span class="mini-chip" id="home-model-chip" title="选择模型"><i data-lucide="cpu"></i><span id="home-model-text">-</span></span>
             </div>
@@ -207,13 +208,27 @@
           <button id="agent-stop-btn" class="action" style="display:none"><i data-lucide="square"></i>停止</button>
         </div>
         <div id="transcript"></div>
-        <div id="agents-empty">创建一个 Agent，让它替你读写代码、执行命令</div>
+        <div id="agents-empty">
+          <div class="welcome-hero">
+            <div class="welcome-icon"><i data-lucide="bot"></i></div>
+            <div class="welcome-title">让想法成为现实</div>
+            <div class="welcome-sub">本地 AI 编程伙伴 · 替你读写代码、执行命令、交付产物</div>
+            <div class="welcome-card">
+              <div class="wc-title">👋 欢迎来到 Cursor Local 的世界</div>
+              <ul class="wc-list">
+                <li>并行多 Agent，diff 审阅一键回滚</li>
+                <li>本地沙箱安全，危险命令自动拦截</li>
+                <li>OpenAI 兼容，任意模型即插即用</li>
+              </ul>
+            </div>
+          </div>
+        </div>
         <!-- 底部 follow-up 输入框（Cursor 风格） -->
         <div class="composer agents-composer" id="agents-composer">
-          <textarea id="followup-input" rows="2" placeholder="添加后续任务…（Enter 发送）"></textarea>
+          <textarea id="followup-input" rows="2" placeholder="描述任务，让 Agent 替你执行…（Enter 发送）"></textarea>
           <div class="composer-bar">
             <div class="composer-left">
-              <span class="mini-chip"><i data-lucide="bot"></i><span>Agent</span></span>
+              <button class="mini-chip mode-chip" id="agents-mode-chip" title="选择工作模式"><i data-lucide="hammer"></i><span id="agents-mode-text">Craft</span><i data-lucide="chevron-down" class="chev"></i></button>
               <span class="mini-chip" id="agents-model-chip" title="选择模型"><i data-lucide="cpu"></i><span id="agents-model-text">-</span></span>
             </div>
             <button class="send-btn" id="followup-send" title="发送（Enter）"><i data-lucide="arrow-up"></i></button>
@@ -290,8 +305,12 @@
               <button class="toggle" id="cfg-ai-complete"><span class="knob"></span></button>
             </div>
             <div class="srow">
-              <div class="srow-main"><div class="srow-label">完全控制权限</div><div class="srow-desc">允许 AI 访问任意路径、执行任意命令（磁盘格式化/关机等毁灭性操作仍被拦截，所有操作记录日志）</div></div>
-              <button class="toggle" id="cfg-permission"><span class="knob"></span></button>
+              <div class="srow-main"><div class="srow-label">Agent 权限</div><div class="srow-desc">自动审批：沙箱内自动执行，危险命令拦截 · 手动审批：写入/删除/命令逐条确认 · 完全访问：任意路径与命令（毁灭性操作仍拦截，全程留日志）</div></div>
+              <div class="seg3" id="cfg-permission-seg">
+                <button data-v="safe">自动审批</button>
+                <button data-v="manual">手动审批</button>
+                <button data-v="full">完全访问</button>
+              </div>
             </div>
           </div>
           <div class="modal-actions"><button id="cfg-cancel">取消</button><button id="cfg-save" class="primary">保存</button></div>
@@ -440,6 +459,7 @@
   <script src="lockscreen.js"></script>
   <script src="menubar.js"></script>
   <script src="model.js"></script>
+  <script src="modes.js"></script>
   <script src="renderer.js"></script>
 </body>
 </html>

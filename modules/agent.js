@@ -114,6 +114,28 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
     try { return loadConfig().permission === 'full'; } catch { return false; }
   }
 
+  /* ---- 审批流（手动审批模式：敏感操作需用户确认，参考 CodeBuddy 三档权限） ---- */
+  const APPROVAL_TOOLS = new Set(['write_file', 'create_file', 'create_dir', 'delete_file', 'delete_path', 'move_file', 'move_path', 'apply_patch', 'run_command']);
+  const pendingApprovals = new Map();
+  let approvalSeq = 0;
+  function needsApproval(agent, tool) {
+    if (agent.readonly) return false;
+    let perm = 'safe';
+    try { perm = loadConfig().permission || 'safe'; } catch { /* ignore */ }
+    if (perm !== 'manual') return false;
+    return APPROVAL_TOOLS.has(tool);
+  }
+  function requestApproval(agent, tool, args) {
+    return new Promise((resolve) => {
+      const callId = 'ap-' + Date.now() + '-' + (++approvalSeq);
+      pendingApprovals.set(callId, resolve);
+      emitAgent(agent, 'approval', { callId, tool, args });
+      setTimeout(() => {
+        if (pendingApprovals.has(callId)) { pendingApprovals.delete(callId); resolve(false); }
+      }, 120000);
+    });
+  }
+
   async function searchInDir(folder, pattern, maxResults = 50) {
     const results = [];
     const needle = String(pattern).toLowerCase();
@@ -163,6 +185,10 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
 
   async function executeTool(agent, name, args) {
     const cwd = agent.cwd;
+    // Ask 只读模式：拦截修改类操作
+    if (agent.readonly && APPROVAL_TOOLS.has(name)) {
+      return 'ERROR: 当前为 Ask 只读模式，已拦截修改类操作 ' + name;
+    }
     const full = isFullControl();
     const guard = (target) => { if (!full) assertInsideWorkspace(cwd, target); };
     addLog('debug', 'tool', `${name} ${JSON.stringify(args || {}).slice(0, 140)}`);
@@ -370,16 +396,21 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
       emitAgent(agent, 'error', { text: '未配置 API Key，请点击右上角「设置」填入你的 API Key 后重试。' });
       return;
     }
+    const perm = cfg.permission || 'safe';
     const sys = [
       '你是运行在本地桌面应用「Cursor Local」中的编码 Agent。',
       `当前工作目录：${agent.cwd}`,
       '你可以使用工具：list_dir 查看目录、list_tree 查看目录树、read_file 读文件、write_file 写文件（覆盖式，需完整内容）、delete_file 删除文件、move_file 移动/重命名、search_files 搜索代码、get_file_info 查看文件信息、run_command 执行终端命令。',
-      '权限说明：' + (isFullControl()
-        ? '当前为「完全控制」模式——可读写任意路径、执行任意命令（磁盘格式化/关机等毁灭性操作仍会被拦截）。'
-        : '当前为「安全」模式——文件读写必须限定在工作目录内（越界会被拦截）；run_command 不能执行 rm -rf、format、del /s /q、shutdown、git push --force 等危险命令（会被拦截）。'),
+      '权限说明：' + (perm === 'full'
+        ? '当前为「完全访问」模式——可读写任意路径、执行任意命令（磁盘格式化/关机等毁灭性操作仍会被拦截）。'
+        : perm === 'manual'
+        ? '当前为「手动审批」模式——文件写入、删除、移动、命令执行等敏感操作需要用户逐条确认后才会执行，被拒绝时请调整方案。'
+        : '当前为「自动审批」模式——文件读写必须限定在工作目录内（越界会被拦截）；run_command 不能执行 rm -rf、format、del /s /q、shutdown、git push --force 等危险命令（会被拦截）。'),
       '请自主完成用户任务：先查看相关文件结构，再读取/修改代码，必要时运行命令验证。',
-      '用简体中文简要说明每一步在做什么。写文件时必须给出完整最终内容。'
-    ].join('\n');
+      '用简体中文简要说明每一步在做什么。写文件时必须给出完整最终内容。',
+      agent.mode === 'plan' ? '【计划模式】只输出实施计划（步骤、涉及文件、风险点），不要调用任何工具、不要修改任何文件。' : '',
+      agent.mode === 'ask' ? '【问答模式】只回答问题与解释代码，不要调用修改类工具。' : ''
+    ].filter(Boolean).join('\n');
     agent.messages = [
       { role: 'system', content: sys },
       { role: 'user', content: agent.task }
@@ -421,6 +452,16 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
           try { args = JSON.parse(tc.function.arguments || '{}'); } catch { /* 忽略 */ }
           emitAgent(agent, 'tool_call', { name: fnName, args });
           let result;
+          // 手动审批：敏感操作等用户确认
+          if (needsApproval(agent, fnName)) {
+            const ok = await requestApproval(agent, fnName, args);
+            if (!ok) {
+              result = '用户拒绝执行 ' + fnName + '，请调整方案或先向用户说明理由。';
+              emitAgent(agent, 'tool_result', { name: fnName, result });
+              agent.messages.push({ role: 'tool', tool_call_id: tc.id, content: result });
+              continue;
+            }
+          }
           try { result = await executeTool(agent, fnName, args); }
           catch (err) { result = 'ERROR: ' + err.message; }
           result = String(result);
@@ -446,12 +487,14 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
   /* ---- IPC 注册 ---- */
   let agentSeq = 0;
   function register(ipcMain) {
-    ipcMain.handle('agent:create', (_e, { task, cwd }) => {
+    ipcMain.handle('agent:create', (_e, { task, cwd, mode }) => {
       agentSeq += 1;
       const agent = {
         id: 'agent-' + Date.now() + '-' + agentSeq,
         task: String(task || '').trim(),
         cwd: cwd || rootDir,
+        mode: mode || 'craft',
+        readonly: mode === 'ask',
         status: 'running',
         messages: [],
         log: [],
@@ -461,6 +504,12 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
       emitAgent(agent, 'meta', { task: agent.task, cwd: agent.cwd, ts: Date.now() });
       runAgent(agent);
       return { id: agent.id };
+    });
+
+    ipcMain.handle('agent:approval', (_e, { callId, allowed }) => {
+      const resolve = pendingApprovals.get(callId);
+      if (resolve) { pendingApprovals.delete(callId); resolve(!!allowed); }
+      return true;
     });
 
     ipcMain.handle('agent:list', () => {

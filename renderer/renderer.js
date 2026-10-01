@@ -73,7 +73,7 @@ async function sendHomeTask() {
   const task = input.value.trim();
   if (!task) { input.focus(); return; }
   const cwd = EditorState.currentFolder || '';
-  const r = await window.api.createAgent({ task, cwd });
+  const r = await window.api.createAgent({ task, cwd, mode: window.__agentMode || 'craft' });
   input.value = '';
   switchMode('agents');
   if (typeof selectAgent === 'function') selectAgent(r.id);
@@ -98,8 +98,8 @@ async function openSettings() {
   document.getElementById('cfg-model').value = cfg.model || '';
   const aiToggle = document.getElementById('cfg-ai-complete');
   if (aiToggle) aiToggle.classList.toggle('on', cfg.aiComplete !== false);
-  const permToggle = document.getElementById('cfg-permission');
-  if (permToggle) permToggle.classList.toggle('on', cfg.permission === 'full');
+  const permSeg = document.getElementById('cfg-permission-seg');
+  if (permSeg) permSeg.querySelectorAll('button').forEach((b) => b.classList.toggle('active', b.dataset.v === (cfg.permission || 'safe')));
   const lightToggle = document.getElementById('cfg-light-mode');
   if (lightToggle) lightToggle.classList.toggle('on', (cfg.theme && cfg.theme.mode) === 'light');
   const fsSel = document.getElementById('cfg-font-size');
@@ -171,13 +171,14 @@ document.getElementById('cfg-cancel').onclick = () => { cancelKeyRecord(); modal
 document.getElementById('cfg-save').onclick = async () => {
   cancelKeyRecord();
   const aiToggle = document.getElementById('cfg-ai-complete');
-  const permToggle = document.getElementById('cfg-permission');
+  const permSeg = document.getElementById('cfg-permission-seg');
+  const permActive = permSeg && permSeg.querySelector('button.active');
   const cfg = await window.api.setConfig({
     baseUrl: document.getElementById('cfg-baseurl').value.trim(),
     apiKey: document.getElementById('cfg-apikey').value.trim(),
     model: document.getElementById('cfg-model').value.trim(),
     aiComplete: aiToggle ? aiToggle.classList.contains('on') : true,
-    permission: permToggle && permToggle.classList.contains('on') ? 'full' : 'safe'
+    permission: permActive ? permActive.dataset.v : 'safe'
   });
   window.__aiCompleteEnabled = cfg.aiComplete !== false;
   modal.classList.add('hidden');
@@ -197,9 +198,11 @@ document.querySelectorAll('.snav-item').forEach((el) => {
 // AI 补全开关
 const aiToggleBtn = document.getElementById('cfg-ai-complete');
 if (aiToggleBtn) aiToggleBtn.onclick = () => aiToggleBtn.classList.toggle('on');
-// 完全控制权限开关
-const permToggleBtn = document.getElementById('cfg-permission');
-if (permToggleBtn) permToggleBtn.onclick = () => permToggleBtn.classList.toggle('on');
+// Agent 权限三档（自动审批/手动审批/完全访问）
+const permSegEl = document.getElementById('cfg-permission-seg');
+if (permSegEl) permSegEl.querySelectorAll('button').forEach((b) => {
+  b.onclick = () => permSegEl.querySelectorAll('button').forEach((x) => x.classList.toggle('active', x === b));
+});
 // 亮色模式开关（即时切换）
 const lightToggleBtn = document.getElementById('cfg-light-mode');
 if (lightToggleBtn) lightToggleBtn.onclick = () => {

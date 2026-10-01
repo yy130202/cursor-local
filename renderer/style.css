@@ -1789,3 +1789,78 @@ body.aura-done #aura {
   cursor: pointer; font-size: 12.5px; padding: 7px; border-radius: 7px;
 }
 .model-custom-btn:hover { background: var(--accent-soft); }
+
+/* ==================== Agent 模式选择（Craft/Ask/Plan，CodeBuddy 式） ==================== */
+.mode-panel {
+  position: fixed; z-index: 600; width: 290px;
+  background: var(--glass-strong); backdrop-filter: blur(var(--blur-lg));
+  -webkit-backdrop-filter: blur(var(--blur-lg));
+  border: 1px solid var(--glass-border); border-radius: 12px;
+  box-shadow: var(--shadow-3); padding: 6px;
+  animation: popUp 0.22s var(--spring-soft);
+}
+.mode-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; cursor: pointer; }
+.mode-item:hover { background: var(--hover-strong); }
+.mode-item.active { background: var(--accent-soft); }
+.mi-ico { display: grid; place-items: center; color: var(--accent); }
+.mi-ico svg.lucide { width: 16px; height: 16px; }
+.mi-body { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.mi-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.mi-desc { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+.mi-check { color: var(--accent); }
+.mode-chip { cursor: pointer; }
+.mode-chip .chev { width: 12px; height: 12px; opacity: 0.6; }
+
+/* ==================== 审批确认卡（手动审批模式） ==================== */
+.approval-card {
+  background: var(--glass); border: 1px solid rgba(245, 158, 11, 0.4);
+  border-radius: var(--r-md); padding: 12px 14px; max-width: 92%;
+}
+.approval-card.resolved { border-color: var(--glass-border); opacity: 0.85; }
+.ap-head { font-size: 13px; font-weight: 700; color: var(--yellow); display: flex; align-items: center; gap: 6px; }
+.ap-args {
+  margin: 8px 0; padding: 8px 10px; background: var(--input-bg); border-radius: 7px;
+  font-size: 11.5px; color: var(--text-dim); max-height: 140px; overflow: auto;
+  font-family: Consolas, monospace; white-space: pre-wrap; word-break: break-all;
+}
+.ap-actions { display: flex; gap: 8px; }
+.ap-allow, .ap-deny { border: none; border-radius: 7px; padding: 6px 16px; cursor: pointer; font-size: 12px; font-weight: 600; }
+.ap-allow { background: var(--accent); color: var(--accent-contrast); }
+.ap-allow:hover { background: var(--accent-hover); }
+.ap-deny { background: transparent; border: 1px solid var(--red); color: var(--red); }
+.ap-deny:hover { background: rgba(241, 76, 76, 0.12); }
+.ap-state { font-size: 12px; font-weight: 600; }
+.ap-state.ok { color: var(--green); }
+.ap-state.deny { color: var(--red); }
+
+/* ==================== Agents 欢迎页（让想法成为现实） ==================== */
+#agents-empty { display: flex; align-items: center; justify-content: center; padding: 24px; }
+.welcome-hero { text-align: center; max-width: 480px; }
+.welcome-icon {
+  width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 18px;
+  display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff; box-shadow: 0 12px 30px var(--glow);
+  animation: orbFloat 8s ease-in-out infinite;
+}
+.welcome-icon svg.lucide { width: 30px; height: 30px; }
+.welcome-title { font-size: 26px; font-weight: 800; color: var(--title); letter-spacing: 0.5px; }
+.welcome-sub { margin-top: 8px; font-size: 13px; color: var(--text-dim); }
+.welcome-card {
+  margin: 22px auto 0; text-align: left; padding: 16px 18px;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  border-radius: var(--r-lg); box-shadow: var(--shadow-1);
+}
+.wc-title { font-size: 13px; font-weight: 700; color: var(--accent); }
+.wc-list { margin: 10px 0 0; padding: 0 0 0 2px; list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.wc-list li { font-size: 12.5px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.wc-list li::before { content: '•'; color: var(--accent); }
+
+/* 权限三档 seg */
+.seg3 { display: flex; gap: 4px; flex-shrink: 0; }
+.seg3 button {
+  background: transparent; border: 1px solid var(--glass-border); color: var(--text-dim);
+  border-radius: 7px; padding: 5px 10px; cursor: pointer; font-size: 11.5px;
+}
+.seg3 button:hover { color: var(--text); border-color: var(--text-dim); }
+.seg3 button.active { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
