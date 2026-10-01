@@ -157,7 +157,7 @@
           <div class="composer-bar">
             <div class="composer-left">
               <span class="mini-chip" id="home-cwd-chip" title="工作目录"><i data-lucide="folder"></i><span id="home-cwd-text">未选择文件夹</span></span>
-              <span class="mini-chip" title="当前模型"><i data-lucide="cpu"></i><span id="home-model-text">-</span></span>
+              <span class="mini-chip" id="home-model-chip" title="选择模型"><i data-lucide="cpu"></i><span id="home-model-text">-</span></span>
             </div>
             <button class="send-btn" id="home-send" title="启动 Agent（Enter）"><i data-lucide="arrow-up"></i></button>
           </div>
@@ -214,7 +214,7 @@
           <div class="composer-bar">
             <div class="composer-left">
               <span class="mini-chip"><i data-lucide="bot"></i><span>Agent</span></span>
-              <span class="mini-chip" title="当前模型"><i data-lucide="cpu"></i><span id="agents-model-text">-</span></span>
+              <span class="mini-chip" id="agents-model-chip" title="选择模型"><i data-lucide="cpu"></i><span id="agents-model-text">-</span></span>
             </div>
             <button class="send-btn" id="followup-send" title="发送（Enter）"><i data-lucide="arrow-up"></i></button>
           </div>
@@ -376,6 +376,11 @@
         <div class="uemail" id="um-email">-</div>
       </div>
     </div>
+    <button class="menu-item" onclick="document.getElementById('theme-btn').click()"><i data-lucide="palette"></i>主题设置</button>
+    <button class="menu-item" onclick="document.getElementById('settings-btn').click()"><i data-lucide="settings"></i>IDE 设置</button>
+    <button class="menu-item" onclick="document.getElementById('settings-btn').click()"><i data-lucide="keyboard"></i>快捷键</button>
+    <div class="mb-sep" style="margin:4px 8px"></div>
+    <button class="menu-item" onclick="flashStatus('Cursor Local · 本地 AI 编程 Agent')"><i data-lucide="info"></i>关于</button>
     <button id="logout-btn" class="menu-item"><i data-lucide="log-out"></i>退出登录</button>
   </div>
 
@@ -434,6 +439,7 @@
   <script src="island.js"></script>
   <script src="lockscreen.js"></script>
   <script src="menubar.js"></script>
+  <script src="model.js"></script>
   <script src="renderer.js"></script>
 </body>
 </html>

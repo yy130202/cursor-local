@@ -1760,3 +1760,32 @@ body.aura-done #aura {
 .pb-item.info .pb-ico { color: #4ea1ff; }
 .pb-msg { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pb-pos { flex-shrink: 0; color: var(--text-dim); font-size: 11px; font-family: Consolas, monospace; }
+
+/* ==================== 模型选择下拉（CodeBuddy 式） ==================== */
+.model-panel {
+  position: fixed; z-index: 600; width: 280px; max-height: 420px;
+  display: flex; flex-direction: column;
+  background: var(--glass-strong); backdrop-filter: blur(var(--blur-lg));
+  -webkit-backdrop-filter: blur(var(--blur-lg));
+  border: 1px solid var(--glass-border); border-radius: 12px;
+  box-shadow: var(--shadow-3); overflow: hidden;
+  animation: popUp 0.22s var(--spring-soft);
+}
+.model-title { padding: 10px 14px 6px; font-size: 11px; font-weight: 700; color: var(--text-dim); letter-spacing: 0.5px; }
+.model-list { overflow-y: auto; padding: 2px 6px 6px; }
+.model-item {
+  display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+  border-radius: 7px; cursor: pointer; font-size: 12.5px; color: var(--text);
+}
+.model-item:hover { background: var(--hover-strong); }
+.model-item.active { background: var(--accent-soft); }
+.model-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.model-tag { font-size: 10.5px; color: var(--text-dim); background: var(--hover-strong); padding: 1px 7px; border-radius: 999px; }
+.model-tag.free { color: #22c55e; background: rgba(34, 197, 94, 0.12); }
+.model-check { color: var(--accent); font-size: 12px; }
+.model-footer { border-top: 1px solid var(--glass-border); padding: 6px; }
+.model-custom-btn {
+  width: 100%; background: transparent; border: none; color: var(--accent);
+  cursor: pointer; font-size: 12.5px; padding: 7px; border-radius: 7px;
+}
+.model-custom-btn:hover { background: var(--accent-soft); }

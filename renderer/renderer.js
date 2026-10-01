@@ -282,15 +282,16 @@ function openJsonSettings() {
 document.getElementById('open-folder-btn').onclick = () => openFolder();
 
 function refreshStatusBar(cfg) {
+  const mName = (typeof window.modelDisplayName === 'function') ? window.modelDisplayName(cfg.model) : (cfg.model || '-');
   document.getElementById('status-model').textContent =
-    '模型: ' + (cfg.model || '-') + ' · ' + (cfg.baseUrl || '');
+    '模型: ' + mName + ' · ' + (cfg.baseUrl || '');
   const noKey = !cfg.apiKey;
   document.getElementById('status-warn').style.display = noKey ? '' : 'none';
   // 主页 / Agents 输入框的模型与目录 chip
   const mt = document.getElementById('home-model-text');
-  if (mt) mt.textContent = cfg.model || '-';
+  if (mt) mt.textContent = mName;
   const at = document.getElementById('agents-model-text');
-  if (at) at.textContent = cfg.model || '-';
+  if (at) at.textContent = mName;
   updateCwdChip();
 }
 
