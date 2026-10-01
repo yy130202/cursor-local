@@ -328,9 +328,18 @@ function renderTranscript() {
     } else if (en.kind === 'agent-msg') {
       const d = document.createElement('div');
       d.className = 'entry entry-text agent-msg' + (en.streaming ? ' streaming' : '') + inCls;
-      d.innerHTML = '<span class="who">Agent</span><span class="body">' + escapeHtml(en.text) + (en.streaming ? '<span class="caret">▍</span>' : '') + '</span>';
+      const body = en.streaming ? escapeHtml(en.text) : miniMarkdown(en.text);
+      d.innerHTML = '<span class="who">Agent</span><span class="body">' + body + (en.streaming ? '<span class="caret">▍</span>' : '') + '</span>';
       transcriptEl.appendChild(d);
       if (en.streaming) a.__streamNode = d; // 记录流式节点，供增量更新
+      // 代码块复制按钮
+      d.querySelectorAll('.md-copy').forEach((b) => {
+        b.onclick = (e) => {
+          e.stopPropagation();
+          try { navigator.clipboard.writeText(decodeURIComponent(b.dataset.code)); flashStatus('已复制代码'); }
+          catch { /* ignore */ }
+        };
+      });
     } else if (en.kind === 'tool') {
       const d = document.createElement('div');
       d.className = 'entry' + inCls;
@@ -544,3 +553,29 @@ loadHistory();
     flashStatus('已清空全部会话');
   };
 })();
+
+/* ---- 轻量 Markdown 渲染（AI 回复的代码块/加粗/标题/列表） ---- */
+function miniMarkdown(text) {
+  let s = escapeHtml(String(text == null ? '' : text));
+  // 提取代码块（占位符保护，避免内部换行/标签被破坏）
+  const blocks = [];
+  s = s.replace(/```(\w*)\n?([\s\S]*?)```/g, (m, lang, code) => {
+    blocks.push({ lang: (lang || 'code').trim(), code });
+    return '\u0000B' + (blocks.length - 1) + '\u0000';
+  });
+  // 行内代码 `...`
+  s = s.replace(/`([^`\n]+)`/g, '<code class="md-inline">$1</code>');
+  // 加粗 **...**
+  s = s.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+  // 标题 ### / ## / #
+  s = s.replace(/^#{1,6} (.+)$/gm, '<div class="md-h">$1</div>');
+  // 有序列表 1. / 无序列表 - *
+  s = s.replace(/^(\d+)[.、] (.+)$/gm, '<div class="md-li"><span class="md-li-n">$1.</span>$2</div>');
+  s = s.replace(/^[-*] (.+)$/gm, '<div class="md-li">• $1</div>');
+  // 恢复代码块
+  s = s.replace(/\u0000B(\d+)\u0000/g, (m, i) => {
+    const b = blocks[+i];
+    return '<div class="md-code"><div class="md-code-head"><span>' + escapeHtml(b.lang) + '</span><button class="md-copy" data-code="' + encodeURIComponent(b.code) + '">' + (window.lucideIcon('copy') || '复制') + '</button></div><pre><code>' + b.code + '</code></pre></div>';
+  });
+  return s;
+}

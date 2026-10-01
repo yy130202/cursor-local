@@ -1972,3 +1972,25 @@ svg.lucide { width: 15px; height: 15px; }
   font-family: Consolas, "Microsoft YaHei", monospace; resize: vertical; line-height: 1.6;
 }
 .rules-textarea:focus { outline: none; border-color: var(--accent); }
+
+/* ==================== AI 回复 Markdown 渲染 ==================== */
+.md-code { margin: 6px 0; border: 1px solid var(--glass-border); border-radius: 8px; overflow: hidden; }
+.md-code-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 3px 10px; background: var(--panel-dark); font-size: 10.5px; color: var(--text-dim);
+}
+.md-copy {
+  display: inline-flex; align-items: center; gap: 4px; background: transparent; border: none;
+  color: var(--text-dim); cursor: pointer; font-size: 10.5px; padding: 2px 6px; border-radius: 4px;
+}
+.md-copy:hover { color: var(--accent); background: var(--hover-strong); }
+.md-copy svg.lucide { width: 11px; height: 11px; }
+.md-code pre { margin: 0; padding: 8px 10px; overflow: auto; background: var(--input-bg); }
+.md-code code { font-family: Consolas, "Microsoft YaHei", monospace; font-size: 12px; color: var(--text); white-space: pre; }
+.md-inline {
+  font-family: Consolas, monospace; font-size: 12px; background: var(--input-bg);
+  border: 1px solid var(--glass-border); border-radius: 4px; padding: 1px 5px; color: var(--accent);
+}
+.md-h { font-size: 13px; font-weight: 700; color: var(--title); margin: 6px 0 2px; }
+.md-li { margin: 2px 0; padding-left: 2px; }
+.md-li-n { color: var(--accent); font-weight: 600; margin-right: 4px; }
