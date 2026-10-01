@@ -20,7 +20,12 @@
       <button id="mode-editor" title="传统代码编辑器"><i data-lucide="file-code-2"></i><span>Editor</span></button>
       <button id="mode-agents" title="Agent 工作台"><i data-lucide="bot"></i><span>Agents</span></button>
     </div>
+    <div class="top-search" id="top-search" title="全局搜索（Ctrl+Shift+F）">
+      <span class="ts-ico"><i data-lucide="search"></i></span>
+      <input id="top-search-input" placeholder="搜索" spellcheck="false" readonly>
+    </div>
     <div class="spacer"></div>
+    <button id="open-agents-btn" class="open-agents-btn" title="切换到 Agent 工作台"><i data-lucide="bot"></i><span>打开 Agents</span></button>
     <div id="workdir-label"></div>
     <button id="open-folder-btn" class="action icon-btn" title="打开文件夹"><i data-lucide="folder-open"></i></button>
     <button id="git-btn" class="action icon-btn" title="源代码管理（Git）"><i data-lucide="git-branch"></i></button>
@@ -187,6 +192,7 @@
     <!-- Agents Window（Cursor 风格：时间分组列表 + 气泡 + 底部 follow-up） -->
     <section id="agents-view" class="view">
       <div id="agents-sidebar">
+        <button id="new-task-btn" class="new-task-btn" title="新建任务（聚焦输入框）"><i data-lucide="square-check"></i><span>新建任务</span></button>
         <div class="panel-title"><span>Agents</span><button id="new-agent-btn"><i data-lucide="plus"></i>新建</button></div>
         <div id="agent-list"></div>
         <div id="history-section" class="hidden">

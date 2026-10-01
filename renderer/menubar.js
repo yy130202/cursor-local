@@ -45,6 +45,7 @@
       { label: '源代码管理', run: () => window.openGitPanel && window.openGitPanel() },
       { label: '终端', key: 'Ctrl+`', run: () => window.openTerminal && window.openTerminal() },
       { label: '问题', run: () => window.openProblems && window.openProblems() },
+      { label: '输出', run: () => window.openOutput && window.openOutput() },
       { sep: true },
       { label: '主题设置…', run: () => { const b = document.getElementById('settings-btn'); if (b) b.click(); } }
     ]},

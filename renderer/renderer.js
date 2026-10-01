@@ -411,3 +411,17 @@ window.refreshStats = refreshStats;
     window.api.maximizeWindow();
   };
 })();
+
+/* 顶栏搜索框 + 打开 Agents + 新建任务（参考 CodeBuddy 顶栏布局） */
+(function bindTopbarExtras() {
+  const ts = document.getElementById('top-search');
+  if (ts) ts.onclick = () => { if (typeof window.openGlobalSearch === 'function') window.openGlobalSearch(); };
+  const oa = document.getElementById('open-agents-btn');
+  if (oa) oa.onclick = () => { if (typeof switchMode === 'function') switchMode('agents'); };
+  const nt = document.getElementById('new-task-btn');
+  if (nt) nt.onclick = () => {
+    if (typeof switchMode === 'function') switchMode('agents');
+    const input = document.getElementById('followup-input');
+    if (input) { input.focus(); input.placeholder = '描述新任务…（Enter 发送）'; }
+  };
+})();

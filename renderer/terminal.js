@@ -14,13 +14,15 @@
         '<div class="term-tabs">' +
           '<button class="term-tab active" data-tab="term">终端</button>' +
           '<button class="term-tab" data-tab="problems">问题</button>' +
+          '<button class="term-tab" data-tab="logs">输出</button>' +
         '</div>' +
         '<span class="term-cwd" id="term-cwd"></span>' +
         '<button class="term-action" id="term-new" title="新终端">' + (window.lucideIcon('plus') || '') + '</button>' +
         '<button class="term-action" id="term-close">×</button>' +
       '</div>' +
       '<div class="term-body" id="term-container"></div>' +
-      '<div class="problems-body hidden" id="problems-container"></div>';
+      '<div class="problems-body hidden" id="problems-container"></div>' +
+      '<div class="problems-body hidden" id="logs-container"></div>';
     document.body.appendChild(panelEl);
     // Tab 切换
     panelEl.querySelectorAll('.term-tab').forEach((tab) => {
@@ -33,8 +35,36 @@
     panelEl.querySelectorAll('.term-tab').forEach((t) => t.classList.toggle('active', t.dataset.tab === name));
     document.getElementById('term-container').classList.toggle('hidden', name !== 'term');
     document.getElementById('problems-container').classList.toggle('hidden', name !== 'problems');
+    document.getElementById('logs-container').classList.toggle('hidden', name !== 'logs');
     if (name === 'problems') renderProblems();
+    if (name === 'logs') renderLogs();
   }
+
+  /* 输出面板：应用运行日志（Debug/Info/Warning/Error） */
+  async function renderLogs() {
+    const box = document.getElementById('logs-container');
+    if (!box) return;
+    try {
+      const logs = await window.api.getLogs();
+      if (!logs || !logs.length) { box.innerHTML = '<div class="pb-empty">暂无日志</div>'; return; }
+      box.innerHTML = logs.slice(-300).reverse().map((l) => {
+        const lv = String(l.level || 'info').toLowerCase();
+        const cls = lv === 'error' ? 'err' : (lv === 'warning' ? 'warn' : 'info');
+        const ico = cls === 'err' ? '✖' : (cls === 'warn' ? '⚠' : 'ℹ');
+        const t = l.ts ? new Date(l.ts).toLocaleTimeString('zh-CN', { hour12: false }) : '';
+        return '<div class="pb-item ' + cls + '">' +
+          '<span class="pb-ico">' + ico + '</span>' +
+          '<span class="pb-msg">[' + esc(l.source || lv) + '] ' + esc(l.message || '') + '</span>' +
+          '<span class="pb-pos">' + t + '</span>' +
+        '</div>';
+      }).join('');
+    } catch { box.innerHTML = '<div class="pb-empty">日志加载失败</div>'; }
+  }
+  window.openOutput = function () {
+    openTerminal();
+    switchTab('logs');
+    renderLogs();
+  };
 
   const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   function renderProblems() {

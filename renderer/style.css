@@ -1916,3 +1916,35 @@ svg.lucide { width: 15px; height: 15px; }
 .icon-tile { width: 34px; height: 34px; }
 .icon-tile svg.lucide { width: 17px; height: 17px; }
 .qc-icon svg.lucide { width: 17px; height: 17px; }
+
+/* ==================== 顶栏搜索框 + 打开 Agents 按钮（CodeBuddy 布局） ==================== */
+.top-search {
+  display: flex; align-items: center; gap: 6px; margin: 0 10px;
+  width: 240px; height: 26px; padding: 0 10px;
+  background: var(--input-bg); border: 1px solid var(--glass-border); border-radius: var(--r-full);
+  cursor: pointer; flex-shrink: 1; min-width: 140px;
+}
+.top-search:hover, .top-search:focus-within { border-color: var(--accent); }
+.top-search .ts-ico { display: grid; place-items: center; color: var(--text-dim); }
+.top-search .ts-ico svg.lucide { width: 13px; height: 13px; }
+.top-search input {
+  flex: 1; min-width: 0; background: transparent; border: none; outline: none;
+  color: var(--text); font-size: 12px; cursor: pointer;
+}
+.open-agents-btn {
+  display: inline-flex; align-items: center; gap: 6px; margin-right: 10px;
+  padding: 4px 12px; border-radius: var(--r-full); cursor: pointer;
+  background: var(--accent-soft); border: 1px solid var(--accent); color: var(--accent);
+  font-size: 12px; font-weight: 600; white-space: nowrap;
+}
+.open-agents-btn:hover { background: var(--accent); color: var(--accent-contrast); box-shadow: 0 0 14px var(--glow); }
+.open-agents-btn svg.lucide { width: 13px; height: 13px; }
+
+/* 新建任务按钮（Agents 侧栏） */
+.new-task-btn {
+  display: flex; align-items: center; gap: 8px; margin: 8px 10px 4px; padding: 7px 12px;
+  background: var(--accent-soft); border: 1px solid var(--accent); border-radius: var(--r-md);
+  color: var(--accent); cursor: pointer; font-size: 12.5px; font-weight: 600;
+}
+.new-task-btn:hover { background: var(--accent); color: var(--accent-contrast); box-shadow: 0 0 12px var(--glow); }
+.new-task-btn svg.lucide { width: 14px; height: 14px; }
