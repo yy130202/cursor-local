@@ -1864,3 +1864,55 @@ body.aura-done #aura {
 }
 .seg3 button:hover { color: var(--text); border-color: var(--text-dim); }
 .seg3 button.active { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+
+/* ==================== 紧凑密度（字体/图标缩小，信息密度提升，更接近专业 IDE） ==================== */
+body { font-size: 12px; }
+svg.lucide { width: 15px; height: 15px; }
+
+/* 顶栏更矮 */
+#topbar { height: 40px; padding: 0 10px; }
+.mb-top { font-size: 12px; padding: 3px 8px; }
+.logo-text { font-size: 13px; }
+#topbar .action.icon-btn { padding: 4px; }
+#topbar .action svg.lucide { width: 14px; height: 14px; }
+.mode-switch button { font-size: 12px; padding: 4px 10px; }
+
+/* 文件树更紧凑 */
+#filetree { padding: 2px 0; }
+.tree-item { padding: 2px 8px; font-size: 12px; gap: 5px; }
+.tree-item svg.lucide { width: 14px; height: 14px; }
+.panel-title { padding: 6px 10px; font-size: 10.5px; }
+
+/* 标签页更紧凑 */
+.tab { font-size: 12px; padding: 4px 10px; }
+.tab .close { width: 16px; height: 16px; }
+
+/* 菜单 / 下拉 / 列表更紧凑 */
+.menu-item, .mb-item { font-size: 12px; padding: 5px 10px; }
+.mb-key { font-size: 10.5px; }
+.git-item { padding: 3px 8px; font-size: 12px; }
+.git-group-label { font-size: 10.5px; padding: 6px 10px 3px; }
+.agent-item { font-size: 12px; padding: 6px 10px; }
+.history-item { font-size: 12px; }
+.model-item, .mode-item { font-size: 12px; }
+.model-title { font-size: 10.5px; }
+.mi-name { font-size: 12.5px; }
+.mi-desc { font-size: 10.5px; }
+
+/* 会话 / 气泡更紧凑 */
+.entry { margin-bottom: 8px; }
+.entry-text { font-size: 12.5px; line-height: 1.55; }
+.user-bubble { font-size: 12.5px; padding: 8px 13px; }
+.agent-item .agent-task { font-size: 12px; }
+
+/* 面包屑更紧凑 */
+.breadcrumb { height: 24px; font-size: 11px; padding: 0 8px; }
+.breadcrumb .bc-seg { padding: 1px 5px; }
+
+/* 状态栏更紧凑 */
+#statusbar { font-size: 11px; height: 22px; }
+
+/* 图标容器（icon-tile 大图标视觉焦点保持，仅微调） */
+.icon-tile { width: 34px; height: 34px; }
+.icon-tile svg.lucide { width: 17px; height: 17px; }
+.qc-icon svg.lucide { width: 17px; height: 17px; }
