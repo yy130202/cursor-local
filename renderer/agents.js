@@ -346,6 +346,7 @@ function renderTranscript() {
       const card = document.createElement('div');
       card.className = 'tool-card';
       const summary = escapeHtml(argsSummary(en.name, en.args));
+      const rSummary = en.result ? toolResultSummary(en.name, en.result) : '';
       card.innerHTML =
         '<div class="head">' +
           '<span class="tag ' + en.name + '">' + (window.lucideIcon(toolIconName(en.name)) || '') + en.name + '</span>' +
@@ -354,11 +355,14 @@ function renderTranscript() {
             (en.result ? (en.result.startsWith('ERROR') || en.result.includes('拦截') ? (window.lucideIcon('circle-x') || '') : (window.lucideIcon('circle-check') || '')) : (window.lucideIcon('loader-circle') || '')) +
           '</span>' +
         '</div>' +
+        (rSummary ? '<div class="tool-result">' + rSummary + '</div>' : '') +
         '<pre>' + escapeHtml(
           '参数:\n' + JSON.stringify(en.args || {}, null, 2) +
           (en.result ? '\n\n结果:\n' + en.result : '')
         ) + '</pre>';
       card.querySelector('.head').onclick = () => card.classList.toggle('open');
+      const trEl = card.querySelector('.tool-result');
+      if (trEl) trEl.onclick = () => card.classList.toggle('open');
       d.appendChild(card);
       transcriptEl.appendChild(d);
     } else if (en.kind === 'approval') {
@@ -578,4 +582,21 @@ function miniMarkdown(text) {
     return '<div class="md-code"><div class="md-code-head"><span>' + escapeHtml(b.lang) + '</span><button class="md-copy" data-code="' + encodeURIComponent(b.code) + '">' + (window.lucideIcon('copy') || '复制') + '</button></div><pre><code>' + b.code + '</code></pre></div>';
   });
   return s;
+}
+
+/* ---- 工具结果友好摘要（直接可见，不用展开就知道工具干了什么） ---- */
+function toolResultSummary(name, result) {
+  if (!result) return '';
+  let r = String(result).replace(/\x1b\[[0-9;]*m/g, '').trim(); // 去 ANSI 颜色码
+  if (r.startsWith('ERROR')) return '<span class="tr-err">' + escapeHtml(r.slice(0, 200)) + '</span>';
+  let short = r;
+  if (name === 'write_file' || name === 'create_file') {
+    short = r.replace(/^已写入\s*/, '').replace(/^已创建\s*/, '');
+    if (short.length > 120) short = short.slice(0, 120) + '…';
+  } else if (name === 'run_command' || name === 'search_files' || name === 'list_tree') {
+    if (short.length > 200) short = short.slice(0, 200) + '…';
+  } else {
+    if (short.length > 160) short = short.slice(0, 160) + '…';
+  }
+  return escapeHtml(short);
 }
