@@ -36,6 +36,8 @@ contextBridge.exposeInMainWorld('api', {
   gitChangedLines: (cwd, file) => ipcRenderer.invoke('git:changedLines', { cwd, file }),
   gitStage: (cwd, file) => ipcRenderer.invoke('git:stage', { cwd, file }),
   gitUnstage: (cwd, file) => ipcRenderer.invoke('git:unstage', { cwd, file }),
+  gitStageAll: (cwd) => ipcRenderer.invoke('git:stageAll', cwd),
+  gitUnstageAll: (cwd) => ipcRenderer.invoke('git:unstageAll', cwd),
   gitCommitFiles: (cwd, files, message) => ipcRenderer.invoke('git:commitFiles', { cwd, files, message }),
   gitPush: (cwd) => ipcRenderer.invoke('git:push', cwd),
   gitBranch: (cwd) => ipcRenderer.invoke('git:branch', cwd),

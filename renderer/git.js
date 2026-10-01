@@ -1,4 +1,4 @@
-/* Cursor Local - Git 面板（VS Code 式：更改/暂存的更改 + 分支切换 + 提交历史） */
+/* Cursor Local - Git 面板（IDEA/VS Code 式：清晰的「暂存→提交」流程 + 并排 diff + 历史） */
 (function () {
   let panelEl = null;
   let diffEditor = null;
@@ -13,16 +13,17 @@
     panelEl.className = 'git-panel hidden';
     panelEl.innerHTML =
       '<div class="git-head">' +
-        '<span class="git-branch" id="git-branch" title="切换分支">-</span>' +
+        '<span class="git-branch-label">分支</span>' +
+        '<span class="git-branch" id="git-branch" title="点击切换分支">-</span>' +
         '<div class="git-head-spacer"></div>' +
-        '<button class="git-action" id="git-pull" title="拉取（pull）">' + (window.lucideIcon('download') || '') + '</button>' +
-        '<button class="git-action" id="git-push" title="推送（push）">' + (window.lucideIcon('arrow-up') || '') + '</button>' +
-        '<button class="git-action" id="git-refresh" title="刷新">' + (window.lucideIcon('refresh-cw') || '') + '</button>' +
-        '<button class="git-action" id="git-history" title="提交历史">' + (window.lucideIcon('history') || '') + '</button>' +
-        '<button class="git-action" id="git-close">×</button>' +
+        '<button class="git-action" id="git-pull" title="从远端拉取">' + (window.lucideIcon('download') || '↓') + '<span>拉取</span></button>' +
+        '<button class="git-action" id="git-push" title="推送到远端">' + (window.lucideIcon('arrow-up') || '↑') + '<span>推送</span></button>' +
+        '<button class="git-action" id="git-refresh" title="刷新状态">' + (window.lucideIcon('refresh-cw') || '↻') + '<span>刷新</span></button>' +
+        '<button class="git-action" id="git-history" title="查看提交历史">' + (window.lucideIcon('history') || '🕐') + '<span>历史</span></button>' +
+        '<button class="git-action git-x" id="git-close" title="关闭">×</button>' +
       '</div>' +
       '<div class="git-commit-row">' +
-        '<textarea class="git-msg" id="git-msg" placeholder="提交信息（Ctrl+Enter 提交）"></textarea>' +
+        '<textarea class="git-msg" id="git-msg" placeholder="提交信息（先点 + 暂存更改，再提交）"></textarea>' +
         '<button class="git-commit-btn" id="git-commit" disabled>提交</button>' +
       '</div>' +
       '<div class="git-body">' +
@@ -86,7 +87,7 @@
     const total = stagedCount + r.unstaged.length;
     updateCommitBtn(stagedCount);
     if (!total) {
-      list.innerHTML = '<div class="git-empty">无更改，工作区干净 ✓<br><span class="git-empty-sub">点右上角时钟查看提交历史</span></div>';
+      list.innerHTML = '<div class="git-empty">✓ 无更改，工作区干净<br><span class="git-empty-sub">点右上角「历史」查看提交记录</span></div>';
       return;
     }
     const statusMeta = { added: ['A', 'git-a'], modified: ['M', 'git-m'], deleted: ['D', 'git-d'], untracked: ['U', 'git-u'], renamed: ['R', 'git-m'], conflict: ['!', 'git-d'] };
@@ -99,29 +100,43 @@
     let html = '';
     const group = (title, items, staged) => {
       if (!items.length) return '';
-      let g = '<div class="git-group-label">' + title + '（' + items.length + '）</div>';
+      const allBtn = staged
+        ? '<button class="git-all-btn" data-all="unstage" title="取消全部暂存">全部取消 −</button>'
+        : '<button class="git-all-btn" data-all="stage" title="暂存全部更改">全部暂存 +</button>';
+      let g = '<div class="git-group-label">' + title + '（' + items.length + '）<span class="git-group-actions">' + allBtn + '</span></div>';
       for (const it of items) {
         const [ch, cls] = statusMeta[it.status] || ['?', 'git-m'];
-        g += '<div class="git-item' + (staged ? '' : '') + '" data-file="' + escapeHtml(it.file) + '" data-staged="' + (staged ? '1' : '0') + '">' +
+        g += '<div class="git-item" data-file="' + escapeHtml(it.file) + '" data-staged="' + (staged ? '1' : '0') + '">' +
+          '<button class="git-stage-btn" title="' + (staged ? '取消暂存' : '暂存') + '">' + (window.lucideIcon(staged ? 'minus' : 'plus') || (staged ? '−' : '+')) + '</button>' +
           '<span class="git-status ' + cls + '">' + ch + '</span>' +
           '<span class="git-file">' + escapeHtml(it.file) + '</span>' +
           numstat(it) +
-          '<button class="git-stage-btn" title="' + (staged ? '取消暂存' : '暂存') + '">' + (window.lucideIcon(staged ? 'minus' : 'plus') || (staged ? '−' : '+')) + '</button>' +
         '</div>';
       }
       return g;
     };
-    html = group('更改', r.unstaged, false) + group('暂存的更改', r.staged, true);
+    html = group('更改（未暂存）', r.unstaged, false) + group('暂存的更改', r.staged, true);
     list.innerHTML = html;
 
     list.querySelectorAll('.git-item').forEach((el) => {
       const file = el.dataset.file;
-      const staged = el.dataset.staged === '1';
-      el.onclick = () => showDiff(file, staged);
-      el.querySelector('.git-stage-btn').onclick = async (e) => {
+      el.onclick = () => showDiff(file, el.dataset.staged === '1');
+    });
+    list.querySelectorAll('.git-stage-btn').forEach((btn) => {
+      const item = btn.closest('.git-item');
+      btn.onclick = async (e) => {
         e.stopPropagation();
-        if (staged) await window.api.gitUnstage(currentCwd, file);
-        else await window.api.gitStage(currentCwd, file);
+        const staged = item.dataset.staged === '1';
+        if (staged) await window.api.gitUnstage(currentCwd, item.dataset.file);
+        else await window.api.gitStage(currentCwd, item.dataset.file);
+        await refresh();
+      };
+    });
+    list.querySelectorAll('.git-all-btn').forEach((btn) => {
+      btn.onclick = async (e) => {
+        e.stopPropagation();
+        if (btn.dataset.all === 'stage') await window.api.gitStageAll(currentCwd);
+        else await window.api.gitUnstageAll(currentCwd);
         await refresh();
       };
     });
@@ -133,18 +148,21 @@
     const r = await window.api.gitLog(currentCwd);
     if (!r.ok) { list.innerHTML = '<div class="git-empty">' + escapeHtml(r.error) + '</div>'; return; }
     if (!r.entries.length) { list.innerHTML = '<div class="git-empty">暂无提交记录</div>'; return; }
-    list.innerHTML = r.entries.map((e) =>
-      '<div class="git-log-item" title="' + escapeHtml(e.message) + '">' +
-        '<span class="git-log-hash">' + escapeHtml(e.hash.slice(0, 8)) + '</span>' +
-        '<span class="git-log-msg">' + escapeHtml(e.message) + '</span>' +
-      '</div>'
-    ).join('');
+    list.innerHTML = '<div class="git-group-label">提交历史（' + r.entries.length + '）<span class="git-group-actions"><button class="git-all-btn" id="git-back-changes" title="返回更改视图">← 返回</button></span></div>' +
+      r.entries.map((e) =>
+        '<div class="git-log-item" title="' + escapeHtml(e.message) + '">' +
+          '<span class="git-log-hash">' + escapeHtml(e.hash.slice(0, 8)) + '</span>' +
+          '<span class="git-log-msg">' + escapeHtml(e.message) + '</span>' +
+        '</div>'
+      ).join('');
+    const back = document.getElementById('git-back-changes');
+    if (back) back.onclick = async () => { viewMode = 'changes'; await refresh(); };
   }
 
   async function showDiff(file, staged) {
     const d = await window.api.gitSideBySide(currentCwd, file, staged);
     const lang = (typeof LANG_BY_EXT !== 'undefined' && LANG_BY_EXT[extOf(file)]) || 'plaintext';
-    document.getElementById('git-diff-head').textContent = file;
+    document.getElementById('git-diff-head').textContent = (staged ? '已暂存 · ' : '未暂存 · ') + file;
     document.getElementById('git-diff').classList.remove('hidden');
     const body = document.getElementById('git-diff-body');
     if (!diffEditor && typeof monaco !== 'undefined') {
@@ -167,6 +185,7 @@
     const msg = p.querySelector('#git-msg').value.trim();
     if (!msg) { flashStatus('请输入提交信息'); return; }
     const files = (statusCache && statusCache.staged ? statusCache.staged : []).map((f) => f.file);
+    if (!files.length) { flashStatus('请先暂存要提交的更改'); return; }
     const r = await window.api.gitCommitFiles(currentCwd, files, msg);
     if (r.ok) { p.querySelector('#git-msg').value = ''; flashStatus('已提交 ' + files.length + ' 个文件'); await refresh(); }
     else flashStatus(r.error || '提交失败');

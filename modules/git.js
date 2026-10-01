@@ -134,6 +134,18 @@ function createGitModule({ winRef, addLog }) {
     return r.code === 0;
   }
 
+  async function gitStageAll(cwd) {
+    const r = await runGit(cwd, ['add', '-A']);
+    addLog('info', 'git', '全部暂存');
+    return { ok: r.code === 0, error: r.stderr };
+  }
+
+  async function gitUnstageAll(cwd) {
+    const r = await runGit(cwd, ['reset', '-q']);
+    addLog('info', 'git', '全部取消暂存');
+    return { ok: r.code === 0, error: r.stderr };
+  }
+
   async function gitPush(cwd) {
     const r = await runGit(cwd, ['push'], 60000);
     if (r.code !== 0) return { ok: false, error: r.stderr || r.stdout || 'git push 失败' };
@@ -197,6 +209,8 @@ function createGitModule({ winRef, addLog }) {
     ipcMain.handle('git:changedLines', (_e, { cwd, file }) => gitChangedLines(cwd, file));
     ipcMain.handle('git:stage', (_e, { cwd, file }) => gitStage(cwd, file));
     ipcMain.handle('git:unstage', (_e, { cwd, file }) => gitUnstage(cwd, file));
+    ipcMain.handle('git:stageAll', (_e, cwd) => gitStageAll(cwd));
+    ipcMain.handle('git:unstageAll', (_e, cwd) => gitUnstageAll(cwd));
     ipcMain.handle('git:commitFiles', (_e, { cwd, files, message }) => gitCommitFiles(cwd, files, message));
     ipcMain.handle('git:push', (_e, cwd) => gitPush(cwd));
     ipcMain.handle('git:branch', (_e, cwd) => gitBranch(cwd));
