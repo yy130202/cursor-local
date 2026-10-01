@@ -398,7 +398,12 @@ function renderTranscript() {
     if (!last || !last.streaming) {
       const t = document.createElement('div');
       t.className = 'thinking entry-in';
-      t.innerHTML = '<span class="t-dot"></span><span class="t-dot"></span><span class="t-dot"></span>';
+      // 若正在执行工具（最近 tool 无结果），显示具体工具名
+      let label = '';
+      if (last && last.kind === 'tool' && !last.result) label = last.name;
+      t.innerHTML =
+        (label ? '<span class="t-label">' + escapeHtml(label) + '</span>' : '') +
+        '<span class="t-dot"></span><span class="t-dot"></span><span class="t-dot"></span>';
       transcriptEl.appendChild(t);
     }
   }

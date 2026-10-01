@@ -2004,3 +2004,10 @@ svg.lucide { width: 15px; height: 15px; }
 }
 .tool-result:hover { color: var(--text); }
 .tool-result .tr-err { color: var(--red); }
+
+/* Agent 实时工具状态标签 */
+.thinking .t-label {
+  font-size: 11px; color: var(--accent); font-weight: 600;
+  background: var(--accent-soft); padding: 2px 8px; border-radius: 999px;
+  font-family: Consolas, monospace;
+}

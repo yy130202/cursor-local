@@ -139,7 +139,7 @@ function updateMonacoTheme(accentHex) {
       'editor.findMatchBackground': hexa(accentHex, 0.35),
       'editor.findMatchHighlightBackground': hexa(accentHex, 0.18),
       'editorSuggestWidget.selectedBackground': hexa(accentHex, 0.30),
-      'editor.inlineSuggest.foreground': dark ? '#888888' : '#888888',
+      'editor.inlineSuggest.foreground': hexa(accentHex, 0.62),
       'editor.inlineSuggest.background': hexa(accentHex, 0.08)
     }
   });

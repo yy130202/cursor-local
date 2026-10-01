@@ -258,7 +258,7 @@ require(['vs/editor/editor.main'], function () {
       minimap: { enabled: true },
       scrollBeyondLastLine: false,
       tabCompletion: 'off',          // Tab 用于接受 AI 补全
-      inlineSuggest: { enabled: true },
+      inlineSuggest: { enabled: true, showToolbar: 'always' },
       unusualLineTerminator: 'off',  // 关闭孤立 \r 的整行红色警告（CRLF 文件常见误报）
       quickSuggestions: { other: true, comments: true, strings: true },
       // VS Code 式增强：括号对着色 / 缩进指南 / 粘滞滚动 / 折叠图标
