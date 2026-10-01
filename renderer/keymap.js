@@ -16,7 +16,8 @@
     { id: 'editor.format', label: '格式化文档', icon: 'align-left', key: 'Shift+Alt+F', action: () => { const ed = (typeof EditorState !== 'undefined' && EditorState.editor); if (ed) ed.getAction('editor.action.formatDocument').run(); } },
     { id: 'editor.foldAll', label: '折叠所有区域', icon: 'fold-vertical', key: '', action: () => { const ed = (typeof EditorState !== 'undefined' && EditorState.editor); if (ed) ed.getAction('editor.foldAll').run(); } },
     { id: 'editor.unfoldAll', label: '展开所有区域', icon: 'unfold-vertical', key: '', action: () => { const ed = (typeof EditorState !== 'undefined' && EditorState.editor); if (ed) ed.getAction('editor.unfoldAll').run(); } },
-    { id: 'editor.gotoSymbol', label: '转到文件中的符号', icon: 'list-tree', key: 'Ctrl+Shift+O', action: () => window.openSymbols && window.openSymbols() }
+    { id: 'editor.gotoSymbol', label: '转到文件中的符号', icon: 'list-tree', key: 'Ctrl+Shift+O', action: () => window.openSymbols && window.openSymbols() },
+    { id: 'git.open', label: '源代码管理', icon: 'git-branch', key: 'Ctrl+Shift+G', action: () => window.openGitPanel && window.openGitPanel() }
   ];
 
   let customKeybindings = {}; // id -> combo（用户自定义覆盖默认）
