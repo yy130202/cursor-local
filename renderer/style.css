@@ -2130,3 +2130,66 @@ svg.lucide { width: 15px; height: 15px; }
 .fai-ico svg.lucide { width: 13px; height: 13px; }
 .fai-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fv-arch-more { padding: 8px 6px; font-size: 11.5px; color: var(--text-dim); }
+
+/* ==================== AI 思考框（专属动画，非三点） ==================== */
+.thinking {
+  position: relative; display: flex; align-items: flex-start; gap: 11px;
+  margin: 8px 0; padding: 11px 15px 12px;
+  background: linear-gradient(135deg, var(--glass), var(--glass-strong));
+  border: 1px solid var(--glass-border); border-radius: 13px;
+  overflow: hidden; box-shadow: var(--shadow-1);
+  animation: thIn 0.35s var(--spring-soft);
+}
+@keyframes thIn { from { opacity: 0; transform: translateY(6px) scale(0.985); } to { opacity: 1; transform: none; } }
+
+/* 顶部流光带循环扫过 */
+.thinking::before {
+  content: ''; position: absolute; top: 0; left: 0; height: 2px; width: 42%;
+  background: linear-gradient(90deg, transparent, var(--accent), var(--accent-2), transparent);
+  animation: thSweep 2.4s cubic-bezier(.4, 0, .2, 1) infinite;
+}
+@keyframes thSweep { 0% { transform: translateX(-105%); } 100% { transform: translateX(345%); } }
+
+/* 左侧旋转光环 + 中心脉冲 */
+.th-orbit {
+  position: relative; width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0deg, var(--accent) 80deg, var(--accent-2) 150deg, transparent 220deg, var(--accent) 300deg, transparent 360deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 5.5px, #000 6.5px);
+  mask: radial-gradient(circle, transparent 0 5.5px, #000 6.5px);
+  animation: thSpin 1.15s linear infinite;
+}
+.th-core {
+  position: absolute; inset: 7px; border-radius: 50%;
+  background: var(--accent); box-shadow: 0 0 8px var(--accent);
+  animation: thPulse 1.6s ease-in-out infinite;
+}
+@keyframes thSpin { to { transform: rotate(360deg); } }
+@keyframes thPulse { 0%, 100% { opacity: .4; transform: scale(.68); } 50% { opacity: 1; transform: scale(1); } }
+
+.th-main { flex: 1; min-width: 0; }
+.th-label { font-size: 12.5px; color: var(--text); font-weight: 600; display: flex; align-items: baseline; }
+.th-shimmer {
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 45%, var(--accent) 90%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: thShimmer 2.2s linear infinite;
+}
+@keyframes thShimmer { 0% { background-position: 220% 0; } 100% { background-position: -120% 0; } }
+.th-tool {
+  font-family: Consolas, monospace; font-size: 11.5px; color: var(--accent);
+  background: var(--accent-soft); border: 1px solid var(--glass-border);
+  padding: 1px 9px; border-radius: 999px;
+}
+
+/* 流式推理内容 + 闪烁光标 */
+.th-reason {
+  margin-top: 5px; font-size: 11.5px; color: var(--text-dim); line-height: 1.65;
+  white-space: pre-wrap; word-break: break-word; max-height: 132px; overflow: hidden;
+}
+.th-reason.streaming::after {
+  content: '\258D'; color: var(--accent); margin-left: 2px;
+  animation: thBlink 1s step-end infinite;
+}
+@keyframes thBlink { 50% { opacity: 0; } }

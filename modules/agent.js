@@ -345,7 +345,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
     return res.json();
   }
 
-  async function chatCompletionStream(cfg, messages, onDelta) {
+  async function chatCompletionStream(cfg, messages, onDelta, onReasoning) {
     const res = await fetch(cfg.baseUrl.replace(/\/+$/, '') + '/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + cfg.apiKey },
@@ -379,6 +379,9 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
           content += delta.content;
           if (onDelta) onDelta(delta.content);
         }
+        // 推理模型（DeepSeek-R1 等）的思考流 → 单独转发用于「思考框」流式展示
+        const rc = delta.reasoning_content || delta.reasoning;
+        if (rc) { if (onReasoning) onReasoning(rc); }
         if (delta.tool_calls) {
           for (const tc of delta.tool_calls) {
             const i = tc.index || 0;
@@ -457,6 +460,8 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
         } else {
           const r = await chatCompletionStream(cfg, agent.messages, (delta) => {
             emitAgent(agent, 'text_delta', { text: delta });
+          }, (rc) => {
+            emitAgent(agent, 'reasoning_delta', { text: rc });
           });
           content = r.content;
           calls = r.tool_calls;

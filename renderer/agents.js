@@ -1,6 +1,8 @@
 /* Cursor Local - Agents Window：并行 Agent 工作台 + 流式输出 + diff 审阅 + 历史会话 */
-const agentsState = {
-  agents: new Map(),   // id -> { id, task, cwd, status, entries: [], readonly? }
+/* 思考框阶段文案（无 reasoning 流时轮播） */
+const THINK_PHASES = ['正在分析', '正在查阅代码', '正在组织方案', '正在执行', '正在校验结果'];
+
+const agentsState = {  agents: new Map(),   // id -> { id, task, cwd, status, entries: [], readonly? }
   selectedId: null,
   history: []          // 历史会话列表（session:list）
 };
@@ -106,6 +108,7 @@ window.api.onAgentEvent((ev) => {
   switch (ev.kind) {
     case 'meta':
       a.task = ev.task; a.cwd = ev.cwd; a.ts = ev.ts || Date.now();
+      a.__reasoning = ''; // 新任务：清空上一轮思考流
       a.entries.push({ kind: 'user', text: ev.task });
       if (typeof window.updateIsland === 'function') window.updateIsland('running', 'Agent 运行中 · ' + (ev.task || '').slice(0, 24));
       break;
@@ -135,6 +138,15 @@ window.api.onAgentEvent((ev) => {
       closeStreaming(a);
       a.entries.push({ kind: 'approval', callId: ev.callId, tool: ev.tool, args: ev.args });
       break;
+    case 'reasoning_delta': {
+      // 推理流：思考框内逐字追加（增量 DOM，不整树重绘）
+      a.__reasoning = (a.__reasoning || '') + ev.text;
+      let box = transcriptEl.querySelector('.th-reason');
+      if (!box) { renderTranscript(); break; } // 首次：重建思考框
+      box.textContent = a.__reasoning;
+      transcriptEl.scrollTop = transcriptEl.scrollHeight;
+      return;
+    }
     case 'cmd_delta': {
       // 命令输出实时流式：最近未完成的 run_command 卡片实时追加
       for (let i = a.entries.length - 1; i >= 0; i--) {
@@ -421,15 +433,32 @@ function renderTranscript() {
   if (a.status === 'running' && !a.readonly) {
     const last = a.entries[a.entries.length - 1];
     if (!last || !last.streaming) {
+      clearInterval(a.__thinkTimer);
+      let ti = 0;
       const t = document.createElement('div');
       t.className = 'thinking entry-in';
-      // 若正在执行工具（最近 tool 无结果），显示具体工具名
-      let label = '';
-      if (last && last.kind === 'tool' && !last.result) label = last.name;
+      // 正在执行工具 → 显示工具名；否则轮播思考阶段文案
+      let toolLabel = '';
+      if (last && last.kind === 'tool' && !last.result) toolLabel = last.name;
       t.innerHTML =
-        (label ? '<span class="t-label">' + escapeHtml(label) + '</span>' : '') +
-        '<span class="t-dot"></span><span class="t-dot"></span><span class="t-dot"></span>';
+        '<div class="th-orbit"><span class="th-core"></span></div>' +
+        '<div class="th-main">' +
+          '<div class="th-label">' +
+            (toolLabel
+              ? '<span class="th-tool">' + escapeHtml(toolLabel) + '</span>'
+              : '<span class="th-phase">正在分析</span><span class="th-shimmer">…</span>') +
+          '</div>' +
+          (a.__reasoning ? '<div class="th-reason streaming">' + escapeHtml(a.__reasoning) + '</div>' : '') +
+        '</div>';
       transcriptEl.appendChild(t);
+      if (!toolLabel) {
+        a.__thinkTimer = setInterval(() => {
+          const el = t.querySelector('.th-phase');
+          if (!el || !el.isConnected) { clearInterval(a.__thinkTimer); return; }
+          ti = (ti + 1) % THINK_PHASES.length;
+          el.textContent = THINK_PHASES[ti];
+        }, 2600);
+      }
     }
   }
   transcriptEl.scrollTop = transcriptEl.scrollHeight;
