@@ -415,7 +415,8 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
         ? '当前为「手动审批」模式——文件写入、删除、移动、命令执行等敏感操作需要用户逐条确认后才会执行，被拒绝时请调整方案。'
         : '当前为「自动审批」模式——文件读写必须限定在工作目录内（越界会被拦截）；run_command 不能执行 rm -rf、format、del /s /q、shutdown、git push --force 等危险命令（会被拦截）。'),
       '请自主完成用户任务：先查看相关文件结构，再读取/修改代码，必要时运行命令验证。',
-      '用简体中文简要说明每一步在做什么。写文件时必须给出完整最终内容。',
+      '【重要】每次调用工具前后都必须用简体中文给用户文字反馈：调用前说明意图，调用后总结结果与发现。绝对不要只甩出工具调用而不给任何文字说明。',
+      '任务收尾时必须给出总结：做了什么、发现了什么、结论与建议的下一步。写文件时必须给出完整最终内容。',
       agent.mode === 'plan' ? '【计划模式】只输出实施计划（步骤、涉及文件、风险点），不要调用任何工具、不要修改任何文件。' : '',
       agent.mode === 'ask' ? '【问答模式】只回答问题与解释代码，不要调用修改类工具。' : ''
     ].filter(Boolean);
@@ -462,6 +463,12 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
           agent.messages.push({ role: 'assistant', content: content || null, tool_calls: calls.length ? calls : undefined });
         }
         if (!calls.length) {
+          // 兜底：LLM 没有输出任何文字就结束（只甩工具不总结）→ 追问一次总结
+          if ((!content || !content.trim()) && !agent.__askedSummary) {
+            agent.__askedSummary = true;
+            agent.messages.push({ role: 'user', content: '请用简体中文简要总结：你刚才做了什么、发现了什么、结论是什么、建议的下一步是什么。' });
+            continue;
+          }
           agent.status = 'done';
           emitAgent(agent, 'status', { status: 'done' });
           return;
