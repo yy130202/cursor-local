@@ -2043,3 +2043,47 @@ svg.lucide { width: 15px; height: 15px; }
   -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
   background: var(--accent); cursor: pointer; box-shadow: 0 0 6px var(--glow);
 }
+
+/* ==================== Markdown 预览（右侧渲染 + 全屏） ==================== */
+#editor-split { flex: 1; display: flex; min-height: 0; overflow: hidden; }
+#editor-split > #monaco-container { flex: 1; min-width: 0; }
+#md-preview {
+  width: 48%; min-width: 220px; display: flex; flex-direction: column;
+  border-left: 1px solid var(--glass-border); background: var(--panel-dark);
+}
+#md-preview.hidden { display: none; }
+#editor-split.preview-full > #monaco-container { display: none; }
+#editor-split.preview-full > #md-preview { flex: 1; width: auto; border-left: none; }
+.mdp-head {
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+  padding: 4px 8px 4px 12px; border-bottom: 1px solid var(--glass-border);
+}
+.mdp-title { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-dim); font-weight: 600; }
+.mdp-title svg.lucide { width: 13px; height: 13px; }
+.mdp-actions { display: flex; gap: 2px; }
+.mdp-actions button {
+  background: transparent; border: none; color: var(--text-dim); cursor: pointer;
+  padding: 3px; border-radius: 5px; display: grid; place-items: center;
+}
+.mdp-actions button:hover { background: var(--hover-strong); color: var(--text); }
+.mdp-actions button svg.lucide { width: 14px; height: 14px; }
+.mdp-body {
+  flex: 1; overflow: auto; padding: 16px 20px 40px;
+  font-size: 13px; color: var(--text); line-height: 1.7; white-space: pre-wrap; word-break: break-word;
+}
+/* Markdown 排版 */
+.mdp-body .md-h { font-size: 17px; font-weight: 700; color: var(--title); margin: 14px 0 6px; white-space: normal; }
+.mdp-body .md-h:first-child { margin-top: 0; }
+.mdp-body .md-code { margin: 8px 0; white-space: normal; }
+.mdp-body .md-code pre { white-space: pre; }
+.mdp-body .md-code code { font-size: 12px; }
+.mdp-body .md-inline { font-size: 12px; }
+.mdp-body .md-li { white-space: normal; margin: 1px 0; }
+.mdp-body .md-link { color: var(--accent); text-decoration: none; }
+.mdp-body .md-link:hover { text-decoration: underline; }
+.mdp-body .md-quote {
+  margin: 6px 0; padding: 4px 10px; border-left: 3px solid var(--accent);
+  background: var(--accent-soft); border-radius: 0 6px 6px 0; color: var(--text-dim); white-space: normal;
+}
+.mdp-body .md-hr { border: none; border-top: 1px solid var(--glass-border); margin: 12px 0; }
+.mdp-body strong { color: var(--title); font-weight: 700; }

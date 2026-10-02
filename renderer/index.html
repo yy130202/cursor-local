@@ -176,7 +176,19 @@
       <div id="editor-main">
         <div id="tabbar"></div>
         <div id="breadcrumb" class="breadcrumb"></div>
-        <div id="monaco-container"></div>
+        <div id="editor-split">
+          <div id="monaco-container"></div>
+          <div id="md-preview" class="hidden">
+            <div class="mdp-head">
+              <span class="mdp-title"><i data-lucide="eye"></i>预览</span>
+              <div class="mdp-actions">
+                <button id="mdp-fullscreen" title="全屏预览"><i data-lucide="maximize-2"></i></button>
+                <button id="mdp-close" title="收起预览"><i data-lucide="panel-right-close"></i></button>
+              </div>
+            </div>
+            <div class="mdp-body" id="mdp-body"></div>
+          </div>
+        </div>
         <div id="editor-empty">在左侧选择文件开始编辑 · Ctrl+S 保存</div>
       </div>
     </section>

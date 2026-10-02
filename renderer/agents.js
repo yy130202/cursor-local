@@ -601,6 +601,12 @@ function miniMarkdown(text) {
   s = s.replace(/`([^`\n]+)`/g, '<code class="md-inline">$1</code>');
   // 加粗 **...**
   s = s.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+  // 链接 [text](url)
+  s = s.replace(/\[([^\]\n]+)\]\(([^)\n]+)\)/g, '<a href="$2" class="md-link" target="_blank">$1</a>');
+  // 引用 > ...（escape 后为 &gt;）
+  s = s.replace(/^&gt; (.+)$/gm, '<blockquote class="md-quote">$1</blockquote>');
+  // 水平线 ---
+  s = s.replace(/^(?:---+|\*\*\*+|___+)$/gm, '<hr class="md-hr">');
   // 标题 ### / ## / #
   s = s.replace(/^#{1,6} (.+)$/gm, '<div class="md-h">$1</div>');
   // 有序列表 1. / 无序列表 - *

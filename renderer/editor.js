@@ -278,6 +278,11 @@ require(['vs/editor/editor.main'], function () {
       clearTimeout(breadcrumbTimer);
       breadcrumbTimer = setTimeout(() => updateBreadcrumb(), 250);
     });
+    // Markdown 预览实时更新（编辑时节流重渲染）
+    EditorState.editor.onDidChangeModelContent(() => {
+      clearTimeout(window.__mdPreviewTimer);
+      window.__mdPreviewTimer = setTimeout(() => updateMdPreview(), 300);
+    });
     monacoReady = true;
     while (pendingOpens.length) openFile(pendingOpens.shift());
   } catch (err) {
@@ -409,6 +414,7 @@ async function openFile(filePath) {
   renderTabs();
   updateTreeActive(); // 只更新当前选中高亮，不重建文件树（避免滚动跳动）
   updateBreadcrumb();
+  updateMdPreview();
   applyGitDecorations(tab); // gutter 变更行标记（异步）
   const langEl = document.getElementById('status-lang');
   if (langEl) langEl.textContent = langDisplay(tab.large ? 'plaintext' : (LANG_BY_EXT[extOf(filePath)] || 'plaintext'));
@@ -774,3 +780,42 @@ window.openSymbols = function () {
   setTimeout(() => document.addEventListener('mousedown', close), 0);
   panel.addEventListener('keydown', (e) => { if (e.key === 'Escape') panel.remove(); });
 };
+
+/* ---- Markdown 预览（右侧渲染 + 全屏） ---- */
+function isMarkdownPath(p) { return /\.(md|markdown)$/i.test(p || ''); }
+function updateMdPreview() {
+  const panel = document.getElementById('md-preview');
+  if (!panel) return;
+  const tab = (typeof EditorState !== 'undefined' && EditorState.tabs)
+    ? EditorState.tabs.find((t) => t.path === EditorState.activePath) : null;
+  if (!tab || !isMarkdownPath(tab.path)) {
+    panel.classList.add('hidden');
+    const split = document.getElementById('editor-split');
+    if (split) split.classList.remove('preview-full');
+    return;
+  }
+  panel.classList.remove('hidden');
+  const ed = EditorState.editor;
+  const content = ed ? ed.getValue() : '';
+  const body = document.getElementById('mdp-body');
+  if (body) body.innerHTML = (typeof miniMarkdown === 'function') ? miniMarkdown(content) : escapeHtml(content);
+}
+window.updateMdPreview = updateMdPreview;
+
+(function bindMdPreview() {
+  const split = document.getElementById('editor-split');
+  const preview = document.getElementById('md-preview');
+  const fsBtn = document.getElementById('mdp-fullscreen');
+  const closeBtn = document.getElementById('mdp-close');
+  if (!split || !preview) return;
+  if (fsBtn) fsBtn.onclick = () => {
+    const on = split.classList.toggle('preview-full');
+    fsBtn.title = on ? '退出全屏' : '全屏预览';
+    try { if (EditorState.editor) EditorState.editor.layout(); } catch { /* ignore */ }
+  };
+  if (closeBtn) closeBtn.onclick = () => {
+    preview.classList.add('hidden');
+    split.classList.remove('preview-full');
+    try { if (EditorState.editor) EditorState.editor.layout(); } catch { /* ignore */ }
+  };
+})();
