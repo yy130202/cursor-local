@@ -476,3 +476,29 @@ async function renderRules() {
   const settingsBtn = document.getElementById('settings-btn');
   settingsBtn.addEventListener('click', () => { setTimeout(() => { renderMemory(); renderRules(); }, 100); });
 })();
+
+/* ---- 背景不透明度可调（毛玻璃透出程度） ---- */
+function applyBgAlpha(v) {
+  v = Math.max(0, Math.min(100, Number(v) || 0));
+  const dark = document.documentElement.dataset.theme !== 'light';
+  const rgb = dark ? '17,17,22' : '246,247,250';
+  document.body.style.setProperty('--body-bg', 'rgba(' + rgb + ',' + (v / 100) + ')');
+  const val = document.getElementById('cfg-bg-alpha-val');
+  if (val) val.textContent = v + '%';
+}
+(function bindBgAlpha() {
+  const range = document.getElementById('cfg-bg-alpha');
+  if (!range) return;
+  range.oninput = () => {
+    applyBgAlpha(range.value);
+    window.api.setConfig({ bgAlpha: Number(range.value) });
+  };
+  // 启动时恢复
+  window.api.getConfig().then((cfg) => {
+    if (cfg && typeof cfg.bgAlpha === 'number') { range.value = cfg.bgAlpha; applyBgAlpha(cfg.bgAlpha); }
+  }).catch(() => {});
+  // 打开设置时同步
+  document.getElementById('settings-btn').addEventListener('click', () => {
+    window.api.getConfig().then((cfg) => { if (cfg && typeof cfg.bgAlpha === 'number') { range.value = cfg.bgAlpha; applyBgAlpha(cfg.bgAlpha); } });
+  });
+})();

@@ -1463,7 +1463,7 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
 }
 .git-item:hover .git-stage-btn { opacity: 1; color: var(--accent); }
 .git-stage-btn:hover { background: var(--accent-soft); color: var(--accent); }
-.git-stage-btn svg.lucide { width: 13px; height: 13px; }
+.git-stage-btn svg.lucide { width: 11px; height: 11px; }
 .git-numstat { flex-shrink: 0; font-size: 11px; font-family: Consolas, monospace; display: flex; gap: 4px; }
 .git-numstat .add { color: #22c55e; }
 .git-numstat .del { color: var(--red); }
@@ -2045,4 +2045,15 @@ svg.lucide { width: 15px; height: 15px; }
 .monaco-editor .margin-view-overlays .codicon-folding-manual-collapsed,
 .monaco-editor .margin-view-overlays .codicon-folding-manual-expanded {
   font-size: 88% !important;
+}
+
+/* 设置页滑块 */
+.range-val { color: var(--accent); font-weight: 600; font-size: 11.5px; }
+.range-input {
+  -webkit-appearance: none; appearance: none; width: 160px; height: 4px;
+  background: var(--glass-border); border-radius: 2px; outline: none; cursor: pointer; flex-shrink: 0;
+}
+.range-input::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--accent); cursor: pointer; box-shadow: 0 0 6px var(--glow);
 }

@@ -30,9 +30,9 @@
     <button id="open-folder-btn" class="action icon-btn" title="打开文件夹"><i data-lucide="folder-open"></i></button>
     <button id="git-btn" class="action icon-btn" title="源代码管理（Git）"><i data-lucide="git-branch"></i></button>
     <button id="term-btn" class="action icon-btn" title="终端"><i data-lucide="square-terminal"></i></button>
-    <button id="theme-btn" class="action icon-btn" title="主题颜色"><i data-lucide="palette"></i></button>
+    <button id="theme-btn" class="action icon-btn" title="主题颜色" style="display:none"><i data-lucide="palette"></i></button>
     <button id="log-btn" class="action icon-btn" title="日志"><i data-lucide="scroll-text"></i></button>
-    <button id="settings-btn" class="action icon-btn" title="设置"><i data-lucide="settings"></i></button>
+    <button id="settings-btn" class="action icon-btn" title="设置" style="display:none"><i data-lucide="settings"></i></button>
     <div id="user-area"></div>
     <div class="win-controls">
       <button id="win-min" title="最小化"><i data-lucide="minus"></i></button>
@@ -44,11 +44,6 @@
   <main>
     <!-- Home Window（主页，Vape 产品页风格） -->
     <section id="home-view" class="view active">
-      <div class="home-aurora" aria-hidden="true">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-      </div>
       <div class="home-content">
 
         <!-- 渐变 Hero 大卡片：左文右 UI 假窗 -->
@@ -329,6 +324,10 @@
             <div class="srow">
               <div class="srow-main"><div class="srow-label">亮色模式</div><div class="srow-desc">切换亮色 / 暗色界面主题</div></div>
               <button class="toggle" id="cfg-light-mode"><span class="knob"></span></button>
+            </div>
+            <div class="srow">
+              <div class="srow-main"><div class="srow-label">背景不透明度 <span id="cfg-bg-alpha-val" class="range-val">35%</span></div><div class="srow-desc">调节界面毛玻璃背景的透出程度（越小越透，越能看见桌面壁纸）</div></div>
+              <input type="range" id="cfg-bg-alpha" class="range-input" min="0" max="100" value="35">
             </div>
           </div>
           <div class="sgroup">
