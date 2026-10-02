@@ -33,8 +33,16 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
         } catch { /* ignore */ }
         resolve({ code: -1, output: (stdout + stderr).slice(0, 12000) + '\n[命令超时已终止]' });
       }, timeoutMs);
-      child.stdout.on('data', (d) => { stdout += decodeOut(d); if (stdout.length > 200000) stdout = stdout.slice(0, 200000); });
-      child.stderr.on('data', (d) => { stderr += decodeOut(d); if (stderr.length > 100000) stderr = stderr.slice(0, 100000); });
+      child.stdout.on('data', (d) => {
+        const chunk = decodeOut(d);
+        stdout += chunk; if (stdout.length > 200000) stdout = stdout.slice(0, 200000);
+        if (agent && chunk) emitAgent(agent, 'cmd_delta', { chunk });
+      });
+      child.stderr.on('data', (d) => {
+        const chunk = decodeOut(d);
+        stderr += chunk; if (stderr.length > 100000) stderr = stderr.slice(0, 100000);
+        if (agent && chunk) emitAgent(agent, 'cmd_delta', { chunk, stderr: true });
+      });
       child.on('error', (err) => {
         if (done) return; done = true; clearTimeout(timer);
         resolve({ code: -1, output: '启动失败: ' + err.message });

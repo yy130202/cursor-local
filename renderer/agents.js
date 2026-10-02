@@ -133,6 +133,28 @@ window.api.onAgentEvent((ev) => {
       closeStreaming(a);
       a.entries.push({ kind: 'approval', callId: ev.callId, tool: ev.tool, args: ev.args });
       break;
+    case 'cmd_delta': {
+      // 命令输出实时流式：最近未完成的 run_command 卡片实时追加
+      for (let i = a.entries.length - 1; i >= 0; i--) {
+        if (a.entries[i].kind === 'tool' && a.entries[i].name === 'run_command' && !a.entries[i].result) {
+          a.entries[i].live = (a.entries[i].live || '') + ev.chunk;
+          const cards = transcriptEl.querySelectorAll('.tool-card');
+          const lastCard = cards[cards.length - 1];
+          if (lastCard) {
+            let res = lastCard.querySelector('.tool-result');
+            if (!res) {
+              res = document.createElement('div');
+              res.className = 'tool-result';
+              lastCard.querySelector('.head').after(res);
+            }
+            res.textContent = a.entries[i].live;
+            transcriptEl.scrollTop = transcriptEl.scrollHeight;
+          }
+          break;
+        }
+      }
+      return; // 不触发 renderTranscript，避免高频重绘
+    }
     case 'tool_result': {
       for (let i = a.entries.length - 1; i >= 0; i--) {
         if (a.entries[i].kind === 'tool' && a.entries[i].name === ev.name && !a.entries[i].result) {
@@ -346,7 +368,8 @@ function renderTranscript() {
       const card = document.createElement('div');
       card.className = 'tool-card';
       const summary = escapeHtml(argsSummary(en.name, en.args));
-      const rSummary = en.result ? toolResultSummary(en.name, en.result) : '';
+      const rSummary = en.result ? toolResultSummary(en.name, en.result)
+        : (en.live ? escapeHtml(en.live.slice(-200)) : '');
       card.innerHTML =
         '<div class="head">' +
           '<span class="tag ' + en.name + '">' + (window.lucideIcon(toolIconName(en.name)) || '') + en.name + '</span>' +
