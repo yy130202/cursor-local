@@ -1,5 +1,6 @@
 /* Cursor Local - 终端面板（xterm.js） */
 (function () {
+  const isWindows = navigator.userAgent.includes('Windows');
   let panelEl = null;
   let term = null;
   let fitAddon = null;
@@ -144,7 +145,14 @@
     const handleKey = (c) => {
       if (c === '\r') {
         term.write('\r\n');
-        window.api.terminalInput(termId, inputBuf + '\r\n');
+        let cmd = inputBuf;
+        // Windows cmd 兼容：`./xxx` 是类 Unix 写法，cmd 下自动转 `.\xxx`
+        if (isWindows && /^\.\//.test(cmd)) {
+          const fixed = cmd.replace(/^\.\//, '.\\');
+          term.write('\x1b[90m[已自动适配 Windows] ' + fixed + '\x1b[0m\r\n');
+          cmd = fixed;
+        }
+        window.api.terminalInput(termId, cmd + '\r\n');
         inputBuf = '';
         return;
       }

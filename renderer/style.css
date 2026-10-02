@@ -1444,12 +1444,12 @@ button, .tree-item, .tab, .agent-item, .history-item, .tool-card .head {
 .git-file { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); font-family: Consolas, monospace; }
 .git-stage-btn {
   flex-shrink: 0; background: transparent; border: none; color: var(--text-dim); cursor: pointer;
-  padding: 2px; border-radius: 4px; display: grid; place-items: center; opacity: 0.75;
-  width: 18px; height: 18px;
+  padding: 0; border-radius: 4px; display: grid; place-items: center; opacity: 0.75;
+  width: 15px; height: 15px;
 }
 .git-item:hover .git-stage-btn { opacity: 1; color: var(--accent); }
 .git-stage-btn:hover { background: var(--accent-soft); color: var(--accent); }
-.git-stage-btn svg.lucide { width: 11px; height: 11px; }
+.git-stage-btn svg.lucide { width: 9px; height: 9px; stroke-width: 2.5; }
 .git-numstat { flex-shrink: 0; font-size: 11px; font-family: Consolas, monospace; display: flex; gap: 4px; }
 .git-numstat .add { color: #22c55e; }
 .git-numstat .del { color: var(--red); }
