@@ -375,6 +375,24 @@ function getEditor() {
 async function openFile(filePath) {
   if (!monacoReady) { pendingOpens.push(filePath); return; }
   let tab = EditorState.tabs.find((t) => t.path === filePath);
+  // 非文本文件（图片 / 音频 / 视频 / 压缩包）→ 专用预览，不载入 Monaco
+  const viewKind = fileViewKind(filePath);
+  if (viewKind) {
+    if (!tab) {
+      tab = { path: filePath, name: filePath.split(/[\\/]/).pop(), model: null, dirty: false, viewKind };
+      EditorState.tabs.push(tab);
+    }
+    EditorState.activePath = filePath;
+    document.getElementById('editor-empty').classList.add('hidden');
+    renderTabs();
+    updateTreeActive(); // 只更新当前选中高亮，不重建文件树（避免滚动跳动）
+    updateBreadcrumb();
+    updateMdPreview();
+    showFileViewer(filePath, viewKind);
+    const langEl2 = document.getElementById('status-lang');
+    if (langEl2) langEl2.textContent = VIEW_LABEL[viewKind];
+    return;
+  }
   if (!tab) {
     const r = await window.api.readFile(filePath);
     // 统一行尾为 \n：消除 CRLF 中孤立的 \r，避免 Monaco 整行红色「异常行终止符」标记
@@ -403,6 +421,7 @@ async function openFile(filePath) {
     EditorState.tabs.push(tab);
   }
   EditorState.activePath = filePath;
+  hideFileViewer(); // 切回文本文件 → 收起文件预览
   const ed = getEditor();
   if (ed) {
     ed.setModel(tab.model);
@@ -462,9 +481,14 @@ function closeTab(path, ev) {
   if (EditorState.activePath === path) {
     const next = EditorState.tabs[idx - 1] || EditorState.tabs[idx] || null;
     EditorState.activePath = next ? next.path : null;
-    const ed = getEditor();
-    if (ed) ed.setModel(next ? next.model : null);
-    if (!next) document.getElementById('editor-empty').classList.remove('hidden');
+    hideFileViewer(); // 关掉预览型文件时同步收起预览面板
+    if (next && next.viewKind) {
+      openFile(next.path); // 下一个是预览型 → 由 openFile 走预览分支
+    } else {
+      const ed = getEditor();
+      if (ed) ed.setModel(next ? next.model : null);
+      if (!next) document.getElementById('editor-empty').classList.remove('hidden');
+    }
   }
   renderTabs();
 }
@@ -554,7 +578,7 @@ function renderTabs() {
 
 async function saveActive() {
   const tab = EditorState.tabs.find((t) => t.path === EditorState.activePath);
-  if (!tab) return;
+  if (!tab || !tab.model) return; // 图片/音视频/压缩包等预览型文件不可保存
   await window.api.writeFile(tab.path, tab.model.getValue());
   tab.dirty = false;
   renderTabs();
@@ -817,5 +841,67 @@ window.updateMdPreview = updateMdPreview;
     preview.classList.add('hidden');
     split.classList.remove('preview-full');
     try { if (EditorState.editor) EditorState.editor.layout(); } catch { /* ignore */ }
+  };
+})();
+
+/* ---- 非文本文件预览（图片 / 音频 / 视频 / 压缩包） ---- */
+const VIEW_EXTS = {
+  image: /\.(png|jpe?g|gif|webp|bmp|svg|ico|avif)$/i,
+  audio: /\.(mp3|ogg|oga|wav|flac|m4a|aac|opus)$/i,
+  video: /\.(mp4|webm|mov|m4v|ogv|mkv)$/i,
+  archive: /\.(zip|7z|tar|gz|tgz|bz2|tbz|xz|txz|jar|war)$/i
+};
+const VIEW_LABEL = { image: '图片', audio: '音频', video: '视频', archive: '压缩包' };
+function fileViewKind(p) {
+  for (const k of Object.keys(VIEW_EXTS)) if (VIEW_EXTS[k].test(p || '')) return k;
+  return null;
+}
+function fileUrlOf(p) { return 'file:///' + String(p).replace(/\\/g, '/'); }
+function updateFileViewerState(on) {
+  const split = document.getElementById('editor-split');
+  if (!split) return;
+  split.classList.toggle('viewer-on', !!on);
+  try { if (EditorState.editor) EditorState.editor.layout(); } catch { /* ignore */ }
+}
+function hideFileViewer() {
+  const panel = document.getElementById('file-viewer');
+  if (panel && !panel.classList.contains('hidden')) { panel.classList.add('hidden'); updateFileViewerState(false); }
+}
+async function showFileViewer(filePath, kind) {
+  const panel = document.getElementById('file-viewer');
+  const body = document.getElementById('fv-body');
+  const title = document.getElementById('fv-title');
+  if (!panel || !body) return;
+  panel.classList.remove('hidden');
+  updateFileViewerState(true);
+  body.className = 'fv-body' + (kind === 'archive' ? ' fv-list' : '');
+  const name = filePath.split(/[\\/]/).pop();
+  if (title) title.innerHTML = '<span class="fv-name">' + escapeHtml(name) + '</span><span class="fv-kind">' + VIEW_LABEL[kind] + '</span>';
+  const url = fileUrlOf(filePath);
+  if (kind === 'image') {
+    body.innerHTML = '<div class="fv-media"><img src="' + url + '" alt="' + escapeHtml(name) + '"></div>';
+  } else if (kind === 'audio') {
+    body.innerHTML = '<div class="fv-media fv-audio"><div class="fv-audio-ico">' + (window.lucideIcon('music') || '') + '</div><audio controls src="' + url + '"></audio></div>';
+  } else if (kind === 'video') {
+    body.innerHTML = '<div class="fv-media"><video controls src="' + url + '"></video></div>';
+  } else if (kind === 'archive') {
+    body.innerHTML = '<div class="fv-loading">正在读取压缩包…</div>';
+    try {
+      const r = await window.api.listArchive(filePath);
+      if (!r.ok) { body.innerHTML = '<div class="fv-error">' + escapeHtml(r.error || '读取失败') + '</div>'; return; }
+      if (!r.entries || !r.entries.length) { body.innerHTML = '<div class="fv-error">压缩包为空</div>'; return; }
+      body.innerHTML = '<div class="fv-arch-head">' + r.entries.length + ' 个条目</div>' +
+        r.entries.slice(0, 1000).map((e) =>
+          '<div class="fv-arch-item"><span class="fai-ico">' + (window.lucideIcon(/\/$/.test(e) ? 'folder' : 'file') || '') + '</span><span class="fai-name">' + escapeHtml(e) + '</span></div>'
+        ).join('') + (r.entries.length > 1000 ? '<div class="fv-arch-more">…仅显示前 1000 条</div>' : '');
+    } catch { body.innerHTML = '<div class="fv-error">读取失败</div>'; }
+  }
+}
+(function bindFileViewer() {
+  const closeBtn = document.getElementById('fv-close');
+  const extBtn = document.getElementById('fv-open-ext');
+  if (closeBtn) closeBtn.onclick = () => hideFileViewer();
+  if (extBtn) extBtn.onclick = () => {
+    if (window.api && window.api.openExternal && EditorState.activePath) window.api.openExternal(EditorState.activePath);
   };
 })();

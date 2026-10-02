@@ -1,7 +1,30 @@
 /* Cursor Local - 文件系统模块（读/写/搜索/文件操作 IPC） */
 const path = require('path');
 const fsp = require('fs').promises;
-const { dialog } = require('electron');
+const { dialog, shell } = require('electron');
+const { spawn } = require('child_process');
+
+/* 压缩包内容列表：用系统 tar（Windows 10+ 自带 bsdtar，支持 zip/tar/gz/bz2/xz） */
+function listArchive(file, timeoutMs = 60000) {
+  return new Promise((resolve) => {
+    const child = spawn('tar', ['-tf', file], { windowsHide: true });
+    let stdout = '', stderr = '', done = false;
+    const timer = setTimeout(() => {
+      if (done) return; done = true;
+      try { child.kill(); } catch { /* ignore */ }
+      resolve({ ok: false, error: '读取压缩包超时' });
+    }, timeoutMs);
+    child.stdout.on('data', (d) => { stdout += d.toString(); });
+    child.stderr.on('data', (d) => { stderr += d.toString(); });
+    child.on('error', () => { if (done) return; done = true; clearTimeout(timer); resolve({ ok: false, error: '无法执行 tar，请确认系统支持（RAR 需另行安装解压工具）' }); });
+    child.on('close', (code) => {
+      if (done) return; done = true; clearTimeout(timer);
+      if (code !== 0) return resolve({ ok: false, error: (stderr || stdout || '读取失败').trim().slice(0, 300) });
+      const entries = stdout.split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
+      resolve({ ok: true, entries });
+    });
+  });
+}
 
 function registerFs(ipcMain, { winRef, addLog, loadConfig, saveConfig }) {
   const notifyFs = (p) => {
@@ -21,6 +44,7 @@ function registerFs(ipcMain, { winRef, addLog, loadConfig, saveConfig }) {
   });
 
   ipcMain.handle('fs:readFile', async (_e, filePath) => {
+
     const stat = await fsp.stat(filePath);
     const buf = await fsp.readFile(filePath);
     let content = buf.toString('utf8');
@@ -35,6 +59,19 @@ function registerFs(ipcMain, { winRef, addLog, loadConfig, saveConfig }) {
     await fsp.mkdir(path.dirname(filePath), { recursive: true });
     await fsp.writeFile(filePath, content, 'utf8');
     return true;
+  });
+
+  /* 用系统默认程序打开（图片/视频/压缩包等） */
+  ipcMain.handle('fs:openExternal', async (_e, filePath) => {
+    if (!filePath) return false;
+    const r = await shell.openPath(filePath);
+    return !r; // 空字符串表示成功
+  });
+
+  /* 压缩包内容列表（图片/音视频之外的二进制文件预览） */
+  ipcMain.handle('fs:listArchive', async (_e, filePath) => {
+    if (!filePath) return { ok: false, error: '未提供文件路径' };
+    return listArchive(filePath);
   });
 
   /* 全局搜索：递归 grep（跳过 node_modules/.git，限制规模） */

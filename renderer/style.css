@@ -2087,3 +2087,46 @@ svg.lucide { width: 15px; height: 15px; }
 }
 .mdp-body .md-hr { border: none; border-top: 1px solid var(--glass-border); margin: 12px 0; }
 .mdp-body strong { color: var(--title); font-weight: 700; }
+
+/* ==================== 文件预览（图片 / 音频 / 视频 / 压缩包） ==================== */
+#editor-split { position: relative; }
+#editor-split.viewer-on > #monaco-container,
+#editor-split.viewer-on > #md-preview { display: none; }
+#file-viewer {
+  position: absolute; inset: 0; z-index: 6;
+  display: flex; flex-direction: column; background: var(--bg);
+}
+#file-viewer.hidden { display: none; }
+.fv-head {
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+  padding: 5px 10px; border-bottom: 1px solid var(--glass-border);
+}
+.fv-title { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text); }
+.fv-name { font-weight: 600; }
+.fv-kind { color: var(--accent); background: var(--accent-soft); padding: 1px 8px; border-radius: 999px; font-size: 10.5px; }
+.fv-actions { display: flex; gap: 2px; }
+.fv-actions button { background: transparent; border: none; color: var(--text-dim); cursor: pointer; padding: 3px; border-radius: 5px; }
+.fv-actions button:hover { background: var(--hover-strong); color: var(--text); }
+.fv-actions button svg.lucide { width: 14px; height: 14px; }
+.fv-body {
+  flex: 1; overflow: auto; padding: 16px;
+  display: flex; align-items: center; justify-content: center;
+}
+.fv-body.fv-list { align-items: flex-start; justify-content: flex-start; display: block; }
+.fv-media { display: flex; flex-direction: column; align-items: center; gap: 14px; max-width: 100%; max-height: 100%; }
+.fv-media img, .fv-media video { max-width: 100%; max-height: 100%; border-radius: 8px; box-shadow: var(--shadow-2); }
+.fv-audio-ico { color: var(--accent); display: grid; place-items: center; }
+.fv-audio-ico svg.lucide { width: 56px; height: 56px; }
+.fv-media audio { width: 420px; max-width: 100%; }
+.fv-loading, .fv-error { color: var(--text-dim); font-size: 12.5px; text-align: center; padding: 24px; }
+.fv-error { color: var(--red); text-align: left; white-space: pre-wrap; }
+.fv-arch-head { font-size: 11.5px; color: var(--text-dim); font-weight: 700; padding: 4px 2px 8px; }
+.fv-arch-item {
+  display: flex; align-items: center; gap: 8px; padding: 3px 6px;
+  border-radius: 6px; font-size: 12px; color: var(--text); font-family: Consolas, monospace;
+}
+.fv-arch-item:hover { background: var(--hover); }
+.fai-ico { display: grid; place-items: center; color: var(--text-dim); flex-shrink: 0; }
+.fai-ico svg.lucide { width: 13px; height: 13px; }
+.fai-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fv-arch-more { padding: 8px 6px; font-size: 11.5px; color: var(--text-dim); }

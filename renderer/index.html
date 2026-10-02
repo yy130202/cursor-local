@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' monaco:; worker-src 'self' blob: monaco:; style-src 'self' 'unsafe-inline'; connect-src monaco: https: http://localhost:* http://127.0.0.1:*; img-src 'self' data: blob:; font-src 'self' data:; object-src 'none'; base-uri 'none'">
+        content="default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' monaco:; worker-src 'self' blob: monaco:; style-src 'self' 'unsafe-inline'; connect-src monaco: https: http://localhost:* http://127.0.0.1:*; img-src 'self' data: blob: file:; media-src 'self' data: blob: file:; font-src 'self' data:; object-src 'none'; base-uri 'none'">
   <title>Cursor Local</title>
   <link rel="stylesheet" href="../node_modules/@xterm/xterm/css/xterm.css">
   <link rel="stylesheet" href="style.css?v=5">
@@ -178,6 +178,16 @@
         <div id="breadcrumb" class="breadcrumb"></div>
         <div id="editor-split">
           <div id="monaco-container"></div>
+          <div id="file-viewer" class="hidden">
+            <div class="fv-head">
+              <span class="fv-title" id="fv-title">预览</span>
+              <div class="fv-actions">
+                <button id="fv-open-ext" title="用系统默认程序打开"><i data-lucide="external-link"></i></button>
+                <button id="fv-close" title="关闭预览"><i data-lucide="x"></i></button>
+              </div>
+            </div>
+            <div class="fv-body" id="fv-body"></div>
+          </div>
           <div id="md-preview" class="hidden">
             <div class="mdp-head">
               <span class="mdp-title"><i data-lucide="eye"></i>预览</span>

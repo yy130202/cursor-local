@@ -138,6 +138,72 @@
     term.loadAddon(fitAddon);
     term.open(container);
     try { fitAddon.fit(); } catch { /* ignore */ }
+    // 复制 / 粘贴 / 中断（VS Code 行为：有选区 Ctrl+C=复制，无选区=中断；Ctrl+Shift+C=强制中断）
+    term.attachCustomKeyEventHandler((e) => {
+      if (e.type !== 'keydown') return true;
+      const isC = (e.key === 'c' || e.key === 'C');
+      const isV = (e.key === 'v' || e.key === 'V');
+      // Ctrl+V 粘贴
+      if (e.ctrlKey && !e.shiftKey && !e.altKey && isV) {
+        e.preventDefault();
+        navigator.clipboard.readText().then((txt) => {
+          if (!txt) return;
+          const flat = txt.replace(/\r?\n/g, ' ');
+          inputBuf += flat;
+          term.write(flat);
+        }).catch(() => { /* 剪贴板不可用则忽略 */ });
+        return false;
+      }
+      // Ctrl+C：有选区→复制；无选区→中断（交给 xterm）
+      if (e.ctrlKey && !e.shiftKey && !e.altKey && isC) {
+        if (term.hasSelection()) {
+          e.preventDefault();
+          const sel = term.getSelection();
+          navigator.clipboard.writeText(sel).then(() => {
+            flashStatus('已复制选中内容');
+          }).catch(() => { /* ignore */ });
+          return false;
+        }
+        return true; // 无选区 → 发送中断信号
+      }
+      // Ctrl+Shift+C / Ctrl+Shift+V：强制复制/粘贴（无视选区与中断语义）
+      if (e.ctrlKey && e.shiftKey && isC) {
+        e.preventDefault();
+        const sel = term.getSelection();
+        if (sel) navigator.clipboard.writeText(sel).then(() => flashStatus('已复制')).catch(() => {});
+        return false;
+      }
+      return true;
+    });
+    // 右键菜单支持：粘贴 / 复制 / 清空
+    container.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      const existing = document.getElementById('term-menu');
+      if (existing) existing.remove();
+      const menu = document.createElement('div');
+      menu.id = 'term-menu';
+      menu.className = 'ctx-menu';
+      menu.innerHTML =
+        '<div class="ctx-item" data-a="copy"' + (term.hasSelection() ? '' : ' style="opacity:.45"') + '>复制' + (window.lucideIcon('copy') || '') + '</div>' +
+        '<div class="ctx-item" data-a="paste">粘贴' + (window.lucideIcon('clipboard') || '') + '</div>' +
+        '<div class="ctx-sep"></div>' +
+        '<div class="ctx-item" data-a="clear">清空' + (window.lucideIcon('eraser') || '') + '</div>';
+      document.body.appendChild(menu);
+      menu.style.left = e.clientX + 'px';
+      menu.style.top = e.clientY + 'px';
+      menu.querySelectorAll('.ctx-item').forEach((n) => {
+        n.onclick = () => {
+          menu.remove();
+          const a = n.dataset.a;
+          if (a === 'copy' && term.hasSelection()) navigator.clipboard.writeText(term.getSelection()).then(() => flashStatus('已复制')).catch(() => {});
+          else if (a === 'paste') navigator.clipboard.readText().then((txt) => { if (txt) { const flat = txt.replace(/\r?\n/g, ' '); inputBuf += flat; term.write(flat); } }).catch(() => {});
+          else if (a === 'clear') term.clear();
+        };
+      });
+      setTimeout(() => document.addEventListener('mousedown', function close(e2) {
+        if (!menu.contains(e2.target)) { menu.remove(); document.removeEventListener('mousedown', close); }
+      }), 0);
+    });
     const cwd = resolveCwd();
     document.getElementById('term-cwd').textContent = cwd || '当前目录';
     // 行缓冲回显：管道模式 cmd 无控制台回显，由前端模拟（打字可见、退格、回车执行）
