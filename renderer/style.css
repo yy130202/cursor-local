@@ -2038,3 +2038,11 @@ svg.lucide { width: 15px; height: 15px; }
 .mi-name { font-weight: 600; }
 .mi-path { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-dim); font-size: 11px; }
 .mention-empty { padding: 14px; text-align: center; color: var(--text-dim); font-size: 12px; }
+
+/* Monaco 折叠箭头调小（默认 140%，比字号大太多，显得笨重） */
+.monaco-editor .margin-view-overlays .codicon-folding-expanded,
+.monaco-editor .margin-view-overlays .codicon-folding-collapsed,
+.monaco-editor .margin-view-overlays .codicon-folding-manual-collapsed,
+.monaco-editor .margin-view-overlays .codicon-folding-manual-expanded {
+  font-size: 88% !important;
+}
