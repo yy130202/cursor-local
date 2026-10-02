@@ -22,17 +22,19 @@ document.getElementById('agent-stop-btn').onclick = () => {
 /* 底部 follow-up 输入框：选中已结束的 Agent 则续跑，否则新建 */
 async function sendFollowup() {
   const input = document.getElementById('followup-input');
-  const task = input.value.trim();
-  if (!task) { input.focus(); return; }
+  const raw = input.value.trim();
+  if (!raw) { input.focus(); return; }
+  const { task, context } = window.extractMentions ? window.extractMentions(raw) : { task: raw, context: '' };
+  const fullTask = (context + task).trim();
   const sel = agentsState.agents.get(agentsState.selectedId);
   const canFollow = sel && !sel.readonly && !sel.id.startsWith('hist-') && sel.status !== 'running';
   if (canFollow) {
-    const r = await window.api.followAgent(sel.id, task);
+    const r = await window.api.followAgent(sel.id, fullTask);
     if (!r.ok) { input.value = ''; flashComposer(r.error); return; }
     input.value = '';
   } else {
     const cwd = EditorState.currentFolder || '';
-    const r = await window.api.createAgent({ task, cwd, mode: window.__agentMode || 'craft' });
+    const r = await window.api.createAgent({ task: fullTask, cwd, mode: window.__agentMode || 'craft' });
     input.value = '';
     selectAgent(r.id);
   }

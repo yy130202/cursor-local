@@ -70,10 +70,12 @@ if (lmEditor) lmEditor.onclick = () => switchMode('editor');
 
 async function sendHomeTask() {
   const input = document.getElementById('home-task-input');
-  const task = input.value.trim();
-  if (!task) { input.focus(); return; }
+  const raw = input.value.trim();
+  if (!raw) { input.focus(); return; }
+  const { task, context } = window.extractMentions ? window.extractMentions(raw) : { task: raw, context: '' };
+  const fullTask = (context + task).trim();
   const cwd = EditorState.currentFolder || '';
-  const r = await window.api.createAgent({ task, cwd, mode: window.__agentMode || 'craft' });
+  const r = await window.api.createAgent({ task: fullTask, cwd, mode: window.__agentMode || 'craft' });
   input.value = '';
   switchMode('agents');
   if (typeof selectAgent === 'function') selectAgent(r.id);
