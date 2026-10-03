@@ -2193,3 +2193,24 @@ svg.lucide { width: 15px; height: 15px; }
   animation: thBlink 1s step-end infinite;
 }
 @keyframes thBlink { 50% { opacity: 0; } }
+
+/* ==================== 菜单防竖排 + 窄窗口自适应 ==================== */
+/* 窗口非全屏/较窄时，菜单项文字被压成竖排 —— 强制不换行、不压缩 */
+.mb-top, .mb-item { white-space: nowrap; }
+.mb-top { flex-shrink: 0; }
+.mb-item > span { flex-shrink: 0; }
+#menubar { flex-shrink: 0; }
+#topbar { overflow: hidden; }
+.workdir-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* 窄窗口：mode-switch 只留图标、搜索框收窄，保证窗口控制按钮始终可见 */
+@media (max-width: 1180px) {
+  .mode-switch button span { display: none; }
+  .mode-switch button { padding: 4px 7px; }
+  .top-search { width: 150px; min-width: 100px; }
+}
+@media (max-width: 980px) {
+  .top-search { display: none; }
+  .open-agents-btn span { display: none; }
+  .open-agents-btn { padding: 4px 8px; }
+}
