@@ -73,31 +73,58 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
   }
 
   function assertInsideWorkspace(cwd, target) {
-    const rel = path.relative(path.resolve(cwd), path.resolve(target));
-    if (rel === '' || (!rel.startsWith('..') && !path.isAbsolute(rel))) return;
+    let rel;
+    try { rel = path.relative(path.resolve(cwd), path.resolve(target)); } catch { rel = target; }
+    // Windows 路径大小写不敏感：先按原值判，再按小写判，任一判定在工作区内才放行
+    const relLc = rel.toLowerCase();
+    const inside = (r) => r === '' || (!r.startsWith('..') && !path.isAbsolute(r));
+    if (inside(rel) && inside(relLc)) return;
     throw new Error(`沙箱拦截：禁止访问工作目录之外的路径（${target}）`);
   }
 
   const DANGEROUS_PATTERNS = [
-    { re: /\brm\s+-[a-z]*r[a-z]*f\b/i, desc: 'rm -rf 递归强制删除' },
-    { re: /\brm\s+-[a-z]*f[a-z]*r\b/i, desc: 'rm -fr 递归强制删除' },
-    { re: /\bdel\s+\/[sfq]\b/i, desc: 'del /s /f /q 递归强制删除' },
-    { re: /\brmdir\s+\/[sq]\b/i, desc: 'rmdir /s /q 递归删除目录' },
+    // rm 递归强制删除：覆盖 -rf/-fr、-r -f 分离、--recursive/--force 长选项
+    { re: /\brm\b[^\n]*\s-[a-z]*r[a-z]*f\b/i, desc: 'rm 递归强制删除' },
+    { re: /\brm\b[^\n]*\s-[a-z]*f[a-z]*r\b/i, desc: 'rm 递归强制删除' },
+    { re: /\brm\b[^\n]*\s-[a-z]*r\b[^\n]*\s-[a-z]*f\b/i, desc: 'rm -r -f 递归强制删除' },
+    { re: /\brm\b[^\n]*\s--(recursive|force)\b/i, desc: 'rm --recursive/--force 递归删除' },
+    { re: /\brd\b[^\n]*\s\/[a-z]*s\b/i, desc: 'rd /s 递归删除目录' },
+    { re: /\brd\b[^\n]*\s\/[a-z]*q\b/i, desc: 'rd /q 静默删除目录' },
+    { re: /\brmdir\b[^\n]*\s\/[a-z]*[sq]\b/i, desc: 'rmdir /s /q 递归删除目录' },
+    { re: /\bdel\b[^\n]*\s\/[a-z]*[fsq]\b/i, desc: 'del /s /f /q 递归强制删除' },
+    { re: /\bremove-item\b[^\n]*\s-[a-z]*r\b/i, desc: 'PowerShell Remove-Item 递归删除' },
+    { re: /\bremove-item\b[^\n]*\s-[a-z]*fo/i, desc: 'PowerShell Remove-Item 强制删除' },
     { re: /\bformat\b/i, desc: '格式化磁盘' },
     { re: /\bmkfs(\.\w+)?\b/i, desc: '创建文件系统（格式化）' },
     { re: /\bdd\s+if=/i, desc: 'dd 磁盘写入' },
     { re: /\bshutdown\b/i, desc: '关机' },
     { re: /\breboot\b/i, desc: '重启' },
-    { re: /\b:\(\)\s*\{\s*:\|:\s*&\s*\};:/, desc: 'fork 炸弹' },
+    { re: /\bdiskpart\b/i, desc: '磁盘分区' },
     { re: /\bchmod\s+-R\s+777\b/i, desc: '全目录 777 权限' },
     { re: /\bgit\s+push\s+(-f|--force)\b/i, desc: 'git 强制推送' },
-    { re: /\bnpm\s+publish\b/i, desc: 'npm 发布' },
-    { re: /\brm\s+-[a-z]*f[a-z]*\s+\/+(?![\w.])/, desc: '删除根目录' }
+    { re: /\bnpm\s+(publish|unpublish)\b/i, desc: 'npm 发布/撤回' },
+    { re: /\bcipher\s+\/w\b/i, desc: 'cipher /w 覆写空闲空间' },
+    { re: /\btakeown\b[^\n]*\/r\b/i, desc: 'takeown 递归夺取所有权' },
+    { re: /\breg\s+delete\b/i, desc: '注册表删除' },
+    { re: /\bfind\b[^\n]*\s-delete\b/i, desc: 'find -delete 批量删除' },
+    { re: /\bmv\b[^\n]*\/dev\/null\b/i, desc: 'mv 到 /dev/null 销毁文件' }
   ];
 
+  /* 预归一化：去 ANSI、统一空白、拆掉反斜杠转义与引号，消除 shell 层面的等价绕过写法 */
+  function normalizeCommand(command) {
+    return String(command)
+      .replace(/\x1b\[[0-9;]*[A-Za-z]/g, '') // ANSI 转义
+      .replace(/[\t\r\n]+/g, ' ')             // 跨行/多空格 → 单空格
+      .replace(/\s{2,}/g, ' ')
+      .replace(/\\(?=[A-Za-z/\\])/g, '')       // sh\utdown -> shutdown
+      .replace(/["']/g, '')                    // 去引号：rm "-rf" -> rm -rf
+      .toLowerCase();
+  }
+
   function checkDangerousCommand(command) {
+    const c = normalizeCommand(command);
     for (const { re, desc } of DANGEROUS_PATTERNS) {
-      if (re.test(command)) return desc;
+      if (re.test(c)) return desc;
     }
     return null;
   }
@@ -112,8 +139,9 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
     { re: /\bdiskpart\b/i, desc: '磁盘分区' }
   ];
   function checkCatastrophic(command) {
+    const c = normalizeCommand(command);
     for (const { re, desc } of CATASTROPHIC_PATTERNS) {
-      if (re.test(command)) return desc;
+      if (re.test(c)) return desc;
     }
     return null;
   }
@@ -136,12 +164,26 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
   function requestApproval(agent, tool, args) {
     return new Promise((resolve) => {
       const callId = 'ap-' + Date.now() + '-' + (++approvalSeq);
-      pendingApprovals.set(callId, resolve);
+      const entry = {
+        agentId: agent.id, resolve,
+        settle: (v) => { if (pendingApprovals.has(callId)) { pendingApprovals.delete(callId); resolve(v); } }
+      };
+      pendingApprovals.set(callId, entry);
+      agent.__pending = agent.__pending || new Set();
+      agent.__pending.add(callId);
       emitAgent(agent, 'approval', { callId, tool, args });
-      setTimeout(() => {
-        if (pendingApprovals.has(callId)) { pendingApprovals.delete(callId); resolve(false); }
-      }, 120000);
+      setTimeout(() => entry.settle(false), 120000);
     });
+  }
+
+  /* 停止 / 结束时清空该 agent 挂起的审批（resolve 为拒绝，避免停止后仍执行已批准操作） */
+  function clearPendingApprovals(agent) {
+    if (!agent.__pending) return;
+    for (const callId of [...agent.__pending]) {
+      const e = pendingApprovals.get(callId);
+      if (e) e.settle(false);
+    }
+    agent.__pending.clear();
   }
 
   async function searchInDir(folder, pattern, maxResults = 50) {
@@ -175,14 +217,36 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
   }
 
   function killChildren(agent) {
-    if (!agent.children) return;
-    for (const child of agent.children) {
+    if (!agent.children || !agent.children.size) return;
+    // 先快照并清空，避免迭代中 close 回调删除元素导致漏杀
+    const list = [...agent.children];
+    agent.children.clear();
+    for (const child of list) {
       try {
         if (process.platform === 'win32') spawn('taskkill', ['/pid', String(child.pid), '/T', '/F']);
         else child.kill('SIGKILL');
       } catch { /* ignore */ }
     }
-    agent.children.clear();
+  }
+
+  /* 沙箱的真实路径校验：解符号链接 / junction，防止 link-out -> 界外目录 的绕过。
+     （assertInsideWorkspace 只做词法判断，对已存在路径不可信）*/
+  async function assertRealInsideWorkspace(cwd, target) {
+    try {
+      const realCwd = await fsp.realpath(path.resolve(cwd));
+      let realTarget;
+      try { realTarget = await fsp.realpath(path.resolve(target)); }
+      catch { realTarget = await fsp.realpath(path.dirname(path.resolve(target))).then((d) => path.join(d, path.basename(target))).catch(() => path.resolve(target)); }
+      const rel = path.relative(realCwd, realTarget);
+      const relLc = rel.toLowerCase();
+      const inside = (r) => r === '' || (!r.startsWith('..') && !path.isAbsolute(r));
+      if (inside(rel) && inside(relLc)) return;
+      throw new Error(`沙箱拦截：解析后路径在工作目录之外（${target}）`);
+    } catch (e) {
+      if (e && /沙箱拦截/.test(e.message)) throw e;
+      // realpath 失败（路径还不存在等）→ 回退词法校验
+      assertInsideWorkspace(cwd, target);
+    }
   }
 
   function emitAgent(agent, kind, payload = {}) {
@@ -198,13 +262,13 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
       return 'ERROR: 当前为 Ask 只读模式，已拦截修改类操作 ' + name;
     }
     const full = isFullControl();
-    const guard = (target) => { if (!full) assertInsideWorkspace(cwd, target); };
+    const guard = (target) => (full ? Promise.resolve() : assertRealInsideWorkspace(cwd, target));
     addLog('debug', 'tool', `${name} ${JSON.stringify(args || {}).slice(0, 140)}`);
     try {
       switch (name) {
         case 'list_dir': {
           const dir = resolveAgentPath(cwd, args.path || '.');
-          guard(dir);
+          await guard(dir);
           const entries = await fsp.readdir(dir, { withFileTypes: true });
           return entries.slice(0, 300)
             .sort((a, b) => (b.isDirectory() - a.isDirectory()) || a.name.localeCompare(b.name))
@@ -213,7 +277,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
         }
         case 'list_tree': {
           const dir = resolveAgentPath(cwd, args.path || '.');
-          guard(dir);
+          await guard(dir);
           const depth = Math.min(parseInt(args.depth, 10) || 3, 6);
           const lines = [];
           async function walk(d, prefix, level) {
@@ -232,14 +296,14 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
         }
         case 'read_file': {
           const f = resolveAgentPath(cwd, args.path);
-          guard(f);
+          await guard(f);
           let content = await fsp.readFile(f, 'utf8');
           if (content.length > 80000) content = content.slice(0, 80000) + '\n...[文件过长已截断]';
           return content || '[空文件]';
         }
         case 'write_file': {
           const f = resolveAgentPath(cwd, args.path);
-          guard(f);
+          await guard(f);
           const newContent = args.content ?? '';
           let before = null, existed = false;
           try { before = await fsp.readFile(f, 'utf8'); existed = true; } catch { /* 新文件 */ }
@@ -258,7 +322,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
         }
         case 'delete_file': {
           const f = resolveAgentPath(cwd, args.path);
-          guard(f);
+          await guard(f);
           await fsp.rm(f, { recursive: false, force: true });
           addLog('warning', 'tool', '删除文件 ' + f);
           const w = win();
@@ -268,7 +332,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
         case 'move_file': {
           const from = resolveAgentPath(cwd, args.from);
           const to = resolveAgentPath(cwd, args.to);
-          guard(from); guard(to);
+          await guard(from); await guard(to);
           await fsp.mkdir(path.dirname(to), { recursive: true });
           await fsp.rename(from, to);
           addLog('info', 'tool', '移动 ' + from + ' → ' + to);
@@ -278,13 +342,13 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
         }
         case 'search_files': {
           const dir = resolveAgentPath(cwd, args.path || '.');
-          guard(dir);
+          await guard(dir);
           const r = await searchInDir(dir, args.pattern || '');
           return r.join('\n') || '[无匹配]';
         }
         case 'get_file_info': {
           const f = resolveAgentPath(cwd, args.path);
-          guard(f);
+          await guard(f);
           const st = await fsp.stat(f);
           const ext = path.extname(f).slice(1) || '无';
           return `大小: ${st.size} 字节\n修改时间: ${new Date(st.mtimeMs).toLocaleString('zh-CN')}\n类型: ${st.isDirectory() ? '目录' : (ext + ' 文件')}`;
@@ -357,8 +421,37 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
     }
     const reader = res.body.getReader();
     const decoder = new TextDecoder('utf-8');
-    let content = '';
-    const toolMap = new Map();
+    const argAcc = { content: '', toolMap: new Map() };
+    // 单行 SSE 处理：抽为闭包，供主循环与尾缓冲复用
+    function handleSseLine(line, accState) {
+      if (!line.startsWith('data:')) return;
+      const data = line.slice(5).trim();
+      if (!data || data === '[DONE]') return;
+      let json;
+      try { json = JSON.parse(data); } catch { return; }
+      const delta = json.choices && json.choices[0] && json.choices[0].delta;
+      if (!delta) return;
+      if (delta.content) {
+        accState.content += delta.content;
+        if (onDelta) onDelta(delta.content);
+      }
+      // 推理模型（DeepSeek-R1 等）的思考流 → 单独转发用于「思考框」流式展示
+      const rc = delta.reasoning_content || delta.reasoning;
+      if (rc) { if (onReasoning) onReasoning(rc); }
+      if (delta.tool_calls) {
+        for (const tc of delta.tool_calls) {
+          const i = tc.index || 0;
+          if (!accState.toolMap.has(i)) accState.toolMap.set(i, { id: '', name: '', arguments: '' });
+          const tcAcc = accState.toolMap.get(i);
+          if (tc.id) tcAcc.id = tc.id;
+          if (tc.function) {
+            // name 只取首个非空值：部分网关会在多个分片重复携带 name，累加会导致 "write_filewrite_file"
+            if (tc.function.name && !tcAcc.name) tcAcc.name = tc.function.name;
+            if (tc.function.arguments) tcAcc.arguments += tc.function.arguments;
+          }
+        }
+      }
+    }
     let buffer = '';
     while (true) {
       const { done, value } = await reader.read();
@@ -368,36 +461,15 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
       while ((nl = buffer.indexOf('\n')) >= 0) {
         const line = buffer.slice(0, nl).trim();
         buffer = buffer.slice(nl + 1);
-        if (!line.startsWith('data:')) continue;
-        const data = line.slice(5).trim();
-        if (data === '[DONE]') continue;
-        let json;
-        try { json = JSON.parse(data); } catch { continue; }
-        const delta = json.choices && json.choices[0] && json.choices[0].delta;
-        if (!delta) continue;
-        if (delta.content) {
-          content += delta.content;
-          if (onDelta) onDelta(delta.content);
-        }
-        // 推理模型（DeepSeek-R1 等）的思考流 → 单独转发用于「思考框」流式展示
-        const rc = delta.reasoning_content || delta.reasoning;
-        if (rc) { if (onReasoning) onReasoning(rc); }
-        if (delta.tool_calls) {
-          for (const tc of delta.tool_calls) {
-            const i = tc.index || 0;
-            if (!toolMap.has(i)) toolMap.set(i, { id: '', name: '', arguments: '' });
-            const acc = toolMap.get(i);
-            if (tc.id) acc.id = tc.id;
-            if (tc.function) {
-              if (tc.function.name) acc.name += tc.function.name;
-              if (tc.function.arguments) acc.arguments += tc.function.arguments;
-            }
-          }
-        }
+        handleSseLine(line, argAcc);
       }
     }
-    const tool_calls = [...toolMap.values()].map((tc) => ({ id: tc.id, function: { name: tc.name, arguments: tc.arguments } }));
-    return { content, tool_calls };
+    buffer += decoder.decode(); // 冲刷解码器残留
+    if (buffer.trim()) {
+      for (const line of buffer.split('\n')) handleSseLine(line.trim(), argAcc);
+    }
+    const tool_calls = [...argAcc.toolMap.values()].map((tc) => ({ id: tc.id, function: { name: tc.name, arguments: tc.arguments } }));
+    return { content: argAcc.content, tool_calls };
   }
 
   async function runAgent(agent) {
@@ -447,6 +519,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
   async function agentLoop(agent, cfg) {
     try {
       for (let i = 0; i < 30; i++) {
+        if (agent.status === 'stopped' || agent.status === 'error') return; // 已停止则不再继续
         let content = '';
         let calls = [];
         if (process.env.MOCK_LLM) {
@@ -509,7 +582,8 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
       emitAgent(agent, 'error', { text: String(err.message || err) });
       addLog('error', 'agent', `Agent 出错：${String(err.message || err).slice(0, 200)}`);
     } finally {
-      // 收尾：清理子进程 + 截断日志（防常驻/长任务内存累积）
+      // 收尾：清理待审批 + 子进程 + 截断日志（防常驻/长任务内存累积）
+      clearPendingApprovals(agent);
       killChildren(agent);
       if (agent.log.length > 200) agent.log = agent.log.slice(-200);
       saveSession(agent);
@@ -539,8 +613,8 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
     });
 
     ipcMain.handle('agent:approval', (_e, { callId, allowed }) => {
-      const resolve = pendingApprovals.get(callId);
-      if (resolve) { pendingApprovals.delete(callId); resolve(!!allowed); }
+      const entry = pendingApprovals.get(callId);
+      if (entry) entry.settle(!!allowed);
       return true;
     });
 
@@ -552,6 +626,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
       const a = agents.get(id);
       if (a) {
         a.status = 'stopped';
+        clearPendingApprovals(a); // 先拒绝挂起审批，再杀进程
         killChildren(a);
         if (a.log.length > 200) a.log = a.log.slice(-200);
         emitAgent(a, 'status', { status: 'stopped' });
@@ -575,7 +650,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
     });
   }
 
-  return { register, executeTool, runAgent, killChildren, emitAgent };
+  return { register, executeTool, runAgent, killChildren, emitAgent, clearPendingApprovals };
 }
 
 module.exports = { createAgentModule };

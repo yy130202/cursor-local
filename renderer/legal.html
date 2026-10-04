@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>法律条款 · Cursor Local</title>
+<style>
+  :root {
+    --paper: #F7F6F2;
+    --card: #FFFFFF;
+    --ink: #14151A;
+    --ink-2: #56585F;
+    --ink-3: #8B8D94;
+    --line: #DEDCD5;
+    --line-2: #EDEBE5;
+    --blue: #00548C;
+    --blue-soft: #E7EFF6;
+    --yellow: #FECC02;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Inter", "Helvetica Neue", "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
+    font-size: 15px;
+    line-height: 1.78;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
+
+  /* ---------- 顶栏 ---------- */
+  .top { border-bottom: 1px solid var(--line); background: var(--paper); position: sticky; top: 0; z-index: 10; }
+  .top-in { display: flex; align-items: center; gap: 14px; height: 60px; }
+  .mark { font-family: "SF Mono", Consolas, monospace; font-size: 12px; letter-spacing: .22em; font-weight: 600; }
+  .top .sep { width: 1px; height: 16px; background: var(--line); }
+  .doc-title { font-size: 14px; color: var(--ink-2); }
+  .ver { margin-left: auto; font-family: "SF Mono", Consolas, monospace; font-size: 11.5px; color: var(--ink-3); }
+
+  /* ---------- 布局 ---------- */
+  .layout { display: grid; grid-template-columns: 210px 1fr; gap: 56px; padding-top: 52px; padding-bottom: 80px; }
+
+  /* ---------- 侧边目录 ---------- */
+  .toc { position: sticky; top: 96px; align-self: start; display: flex; flex-direction: column; }
+  .toc-h { font-family: "SF Mono", Consolas, monospace; font-size: 10.5px; letter-spacing: .2em; color: var(--ink-3); margin-bottom: 14px; }
+  .toc a {
+    display: flex; gap: 10px; align-items: baseline;
+    padding: 7px 0 7px 12px; border-left: 2px solid var(--line);
+    color: var(--ink-2); text-decoration: none; font-size: 13.5px; transition: all .18s ease;
+  }
+  .toc a .n { font-family: "SF Mono", Consolas, monospace; font-size: 11px; color: var(--ink-3); }
+  .toc a:hover { color: var(--ink); border-left-color: var(--blue); }
+  .toc a.on { color: var(--blue); border-left-color: var(--blue); font-weight: 600; }
+  .toc a.on .n { color: var(--blue); }
+
+  /* ---------- 文档 ---------- */
+  .doc { max-width: 68ch; }
+  .doc-head { margin-bottom: 56px; }
+  .doc-head h1 { font-size: 40px; font-weight: 300; letter-spacing: -.02em; line-height: 1.2; margin: 0 0 14px; }
+  .doc-head p { color: var(--ink-2); margin: 0; max-width: 56ch; }
+  .meta-rule { display: flex; gap: 28px; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--line); }
+  .meta-rule div { font-size: 12.5px; color: var(--ink-3); }
+  .meta-rule b { display: block; font-size: 13px; color: var(--ink); font-weight: 600; margin-top: 2px; }
+
+  section { margin-bottom: 72px; scroll-margin-top: 96px; }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 8px; }
+  .sec-n {
+    font-family: "SF Mono", Consolas, monospace; font-size: 12px; font-weight: 600;
+    color: var(--ink); background: var(--yellow); padding: 2px 7px; letter-spacing: .04em;
+  }
+  .sec-head h2 { font-size: 25px; font-weight: 400; letter-spacing: -.01em; margin: 0; }
+  .sec-lead { color: var(--ink-2); font-size: 14.5px; margin: 0 0 26px; padding-bottom: 20px; border-bottom: 1px solid var(--line-2); }
+
+  h3 { font-size: 15.5px; font-weight: 600; margin: 30px 0 8px; }
+  h3 .hn { font-family: "SF Mono", Consolas, monospace; font-size: 11.5px; color: var(--ink-3); margin-right: 8px; }
+  p { margin: 0 0 13px; }
+  ul { margin: 0 0 13px; padding-left: 0; list-style: none; }
+  ul li { position: relative; padding-left: 18px; margin-bottom: 7px; }
+  ul li::before { content: ""; position: absolute; left: 2px; top: .72em; width: 5px; height: 5px; background: var(--blue); }
+  strong { font-weight: 600; }
+  a { color: var(--blue); text-decoration: none; border-bottom: 1px solid var(--blue-soft); }
+  a:hover { border-bottom-color: var(--blue); }
+  code {
+    font-family: "SF Mono", Consolas, monospace; font-size: 12.5px;
+    background: var(--blue-soft); color: var(--blue); padding: 1px 6px; border-radius: 3px;
+  }
+  .note {
+    background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--yellow);
+    padding: 16px 20px; margin: 20px 0; font-size: 14px; color: var(--ink-2);
+  }
+  .note b { color: var(--ink); }
+
+  /* ---------- 页脚 ---------- */
+  .foot { border-top: 1px solid var(--line); padding: 28px 0 40px; }
+  .foot-in { display: flex; flex-wrap: wrap; gap: 8px 28px; align-items: center; }
+  .foot span { font-size: 12.5px; color: var(--ink-3); }
+  .foot .fm { font-family: "SF Mono", Consolas, monospace; letter-spacing: .2em; font-size: 11px; margin-right: auto; }
+
+  @media (max-width: 860px) {
+    .wrap { padding: 0 22px; }
+    .layout { grid-template-columns: 1fr; gap: 30px; padding-top: 34px; }
+    .toc { position: static; flex-direction: row; flex-wrap: wrap; gap: 0 22px; border-bottom: 1px solid var(--line); padding-bottom: 14px; }
+    .toc-h { width: 100%; margin-bottom: 8px; }
+    .doc-head h1 { font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-in">
+    <span class="mark">CURSOR LOCAL</span>
+    <span class="sep"></span>
+    <span class="doc-title">法律条款</span>
+    <span class="ver">v0.1.0 · 生效于 2026-10-04</span>
+  </div>
+</header>
+
+<div class="wrap layout">
+
+  <aside class="toc">
+    <div class="toc-h">目录 / CONTENTS</div>
+    <a href="#tos" class="on"><span class="n">01</span><span>用户服务协议</span></a>
+    <a href="#privacy"><span class="n">02</span><span>隐私政策</span></a>
+    <a href="#disclaimer"><span class="n">03</span><span>免责声明</span></a>
+  </aside>
+
+  <main class="doc">
+
+    <div class="doc-head">
+      <h1>法律条款</h1>
+      <p>本文件包含 Cursor Local 的用户服务协议、隐私政策与免责声明三份文本。Cursor Local 是一款本地运行的开源桌面工具，以下条款说明你与本软件之间的权利与义务关系。</p>
+      <div class="meta-rule">
+        <div>适用版本<b>v0.1.0 及以后</b></div>
+        <div>适用对象<b>软件使用者</b></div>
+        <div>运行方式<b>本地单机</b></div>
+      </div>
+    </div>
+
+    <!-- ==================== 01 用户服务协议 ==================== -->
+    <section id="tos">
+      <div class="sec-head"><span class="sec-n">01</span><h2>用户服务协议</h2></div>
+      <p class="sec-lead">本协议是你与 Cursor Local（以下简称"本软件"）之间就使用、下载与运行本软件所订立的约定。开始使用即表示你已阅读并接受本协议全部条款。</p>
+
+      <h3><span class="hn">1.1</span>服务内容</h3>
+      <p>本软件是一个运行于本地桌面环境的 AI 辅助编程工具，提供代码编辑、文件管理、版本控制可视化、终端接入以及本地 Agent 智能体编排等能力。本软件通过你自行配置的第三方大语言模型 API 提供智能能力，<strong>自身不提供、不托管、不代理任何模型服务</strong>。</p>
+
+      <h3><span class="hn">1.2</span>许可授予</h3>
+      <p>本软件以开源许可证发布（具体以随附的 <code>LICENSE</code> 文件为准）。在遵守该许可证全部条款的前提下，授予你永久、非独占、免 royalty 的使用、复制、修改与再分发权利。</p>
+      <ul>
+        <li>本软件按"现状"提供，作者不持有任何形式的担保或兜底义务。</li>
+        <li>你再分发本软件或其衍生作品时，须保留原版权声明与许可证全文。</li>
+        <li>不得以本软件名义进行任何形式的商业背书或误导性宣传。</li>
+      </ul>
+
+      <h3><span class="hn">1.3</span>你的内容与数据</h3>
+      <ul>
+        <li>你对本地工作目录中的代码、文档、配置等全部内容拥有完整权利。</li>
+        <li>本软件在你授权的前提下读取上述内容以完成任务；相关处理均在你的设备上完成。</li>
+        <li>你保留对 Agent 生成内容中一切知识产权的归属；生成内容的可用性由你自行判断。</li>
+      </ul>
+
+      <h3><span class="hn">1.4</span>使用规范</h3>
+      <p>你承诺不将本软件用于以下情形：</p>
+      <ul>
+        <li>违反适用法律法规的处理活动；</li>
+        <li>生成、上传或传播违法有害内容，或侵犯他人知识产权、隐私权、肖像权的行为；</li>
+        <li>对本软件进行反向工程以用于商业竞品复制，或移除版权与许可标识进行再发布；</li>
+        <li>对第三方服务实施未授权的批量调用、接口滥用或绕过其使用限制。</li>
+      </ul>
+
+      <h3><span class="hn">1.5</span>第三方服务</h3>
+      <p>本软件可对接你自行选择的大语言模型 API、Git 等第三方服务。该等服务的可用性、内容准确性、计费与数据处理规则由对应服务方独立负责，与本软件及作者无关。请你自行审慎选择并配置所使用的第三方服务。</p>
+
+      <h3><span class="hn">1.6</span>条款变更</h3>
+      <p>作者可能随软件版本迭代更新本协议。更新后的条款随新版本发布，发布之日即生效之日。已发布历史版本对应的条款保留于该版本的开源仓库中备查。</p>
+    </section>
+
+    <!-- ==================== 02 隐私政策 ==================== -->
+    <section id="privacy">
+      <div class="sec-head"><span class="sec-n">02</span><h2>隐私政策</h2></div>
+      <p class="sec-lead">本软件遵循本地优先（local-first）设计理念。核心原则是：<strong>你的代码和偏好只属于你</strong>，不因使用本软件而向作者或任何中心服务器上传。</p>
+
+      <h3><span class="hn">2.1</span>我们不收集什么</h3>
+      <p>本软件<b>不设服务器、不设账号体系、不采集遥测、不接入广告与行为分析 SDK</b>。软件运行期间不会向作者或任何第三方发送你的以下信息：</p>
+      <ul>
+        <li>你的源代码、文件内容、目录结构；</li>
+        <li>你的任务描述、对话记录、Agent 交互内容；</li>
+        <li>你的本机路径、用户名、系统信息；</li>
+        <li>使用时长、功能点击等任何行为数据。</li>
+      </ul>
+
+      <h3><span class="hn">2.2</span>数据存储位置</h3>
+      <p>你配置的数据仅保存在本机：</p>
+      <ul>
+        <li><b>API 密钥</b>：经本地加密后写入本机配置文件，仅用于向模型服务发起请求；</li>
+        <li><b>记忆与规则</b>：以 JSON / Markdown 格式保存在 <code>~/.cursor-local/</code> 与项目目录下；</li>
+        <li><b>会话历史</b>：保存在本地会话文件与工作区数据目录中；</li>
+        <li><b>运行日志</b>：仅保留在内存中用于本地排障，不含代码正文。</li>
+      </ul>
+
+      <h3><span class="hn">2.3</span>模型请求的数据流向</h3>
+      <p>当你主动发起 Agent 任务时，本软件会将完成该任务所必需的上下文（可能包含你用 <code>@</code> 引用的文件片段、相关目录结构与你的任务描述）发送至<strong>你所配置的模型服务</strong>。该传输由你与该服务方直接发生，其数据处理受服务方隐私政策约束。请勿在涉密项目中配置会将内容上传至公网的服务。</p>
+
+      <h3><span class="hn">2.4</span>版本检查</h3>
+      <p>当前版本不做自动联网检查。若未来加入更新检查功能，将以开关形式默认关闭，且仅传输版本号与平台标识，不含任何项目内容。</p>
+
+      <h3><span class="hn">2.5</span>你的控制权</h3>
+      <p>你可以随时在设置中删除全部记忆与会话、清除 API 密钥，或直接删除软件目录。所有数据均由你在本机掌控，不存在作者侧副本需要申请删除。</p>
+    </section>
+
+    <!-- ==================== 03 免责声明 ==================== -->
+    <section id="disclaimer">
+      <div class="sec-head"><span class="sec-n">03</span><h2>免责声明</h2></div>
+      <p class="sec-lead">请在使用前认真阅读本节。本软件为开发者工具，错误的输出或操作可能直接导致代码损坏、数据丢失等后果，请务必保留重要文件的备份。</p>
+
+      <h3><span class="hn">3.1</span>按"现状"提供</h3>
+      <p>本软件按"现状"（AS IS）与"可用"（AS AVAILABLE）提供，作者明示不作出任何明示或默示的担保，包括但不限于适销性、特定用途适用性、非侵权与不干扰使用的担保。</p>
+
+      <h3><span class="hn">3.2</span>AI 输出风险</h3>
+      <ul>
+        <li>大语言模型的输出由概率模型生成，<strong>可能包含事实错误、逻辑错误、过时信息或危险建议</strong>；</li>
+        <li>任何由 AI 生成并被写入磁盘的代码、配置、文档，均须经你人工审阅与测试后方可使用；</li>
+        <li>作者不对 AI 输出的正确性、完整性、合法性承担任何责任。</li>
+      </ul>
+
+      <h3><span class="hn">3.3</span>操作风险</h3>
+      <p>本软件具备文件写入、命令执行等能力。即便在受限权限档位下已内置危险命令拦截与工作区边界校验，仍存在因误判或边界情况导致非预期结果的可能。作者不对由此产生的文件损坏、数据丢失、权限变更等后果承担责任。</p>
+      <div class="note">
+        <b>强烈建议：</b>在重要项目中使用前请先提交 Git 版本或建立完整备份；使用「完全访问」权限档位时，AI 将可访问工作区外的任意路径并执行命令，请谨慎开启。
+      </div>
+
+      <h3><span class="hn">3.4</span>责任限制</h3>
+      <p>在法律允许的最大范围内，作者不对使用或无法使用本软件所导致的任何直接、间接、偶然、特殊或后果性损害（包括但不限于数据丢失、业务中断、利润损失）承担责任。</p>
+
+      <h3><span class="hn">3.5</span>第三方内容</h3>
+      <p>本软件展示的第三方服务信息、开源许可与链接内容，其准确性与合法性由原作者负责。作者不对第三方内容的任何瑕疵承担责任。</p>
+
+      <h3><span class="hn">3.6</span>条款独立性</h3>
+      <p>本协议部分条款被认定无效的，不影响其余条款的效力；其余条款仍应完全有效并可执行。</p>
+    </section>
+
+  </main>
+</div>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <span class="fm">CURSOR LOCAL</span>
+    <span>本页为通用条款模板，不构成正式法律意见，请按实际情况调整。</span>
+  </div>
+</footer>
+
+<script>
+  // 目录高亮跟随滚动
+  var links = [].slice.call(document.querySelectorAll('.toc a'));
+  var secs = links.map(function (a) { return document.querySelector(a.getAttribute('href')); });
+  function sync() {
+    var y = window.scrollY + 140, idx = 0;
+    for (var i = 0; i < secs.length; i++) { if (secs[i] && secs[i].offsetTop <= y) idx = i; }
+    links.forEach(function (a, i) { a.classList.toggle('on', i === idx); });
+  }
+  window.addEventListener('scroll', sync, { passive: true });
+  sync();
+</script>
+</body>
+</html>

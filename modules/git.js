@@ -18,12 +18,51 @@ function createGitModule({ winRef, addLog }) {
 
   const statusMap = { ' ': null, M: 'modified', A: 'added', D: 'deleted', R: 'renamed', C: 'copied', U: 'conflict' };
 
-  /* porcelain 文件名解析：处理引号转义（C 风格）与重命名 "old -> new" */
+  /* C 风格引号反转义：git 对含空格/中文/制表符等路径用双引号包裹 + 八进制字节转义。
+     注意：git 的 \NNN 是字节转义（非 JSON），必须先还原字节再按 UTF-8 解码，JSON.parse 无效。*/
+  function unquotePath(s) {
+    s = String(s).trim();
+    if (!(s.length >= 2 && s[0] === '"' && s[s.length - 1] === '"')) return s;
+    const body = s.slice(1, -1);
+    const bytes = [];
+    const pushStr = (str) => { for (const b of Buffer.from(str, 'utf8')) bytes.push(b); };
+    const SIMPLE = { n: 10, t: 9, r: 13, '"': 34, '\\': 92, a: 7, b: 8, f: 12, v: 11 };
+    for (let i = 0; i < body.length; i++) {
+      const c = body[i];
+      if (c !== '\\') { pushStr(c); continue; }
+      const n = body[i + 1];
+      if (n >= '0' && n <= '7') {
+        let oct = '';
+        let j = i + 1;
+        while (j < body.length && oct.length < 3 && body[j] >= '0' && body[j] <= '7') { oct += body[j]; j++; }
+        bytes.push(parseInt(oct, 8) & 0xff);
+        i = j - 1;
+      } else {
+        pushStr(SIMPLE[n] !== undefined ? String.fromCharCode(SIMPLE[n]) : (n || ''));
+        i++;
+      }
+    }
+    try { return Buffer.from(bytes).toString('utf8'); } catch { return s; }
+  }
+
+  /* porcelain 文件名解析：重命名取新路径（"old" -> "new" / old -> new），再反转义 */
   function parsePorcelainName(s) {
     s = String(s).trim();
-    if (s.includes(' -> ')) return s.split(' -> ')[1].trim(); // 重命名取新路径
-    if (s.startsWith('"')) { try { return JSON.parse(s); } catch { /* fallthrough */ } }
-    return s;
+    const arrow = s.indexOf(' -> ');
+    if (arrow >= 0) s = s.slice(arrow + 4).trim();
+    return unquotePath(s);
+  }
+
+  /* numstat 文件名解析：处理 rename 的 "old => new" 与 "pre/{old => new}/post" 两种形态
+     （numstat 用 =>，porcelain 用 ->，故不能共用同一函数） */
+  function parseNumstatName(s) {
+    s = String(s).trim();
+    if (s.includes('{') && s.includes('=>')) {
+      s = s.replace(/\{([^{}]*) => ([^{}]*)\}/g, '$2');
+    } else if (s.includes(' => ')) {
+      s = s.split(' => ').pop().trim();
+    }
+    return unquotePath(s);
   }
 
   /* numstat 变更统计：file -> { adds, dels } */
@@ -35,7 +74,7 @@ function createGitModule({ winRef, addLog }) {
         if (!line.trim()) continue;
         const parts = line.split('\t');
         if (parts.length < 3) continue;
-        const file = parsePorcelainName(parts.slice(2).join('\t'));
+        const file = parseNumstatName(parts.slice(2).join('\t'));
         map.set(file, { adds: parts[0], dels: parts[1] });
       }
     }
@@ -116,7 +155,7 @@ function createGitModule({ winRef, addLog }) {
     if (!list.length) return { ok: false, error: '没有暂存的更改可提交' };
     const msg = String(message || '').trim();
     if (!msg) return { ok: false, error: '提交信息不能为空' };
-    const c = await runGit(cwd, ['commit', '-m', msg, '--', ...list]);
+    const c = await runGit(cwd, ['commit', '-m', msg, '-o', '--', ...list]);
     if (c.code !== 0) return { ok: false, error: c.stderr || c.stdout || 'git commit 失败' };
     addLog('info', 'git', '提交 ' + list.length + ' 个文件：' + msg.slice(0, 60));
     return { ok: true, output: (c.stdout + c.stderr).trim() };

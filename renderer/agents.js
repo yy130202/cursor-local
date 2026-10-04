@@ -630,8 +630,15 @@ function miniMarkdown(text) {
   s = s.replace(/`([^`\n]+)`/g, '<code class="md-inline">$1</code>');
   // 加粗 **...**
   s = s.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
-  // 链接 [text](url)
-  s = s.replace(/\[([^\]\n]+)\]\(([^)\n]+)\)/g, '<a href="$2" class="md-link" target="_blank">$1</a>');
+  // 链接 [text](url) —— 仅放行安全 URL 协议，防 javascript:/data:/vbscript: 注入
+  s = s.replace(/\[([^\]\n]+)\]\(([^)\n]+)\)/g, (m, text, url) => {
+    const raw = String(url).trim();
+    const probe = raw.replace(/[\u0000- ]/g, ''); // 浏览器会忽略 URL 中的控制字符/空白
+    // 含 scheme（形如 xxx:）时只放行 http/https/mailto；其余（相对路径/锚点/绝对路径）放行
+    const scheme = (probe.match(/^([a-zA-Z][a-zA-Z0-9+.-]*):/) || [])[1];
+    const safe = !scheme || /^(https?|mailto)$/i.test(scheme) ? raw : '#';
+    return '<a href="' + safe + '" class="md-link" target="_blank" rel="noopener noreferrer">' + text + '</a>';
+  });
   // 引用 > ...（escape 后为 &gt;）
   s = s.replace(/^&gt; (.+)$/gm, '<blockquote class="md-quote">$1</blockquote>');
   // 水平线 ---

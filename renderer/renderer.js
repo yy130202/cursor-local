@@ -502,3 +502,9 @@ function applyBgAlpha(v) {
     window.api.getConfig().then((cfg) => { if (cfg && typeof cfg.bgAlpha === 'number') { range.value = cfg.bgAlpha; applyBgAlpha(cfg.bgAlpha); } });
   });
 })();
+
+/* 关于页：打开法律条款（用户协议 / 隐私政策 / 免责声明） */
+(function bindOpenLegal() {
+  const btn = document.getElementById('open-legal-btn');
+  if (btn) btn.onclick = () => { if (window.api && window.api.openLegal) window.api.openLegal(); };
+})();

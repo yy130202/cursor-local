@@ -38,7 +38,7 @@ const memoryMod = createMemoryModule();
 const agentMod = createAgentModule({ winRef, addLog, loadConfig, agents, saveSession: sessionMod.saveSession, rootDir: __dirname, memory: memoryMod });
 const gitMod = createGitModule({ winRef, addLog });
 const terminalMod = createTerminalModule({ winRef, addLog });
-const { executeTool, runAgent, killChildren, emitAgent } = agentMod;
+const { executeTool, runAgent, killChildren, emitAgent, clearPendingApprovals } = agentMod;
 const { revertFile } = sessionMod;
 
 registerConfig(ipcMain);
@@ -51,6 +51,22 @@ terminalMod.register(ipcMain);
 memoryMod.register(ipcMain);
 registerAi(ipcMain, { loadConfig });
 registerAuth(ipcMain, { getUserStore });
+
+/* 法律条款页（用户协议 / 隐私政策 / 免责声明）—— 独立窗口打开 */
+ipcMain.handle('legal:open', () => {
+  const already = BrowserWindow.getAllWindows().find((w) => w.__isLegal);
+  if (already) { already.focus(); return true; }
+  const w = new BrowserWindow({
+    width: 1000, height: 920, minWidth: 560, minHeight: 480,
+    title: '法律条款 · Cursor Local',
+    autoHideMenuBar: true,
+    backgroundColor: '#F7F6F2',
+    webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: false }
+  });
+  w.__isLegal = true;
+  w.loadFile(path.join(__dirname, 'renderer', 'legal.html'));
+  return true;
+});
 ipcMain.handle('billing:query', (_e, userId) => billing.queryBilling(userId));
 // 窗口全屏切换（F11）
 ipcMain.handle('window:toggleFullscreen', () => {
@@ -478,5 +494,5 @@ app.whenReady().then(() => {
 });
 app.on('window-all-closed', () => app.quit());
 app.on('before-quit', () => {
-  for (const a of agents.values()) killChildren(a);
+  for (const a of agents.values()) { clearPendingApprovals(a); killChildren(a); }
 });

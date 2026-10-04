@@ -14,3 +14,6 @@ screenshots/
 # 临时验证日志
 shot-log.txt
 test-log.txt
+
+# 对抗测试脚本
+.adv-test/

@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('api', {
   readDir: (p) => ipcRenderer.invoke('fs:readDir', p),
   listArchive: (f) => ipcRenderer.invoke('fs:listArchive', f),
   openExternal: (f) => ipcRenderer.invoke('fs:openExternal', f),
+  openLegal: () => ipcRenderer.invoke('legal:open'),
   readFile: (p) => ipcRenderer.invoke('fs:readFile', p),
   writeFile: (p, c) => ipcRenderer.invoke('fs:writeFile', p, c),
   createFile: (p) => ipcRenderer.invoke('fs:createFile', p),
