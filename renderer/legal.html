@@ -29,7 +29,7 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
 
   /* ---------- 顶栏 ---------- */
   .top { border-bottom: 1px solid var(--line); background: var(--paper); position: sticky; top: 0; z-index: 10; }
@@ -40,10 +40,8 @@
   .ver { margin-left: auto; font-family: "SF Mono", Consolas, monospace; font-size: 11.5px; color: var(--ink-3); }
 
   /* ---------- 布局 ---------- */
-  .layout { display: grid; grid-template-columns: 210px 1fr; gap: 56px; padding-top: 52px; padding-bottom: 80px; }
-
-  /* ---------- 侧边目录 ---------- */
-  .toc { position: sticky; top: 96px; align-self: start; display: flex; flex-direction: column; }
+  .layout { display: grid; grid-template-columns: 218px 1fr; gap: 56px; padding-top: 52px; padding-bottom: 80px; }
+  .toc { position: sticky; top: 90px; align-self: start; display: flex; flex-direction: column; }
   .toc-h { font-family: "SF Mono", Consolas, monospace; font-size: 10.5px; letter-spacing: .2em; color: var(--ink-3); margin-bottom: 14px; }
   .toc a {
     display: flex; gap: 10px; align-items: baseline;
@@ -54,17 +52,19 @@
   .toc a:hover { color: var(--ink); border-left-color: var(--blue); }
   .toc a.on { color: var(--blue); border-left-color: var(--blue); font-weight: 600; }
   .toc a.on .n { color: var(--blue); }
+  .toc .sub { padding-left: 26px; font-size: 12.5px; }
+  .toc .sub .n { display: none; }
 
   /* ---------- 文档 ---------- */
-  .doc { max-width: 68ch; }
-  .doc-head { margin-bottom: 56px; }
+  .doc { max-width: 70ch; }
+  .doc-head { margin-bottom: 54px; }
   .doc-head h1 { font-size: 40px; font-weight: 300; letter-spacing: -.02em; line-height: 1.2; margin: 0 0 14px; }
-  .doc-head p { color: var(--ink-2); margin: 0; max-width: 56ch; }
-  .meta-rule { display: flex; gap: 28px; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--line); }
+  .doc-head p { color: var(--ink-2); margin: 0; max-width: 58ch; }
+  .meta-rule { display: flex; flex-wrap: wrap; gap: 12px 34px; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--line); }
   .meta-rule div { font-size: 12.5px; color: var(--ink-3); }
   .meta-rule b { display: block; font-size: 13px; color: var(--ink); font-weight: 600; margin-top: 2px; }
 
-  section { margin-bottom: 72px; scroll-margin-top: 96px; }
+  section { margin-bottom: 70px; scroll-margin-top: 92px; }
   .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 8px; }
   .sec-n {
     font-family: "SF Mono", Consolas, monospace; font-size: 12px; font-weight: 600;
@@ -76,12 +76,18 @@
   h3 { font-size: 15.5px; font-weight: 600; margin: 30px 0 8px; }
   h3 .hn { font-family: "SF Mono", Consolas, monospace; font-size: 11.5px; color: var(--ink-3); margin-right: 8px; }
   p { margin: 0 0 13px; }
-  ul { margin: 0 0 13px; padding-left: 0; list-style: none; }
+  ul, ol { margin: 0 0 13px; padding-left: 0; list-style: none; counter-reset: li; }
   ul li { position: relative; padding-left: 18px; margin-bottom: 7px; }
   ul li::before { content: ""; position: absolute; left: 2px; top: .72em; width: 5px; height: 5px; background: var(--blue); }
+  ol li { position: relative; padding-left: 26px; margin-bottom: 7px; counter-increment: li; }
+  ol li::before {
+    content: counter(li, decimal-leading-zero); position: absolute; left: 0; top: .05em;
+    font-family: "SF Mono", Consolas, monospace; font-size: 11px; color: var(--blue);
+  }
   strong { font-weight: 600; }
   a { color: var(--blue); text-decoration: none; border-bottom: 1px solid var(--blue-soft); }
   a:hover { border-bottom-color: var(--blue); }
+  a.ext::after { content: " ↗"; font-size: .82em; opacity: .7; }
   code {
     font-family: "SF Mono", Consolas, monospace; font-size: 12.5px;
     background: var(--blue-soft); color: var(--blue); padding: 1px 6px; border-radius: 3px;
@@ -91,6 +97,16 @@
     padding: 16px 20px; margin: 20px 0; font-size: 14px; color: var(--ink-2);
   }
   .note b { color: var(--ink); }
+  .ref {
+    font-size: 13.5px; color: var(--ink-2); background: var(--card);
+    border: 1px solid var(--line-2); padding: 12px 16px; margin: 14px 0 18px;
+  }
+  .ref-t { font-family: "SF Mono", Consolas, monospace; font-size: 10.5px; letter-spacing: .18em; color: var(--ink-3); margin-bottom: 6px; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0 20px; font-size: 13.5px; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line-2); vertical-align: top; }
+  th { font-size: 11px; font-family: "SF Mono", Consolas, monospace; letter-spacing: .12em; color: var(--ink-3); font-weight: 500; border-bottom-color: var(--line); }
+  td:first-child { white-space: nowrap; color: var(--ink-2); }
+  .tag { display: inline-block; font-size: 10.5px; font-family: "SF Mono", Consolas, monospace; padding: 1px 6px; border: 1px solid var(--line); color: var(--ink-3); border-radius: 3px; }
 
   /* ---------- 页脚 ---------- */
   .foot { border-top: 1px solid var(--line); padding: 28px 0 40px; }
@@ -98,10 +114,10 @@
   .foot span { font-size: 12.5px; color: var(--ink-3); }
   .foot .fm { font-family: "SF Mono", Consolas, monospace; letter-spacing: .2em; font-size: 11px; margin-right: auto; }
 
-  @media (max-width: 860px) {
+  @media (max-width: 900px) {
     .wrap { padding: 0 22px; }
     .layout { grid-template-columns: 1fr; gap: 30px; padding-top: 34px; }
-    .toc { position: static; flex-direction: row; flex-wrap: wrap; gap: 0 22px; border-bottom: 1px solid var(--line); padding-bottom: 14px; }
+    .toc { position: static; flex-direction: row; flex-wrap: wrap; gap: 0 20px; border-bottom: 1px solid var(--line); padding-bottom: 14px; }
     .toc-h { width: 100%; margin-bottom: 8px; }
     .doc-head h1 { font-size: 30px; }
   }
@@ -123,123 +139,244 @@
   <aside class="toc">
     <div class="toc-h">目录 / CONTENTS</div>
     <a href="#tos" class="on"><span class="n">01</span><span>用户服务协议</span></a>
-    <a href="#privacy"><span class="n">02</span><span>隐私政策</span></a>
-    <a href="#disclaimer"><span class="n">03</span><span>免责声明</span></a>
+    <a href="#privacy" class="sub"><span class="n"></span><span>隐私政策</span></a>
+    <a href="#disclaimer" class="sub"><span class="n"></span><span>免责声明</span></a>
+    <a href="#appendix" class="sub"><span class="n"></span><span>附录：引用法规索引</span></a>
   </aside>
 
   <main class="doc">
 
     <div class="doc-head">
       <h1>法律条款</h1>
-      <p>本文件包含 Cursor Local 的用户服务协议、隐私政策与免责声明三份文本。Cursor Local 是一款本地运行的开源桌面工具，以下条款说明你与本软件之间的权利与义务关系。</p>
+      <p>本文件由四部分组成，完整规定了 Cursor Local 的服务边界、数据处理方式、责任限制及所依据的法律法规。你应当在使用本软件前完整阅读本文件。</p>
       <div class="meta-rule">
         <div>适用版本<b>v0.1.0 及以后</b></div>
         <div>适用对象<b>软件使用者</b></div>
         <div>运行方式<b>本地单机</b></div>
+        <div>适用法域<b>用户所在司法辖区</b></div>
       </div>
     </div>
 
-    <!-- ==================== 01 用户服务协议 ==================== -->
+    <!-- ==================================================== 01 用户服务协议 -->
     <section id="tos">
       <div class="sec-head"><span class="sec-n">01</span><h2>用户服务协议</h2></div>
-      <p class="sec-lead">本协议是你与 Cursor Local（以下简称"本软件"）之间就使用、下载与运行本软件所订立的约定。开始使用即表示你已阅读并接受本协议全部条款。</p>
+      <p class="sec-lead">本协议是你与 Cursor Local（以下简称"本软件"）之间就使用、下载、运行本软件所订立的具有法律约束力的约定。继续使用即表示你已阅读、理解并接受本协议全部条款；如不接受，请立即停止使用并删除本软件。</p>
 
-      <h3><span class="hn">1.1</span>服务内容</h3>
-      <p>本软件是一个运行于本地桌面环境的 AI 辅助编程工具，提供代码编辑、文件管理、版本控制可视化、终端接入以及本地 Agent 智能体编排等能力。本软件通过你自行配置的第三方大语言模型 API 提供智能能力，<strong>自身不提供、不托管、不代理任何模型服务</strong>。</p>
+      <h3><span class="hn">1.1</span>定义与适用范围</h3>
+      <p><strong>"本软件"</strong>指 Cursor Local 及其源代码、构建产物、发行版及随附文档；<strong>"服务"</strong>指本软件在本地提供的代码编辑、文件管理、可视化版本控制、终端接入与智能体编排等全部功能；<strong>"第三方服务"</strong>指你自行选择并配置的大语言模型 API、代码托管平台等外部服务。</p>
+      <p>本协议适用于所有使用本软件的自然人及组织。你代表自己或你有权代表的组织接受本协议，并保证你具备相应的民事行为能力与缔约资格；若你不具备，请勿使用本软件。</p>
 
       <h3><span class="hn">1.2</span>许可授予</h3>
-      <p>本软件以开源许可证发布（具体以随附的 <code>LICENSE</code> 文件为准）。在遵守该许可证全部条款的前提下，授予你永久、非独占、免 royalty 的使用、复制、修改与再分发权利。</p>
+      <p>本软件以开源许可证发布，具体以随附的 <code>LICENSE</code> 文件为准（当前采用 <a class="ext" href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener">MIT License</a>）。在遵守该许可证全部条款的前提下，作者授予你永久、非独占、免版税、不可撤销的全球许可，允许你使用、复制、修改、再分发及商业利用本软件及其衍生作品。</p>
+      <p>你承诺遵守以下开源合规要求：</p>
       <ul>
-        <li>本软件按"现状"提供，作者不持有任何形式的担保或兜底义务。</li>
-        <li>你再分发本软件或其衍生作品时，须保留原版权声明与许可证全文。</li>
-        <li>不得以本软件名义进行任何形式的商业背书或误导性宣传。</li>
+        <li>在再分发的副本中<b>完整保留</b>原版权声明、许可声明与本文件链接；</li>
+        <li>修改源代码时，应在显著位置标注变更内容与变更时间（good practice，非强制）；</li>
+        <li>不得以本软件名称或作者名义为任何衍生产品背书；</li>
+        <li>本软件中已集成的第三方依赖，各自适用其原始许可证，详见 <a class="ext" href="#appendix">附录 C</a>。</li>
       </ul>
 
       <h3><span class="hn">1.3</span>你的内容与数据</h3>
       <ul>
-        <li>你对本地工作目录中的代码、文档、配置等全部内容拥有完整权利。</li>
-        <li>本软件在你授权的前提下读取上述内容以完成任务；相关处理均在你的设备上完成。</li>
-        <li>你保留对 Agent 生成内容中一切知识产权的归属；生成内容的可用性由你自行判断。</li>
+        <li>你对本地工作目录中的源代码、文档、配置、数据等全部内容（"你的内容"）拥有完整权利，本软件不主张任何所有权；</li>
+        <li>你授予本软件为<strong>提供服务所必需</strong>的、限于本机范围内且非独占的、可随时撤销的使用许可（例如读取文件以响应任务、调用你配置的服务）；</li>
+        <li>你对智能体生成的输出保留其可能的知识产权归属，并负责判断其是否可被合法采用；</li>
+        <li>本软件的记忆与规则功能会读取你主动写入的偏好条目，并向模型服务传递以保持行为一致性，该行为视为你提供的上述许可范围的一部分。</li>
       </ul>
 
-      <h3><span class="hn">1.4</span>使用规范</h3>
-      <p>你承诺不将本软件用于以下情形：</p>
+      <h3><span class="hn">1.4</span>使用规范（Acceptable Use）</h3>
+      <p>你承诺不以本软件从事下列活动：</p>
       <ul>
-        <li>违反适用法律法规的处理活动；</li>
-        <li>生成、上传或传播违法有害内容，或侵犯他人知识产权、隐私权、肖像权的行为；</li>
-        <li>对本软件进行反向工程以用于商业竞品复制，或移除版权与许可标识进行再发布；</li>
-        <li>对第三方服务实施未授权的批量调用、接口滥用或绕过其使用限制。</li>
+        <li>违反适用法律法规的处理活动，包括但不限于制作、传播违法有害内容；</li>
+        <li>侵犯他人知识产权、商标权、肖像权、名誉权、隐私权或个人信息权益的行为；</li>
+        <li>对本软件进行反向工程、反编译以制作竞品，或移除版权与许可标识后重新发布；</li>
+        <li>对第三方模型服务实施未授权的批量调用、接口滥用、绕过速率限制或违反其服务条款的行为；</li>
+        <li>利用本软件生成用于自动化欺诈、恶意攻击、未经同意的数据抓取或监控的代码；</li>
+        <li>在未告知用户的前提下收集、留存或外传他人个人信息。</li>
       </ul>
 
-      <h3><span class="hn">1.5</span>第三方服务</h3>
-      <p>本软件可对接你自行选择的大语言模型 API、Git 等第三方服务。该等服务的可用性、内容准确性、计费与数据处理规则由对应服务方独立负责，与本软件及作者无关。请你自行审慎选择并配置所使用的第三方服务。</p>
+      <h3><span class="hn">1.5</span>第三方服务与集成</h3>
+      <p>本软件支持你自行配置第三方大语言模型 API。该等服务的可用性、输出内容准确性、计费标准与数据处理规则由<strong>服务方独立负责</strong>，并受其自身条款约束，例如 <a class="ext" href="https://openai.com/policies/terms-of-use" target="_blank" rel="noopener">OpenAI 使用条款</a>、<a class="ext" href="https://docs.github.com/en/site-policy/github-terms/github-terms-of-service" target="_blank" rel="noopener">GitHub 服务条款</a>。请在使用前审慎阅读并接受相应条款。</p>
+      <p>本软件不对任何第三方服务提供担保，亦不对因第三方服务变更、限流、停服导致的功能异常承担责任。</p>
 
-      <h3><span class="hn">1.6</span>条款变更</h3>
-      <p>作者可能随软件版本迭代更新本协议。更新后的条款随新版本发布，发布之日即生效之日。已发布历史版本对应的条款保留于该版本的开源仓库中备查。</p>
+      <h3><span class="hn">1.6</span>反馈与贡献</h3>
+      <p>若你向本软件提交缺陷报告、功能建议或代码贡献，你默认授予作者一项<strong>永久、非独占、免版税、可再许可</strong>的许可，将其用于修改、改进与再发布本软件。作者不承担审阅义务，亦无义务采纳你的建议。</p>
+
+      <h3><span class="hn">1.7</span>终止与停用</h3>
+      <p>你随时可停止使用并删除本软件。作者亦可在以下情形中止你使用本软件：违反本协议、侵害他人合法权益，或分发恶意代码。终止不影响已产生条款的效力，第 1.2 条许可授予中关于已分发副本的义务在终止后继续有效。</p>
+
+      <h3><span class="hn">1.8</span>出口管制与制裁合规</h3>
+      <p>你不得违反适用国家或地区的出口管制、制裁或贸易限制法规使用本软件。你应自行确认所在司法辖区对相关第三方服务的使用限制，并保证不通过本软件从事被禁止的交易或活动。</p>
+
+      <h3><span class="hn">1.9</span>条款变更</h3>
+      <p>作者可能随软件版本迭代更新本协议。更新后的条款自新版本发布之日起生效，发布日即生效日。历史版本对应的条款文本保留于该版本的开源仓库中备查。若你在更新后继续使用本软件，即视为接受新条款。</p>
     </section>
 
-    <!-- ==================== 02 隐私政策 ==================== -->
+    <!-- ==================================================== 02 隐私政策 -->
     <section id="privacy">
       <div class="sec-head"><span class="sec-n">02</span><h2>隐私政策</h2></div>
-      <p class="sec-lead">本软件遵循本地优先（local-first）设计理念。核心原则是：<strong>你的代码和偏好只属于你</strong>，不因使用本软件而向作者或任何中心服务器上传。</p>
+      <p class="sec-lead">本软件遵循 <strong>local-first（本地优先）</strong> 设计理念。核心原则是：<em>你的代码与偏好只属于你</em>，不因使用本软件而向作者或任何中心服务器传输。本政策依据<a class="ext" href="https://eur-lex.europa.eu/eli/reg/2016/679/oj" target="_blank" rel="noopener">《通用数据保护条例》(GDPR)</a>、<a class="ext" href="https://oag.ca.gov/privacy/ccpa" target="_blank" rel="noopener">《加州消费者隐私法》(CCPA/CPRA)</a>及<a class="ext" href="http://www.npc.gov.cn/npc/c2/c30834/202108/t20210820_313088.html" target="_blank" rel="noopener">《中华人民共和国个人信息保护法》</a>的透明性与目的限定原则起草。</p>
 
-      <h3><span class="hn">2.1</span>我们不收集什么</h3>
-      <p>本软件<b>不设服务器、不设账号体系、不采集遥测、不接入广告与行为分析 SDK</b>。软件运行期间不会向作者或任何第三方发送你的以下信息：</p>
+      <h3><span class="hn">2.1</span>我们不收集什么（Data We Do Not Collect）</h3>
+      <p>本软件<strong>不设服务器、不设账号体系、不采集遥测、不接入广告与行为分析 SDK</strong>。软件运行期间不会向作者或任何第三方传输：</p>
       <ul>
-        <li>你的源代码、文件内容、目录结构；</li>
-        <li>你的任务描述、对话记录、Agent 交互内容；</li>
-        <li>你的本机路径、用户名、系统信息；</li>
-        <li>使用时长、功能点击等任何行为数据。</li>
+        <li>你的源代码、文件内容、目录结构与符号信息；</li>
+        <li>你的任务描述、对话记录、智能体交互过程与生成输出；</li>
+        <li>你的本机绝对路径、系统用户名、操作系统与硬件信息；</li>
+        <li>使用时长、功能点击、崩溃日志等任何行为或统计数据；</li>
+        <li>任何用于识别你个人身份的直接或间接标识符。</li>
       </ul>
+      <p>换言之，本软件的作者<strong>无法观测到你使用软件做了什么</strong>，因为你的一切都留在了你的机器上。</p>
 
-      <h3><span class="hn">2.2</span>数据存储位置</h3>
-      <p>你配置的数据仅保存在本机：</p>
+      <h3><span class="hn">2.2</span>数据存储位置与保留期限</h3>
+      <p>你配置的数据仅保存在本机，存储位置与目的如下：</p>
+      <table>
+        <thead><tr><th>数据类别</th><th>存储位置</th><th>用途</th><th>保留</th></tr></thead>
+        <tbody>
+          <tr><td>API 密钥</td><td><code>~/.cursor-local/</code>（本地加密）</td><td>向模型服务发起认证请求</td><td>至你手动清除</td></tr>
+          <tr><td>模型与主题偏好</td><td><code>~/.cursor-local/</code></td><td>恢复你的界面与引擎设置</td><td>至你手动清除</td></tr>
+          <tr><td>记忆与规则</td><td><code>~/.cursor-local/*.json</code>、<code>*.md</code> 及项目 <code>.cursor-local/</code></td><td>跨会话保持偏好与项目约束</td><td>至你手动删除</td></tr>
+          <tr><td>会话历史</td><td>工作区本地会话文件</td><td>历史任务回溯与成果回滚</td><td>至你手动清除</td></tr>
+          <tr><td>运行日志</td><td>仅内存，用于本地排障</td><td>错误诊断</td><td>随应用退出销毁</td></tr>
+        </tbody>
+      </table>
+
+      <h3><span class="hn">2.3</span>模型请求的数据流向（唯一出网路径）</h3>
+      <p>当你主动发起智能体任务时，本软件会将<strong>完成任务所必需的最小上下文</strong>发送至<strong>你所配置的模型服务</strong>。该传输由你与该服务方<strong>直接发生</strong>，作者在此链路中不充当数据控制者或处理者。传输内容可能包括：</p>
       <ul>
-        <li><b>API 密钥</b>：经本地加密后写入本机配置文件，仅用于向模型服务发起请求；</li>
-        <li><b>记忆与规则</b>：以 JSON / Markdown 格式保存在 <code>~/.cursor-local/</code> 与项目目录下；</li>
-        <li><b>会话历史</b>：保存在本地会话文件与工作区数据目录中；</li>
-        <li><b>运行日志</b>：仅保留在内存中用于本地排障，不含代码正文。</li>
+        <li>你的任务描述与后续追问内容；</li>
+        <li>你以 <code>@</code> 显式引用的文件内容片段；</li>
+        <li>智能体为理解问题而读取的相关文件与目录结构；</li>
+        <li>你写入的记忆条目与项目规则。</li>
       </ul>
-
-      <h3><span class="hn">2.3</span>模型请求的数据流向</h3>
-      <p>当你主动发起 Agent 任务时，本软件会将完成该任务所必需的上下文（可能包含你用 <code>@</code> 引用的文件片段、相关目录结构与你的任务描述）发送至<strong>你所配置的模型服务</strong>。该传输由你与该服务方直接发生，其数据处理受服务方隐私政策约束。请勿在涉密项目中配置会将内容上传至公网的服务。</p>
-
-      <h3><span class="hn">2.4</span>版本检查</h3>
-      <p>当前版本不做自动联网检查。若未来加入更新检查功能，将以开关形式默认关闭，且仅传输版本号与平台标识，不含任何项目内容。</p>
-
-      <h3><span class="hn">2.5</span>你的控制权</h3>
-      <p>你可以随时在设置中删除全部记忆与会话、清除 API 密钥，或直接删除软件目录。所有数据均由你在本机掌控，不存在作者侧副本需要申请删除。</p>
-    </section>
-
-    <!-- ==================== 03 免责声明 ==================== -->
-    <section id="disclaimer">
-      <div class="sec-head"><span class="sec-n">03</span><h2>免责声明</h2></div>
-      <p class="sec-lead">请在使用前认真阅读本节。本软件为开发者工具，错误的输出或操作可能直接导致代码损坏、数据丢失等后果，请务必保留重要文件的备份。</p>
-
-      <h3><span class="hn">3.1</span>按"现状"提供</h3>
-      <p>本软件按"现状"（AS IS）与"可用"（AS AVAILABLE）提供，作者明示不作出任何明示或默示的担保，包括但不限于适销性、特定用途适用性、非侵权与不干扰使用的担保。</p>
-
-      <h3><span class="hn">3.2</span>AI 输出风险</h3>
-      <ul>
-        <li>大语言模型的输出由概率模型生成，<strong>可能包含事实错误、逻辑错误、过时信息或危险建议</strong>；</li>
-        <li>任何由 AI 生成并被写入磁盘的代码、配置、文档，均须经你人工审阅与测试后方可使用；</li>
-        <li>作者不对 AI 输出的正确性、完整性、合法性承担任何责任。</li>
-      </ul>
-
-      <h3><span class="hn">3.3</span>操作风险</h3>
-      <p>本软件具备文件写入、命令执行等能力。即便在受限权限档位下已内置危险命令拦截与工作区边界校验，仍存在因误判或边界情况导致非预期结果的可能。作者不对由此产生的文件损坏、数据丢失、权限变更等后果承担责任。</p>
       <div class="note">
-        <b>强烈建议：</b>在重要项目中使用前请先提交 Git 版本或建立完整备份；使用「完全访问」权限档位时，AI 将可访问工作区外的任意路径并执行命令，请谨慎开启。
+        <b>请务必注意：</b>若你配置的模型服务为公网服务，则上述内容将离开你的设备并受该服务方隐私政策约束。在涉密或受监管项目中，请配置私有部署模型，或改用本软件的 <strong>Ask / Plan</strong> 模式并审慎选择引用文件。
       </div>
 
-      <h3><span class="hn">3.4</span>责任限制</h3>
-      <p>在法律允许的最大范围内，作者不对使用或无法使用本软件所导致的任何直接、间接、偶然、特殊或后果性损害（包括但不限于数据丢失、业务中断、利润损失）承担责任。</p>
+      <h3><span class="hn">2.4</span>本地存储与类 Cookie 机制</h3>
+      <p>本软件不使用浏览器 Cookie，不投放追踪像素或跨站标识符。界面偏好（如主题色、背景不透明度、面板展开状态）通过浏览器 <code>localStorage</code> 保存在你的用户数据目录中，仅用于还原你的使用状态，<strong>不与任何外部服务共享</strong>。清除浏览器存储或删除软件数据目录即可完全清除。</p>
 
-      <h3><span class="hn">3.5</span>第三方内容</h3>
-      <p>本软件展示的第三方服务信息、开源许可与链接内容，其准确性与合法性由原作者负责。作者不对第三方内容的任何瑕疵承担责任。</p>
+      <h3><span class="hn">2.5</span>第三方组件</h3>
+      <p>本软件集成的开源组件（含 <a class="ext" href="https://www.electronjs.org/licenses" target="_blank" rel="noopener">Electron</a>、<a class="ext" href="https://microsoft.github.io/monaco-editor/" target="_blank" rel="noopener">Monaco Editor</a>、<a class="ext" href="https://xtermjs.org/" target="_blank" rel="noopener">xterm.js</a>、<a class="ext" href="https://lucide.dev/" target="_blank" rel="noopener">Lucide Icons</a>）均以库形式静态打包，<strong>不内置遥测</strong>，其行为受各自许可证与隐私声明约束。</p>
 
-      <h3><span class="hn">3.6</span>条款独立性</h3>
-      <p>本协议部分条款被认定无效的，不影响其余条款的效力；其余条款仍应完全有效并可执行。</p>
+      <h3><span class="hn">2.6</span>你的数据权利</h3>
+      <p>依据上述 GDPR、CCPA 及《个人信息保护法》所确立的<u>查阅、复制、更正、删除、撤回同意、可携带</u>等权利，你对本软件中的数据拥有<strong>完全自主的控制权</strong>，且无需向作者提出请求：</p>
+      <ol>
+        <li><b>查阅与复制</b>：数据以明文 JSON / Markdown 存储于你指定的本地路径，可直接打开查看；</li>
+        <li><b>更正与删除</b>：在设置页「记忆」「规则」中逐条删除，或直接删除对应文件；</li>
+        <li><b>撤回与清理 API Key</b>：在设置页清除密钥字段，或删除整个配置目录；</li>
+        <li><b>可携带与销毁</b>：复制本地文件即可迁移，删除本地文件即完成销毁——因作者侧不存在任何副本，无"忘记删除"风险。</li>
+      </ol>
+
+      <h3><span class="hn">2.7</span>未成年人保护</h3>
+      <p>本软件面向开发者与具备相应民事行为能力的用户，不主动面向未成年人收集任何信息。若未成年人需使用，应在监护人陪同与指导下进行。若你发现未成年人未经同意向我们（作者）提供了个人信息，请通过下方方式联系我们。</p>
+
+      <h3><span class="hn">2.8</span>政策更新与通知</h3>
+      <p>本政策如有变更，将随软件版本发布并在开源仓库中留存历史版本。鉴于本软件不设账号与推送通道，<strong>我们不会主动向你发送通知</strong>；请在升级前查阅本文件的最新版本。</p>
+
+      <h3><span class="hn">2.9</span>联系我们</h3>
+      <p>若你对自己的个人信息权利有任何疑问，或发现本软件存在安全问题，请通过开源仓库的 Issue 通道提出。出于隐私保护考虑，<strong>请勿在 Issue 中粘贴任何敏感代码、密钥或个人身份信息</strong>。</p>
+    </section>
+
+    <!-- ==================================================== 03 免责声明 -->
+    <section id="disclaimer">
+      <div class="sec-head"><span class="sec-n">03</span><h2>免责声明</h2></div>
+      <p class="sec-lead">请在使用前认真阅读本节。本软件是具备文件写入与命令执行能力的开发者工具，错误的输出或操作可能直接导致代码损坏、数据丢失等后果。使用即视为你已理解并接受以下全部风险。</p>
+
+      <h3><span class="hn">3.1</span>按"现状"提供</h3>
+      <p>本软件按"现状"（AS IS）与"可用"（AS AVAILABLE）提供，作者明示不作出任何明示或默示的担保，包括但不限于<strong>适销性、特定用途适用性、不侵权、不干扰使用</strong>及"错误为零"（error-free）的担保。</p>
+
+      <h3><span class="hn">3.2</span>AI 输出的固有风险</h3>
+      <ul>
+        <li>大语言模型的输出由概率模型生成，<strong>必然存在一定比例的事实错误、逻辑错误、过时信息、有害偏见或危险建议</strong>；</li>
+        <li>任何由 AI 生成并被写入磁盘的代码、配置、文档、命令，<strong>均须经你人工审阅、测试后方可使用</strong>；</li>
+        <li>模型可能"幻觉"出不存在的 API、库、文件路径或参数，导致运行时错误；</li>
+        <li>作者不对 AI 输出的正确性、完整性、合法性、安全性承担任何责任。</li>
+      </ul>
+
+      <h3><span class="hn">3.3</span>操作风险与数据安全</h3>
+      <p>本软件具备文件写入、删除、批量替换与命令执行能力。即便在受限权限档位下已内置危险命令拦截（如 <code>rm -rf</code>、<code>format</code>、<code>shutdown</code>）与工作区边界校验，仍存在因模型误判、路径边界情况或并发操作导致的非预期结果可能。</p>
+      <div class="note">
+        <b>操作建议：</b>① 在重要项目中，使用前先提交 Git 版本或建立完整备份；② 优先使用「自动审批」档位，对敏感操作保持人工确认；③ 「完全访问」档位下，智能体可访问工作区外任意路径并执行任意命令（格式化、关机等毁灭性操作仍会被拦截），<strong>请仅在完全信任的环境下开启</strong>；④ 涉及生产环境、数据库迁移、密钥轮换的操作，务必人工复核。
+      </div>
+
+      <h3><span class="hn">3.4</span>专业建议排除</h3>
+      <p>本软件及 AI 输出<strong>不构成</strong>法律、医疗、财务、税务或安全工程等领域的专业建议。涉及合规、生产发布、安全审计等重大决策时，请咨询具备相应资质的专业人士，并对 AI 输出进行独立验证。</p>
+
+      <h3><span class="hn">3.5</span>开源许可与第三方组件</h3>
+      <p>本软件为开源项目，作者不对以下情形承担责任：</p>
+      <ul>
+        <li>因你违反开源许可证（<a class="ext" href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener">MIT</a>、<a class="ext" href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener">Apache-2.0</a> 等）导致的法律纠纷；</li>
+        <li>第三方依赖自身漏洞、许可证变更或停止维护造成的问题（详见<a class="ext" href="#appendix">附录 C</a>）；</li>
+        <li>你将本软件用于违法或侵权用途产生的后果。</li>
+      </ul>
+
+      <h3><span class="hn">3.6</span>不可抗力</h3>
+      <p>因不可抗力（自然灾害、战争、政府行为、疫情、网络基础设施中断、第三方平台故障等）导致本软件无法正常使用的，作者不承担责任。</p>
+
+      <h3><span class="hn">3.7</span>责任限制（Limitation of Liability）</h3>
+      <p>在适用法律允许的最大范围内，作者及贡献者<strong>不对</strong>使用或无法使用本软件所导致的任何直接、间接、偶然、特殊或后果性损害承担责任，包括但不限于：数据丢失、业务中断、利润损失、商誉损害、代码被覆盖或安全事件。</p>
+      <p>在法律允许的情形下，作者对你的全部赔偿责任以<strong>你为本软件实际支付的金额为限</strong>（本软件免费分发，该金额通常为零）。某些司法辖区不允许排除间接或后果性损害的赔偿，此时上述限制仅在法律允许的范围内适用。</p>
+
+      <h3><span class="hn">3.8</span>第三方内容与链接</h3>
+      <p>本软件及其文档中包含的第三方链接（包括但不限于 <a class="ext" href="https://eur-lex.europa.eu/eli/reg/2016/679/oj" target="_blank" rel="noopener">欧盟法规原文</a>、<a class="ext" href="https://opensource.org/osd" target="_blank" rel="noopener">OSI 开源定义</a>、标准组织页面）其内容与准确性由第三方负责。作者不对第三方内容的任何瑕疵、失效或安全性承担责任。</p>
+
+      <h3><span class="hn">3.9</span>条款的独立性</h3>
+      <p>本文件部分条款被认定无效或不可执行的，不影响其余条款的效力，其余条款仍应完全有效并可执行。条款标题仅为便于阅读，不影响条款解释。</p>
+
+      <h3><span class="hn">3.10</span>争议解决与管辖法律</h3>
+      <p>本条款的解释与执行适用<strong>你所在司法辖区</strong>的法律（不含冲突法规则）。因本软件产生或与本软件相关的任何争议，应首先通过友好协商解决；协商不成的，提交软件作者主要营业地有管辖权的法院处理。消费争议适用当地强制性法律关于管辖的特别规定。</p>
+    </section>
+
+    <!-- ==================================================== 04 附录 -->
+    <section id="appendix">
+      <div class="sec-head"><span class="sec-n">04</span><h2>附录：引用法规与标准索引</h2></div>
+      <p class="sec-lead">本条款引用的外部规范、许可证与官方资料如下。所有链接均为官方或权威来源，条款随链接内容的更新而自动以原文为准。</p>
+
+      <h3><span class="hn">A</span>数据保护与隐私法规</h3>
+      <table>
+        <thead><tr><th>规范</th><th>发布机构 / 效力</th><th>官方文本</th></tr></thead>
+        <tbody>
+          <tr><td>通用数据保护条例 (GDPR)</td><td>欧盟 · 2018/5/25 起施行</td><td><a class="ext" href="https://eur-lex.europa.eu/eli/reg/2016/679/oj" target="_blank" rel="noopener">EUR-Lex 官方文本</a></td></tr>
+          <tr><td>加州消费者隐私法 (CCPA/CPRA)</td><td>美国加州 · 2020/1/1 起施行</td><td><a class="ext" href="https://oag.ca.gov/privacy/ccpa" target="_blank" rel="noopener">CA Attorney General</a></td></tr>
+          <tr><td>中华人民共和国个人信息保护法</td><td>全国人大 · 2021/11/1 起施行</td><td><a class="ext" href="http://www.npc.gov.cn/npc/c2/c30834/202108/t20210820_313088.html" target="_blank" rel="noopener">中国人大网</a></td></tr>
+          <tr><td>中华人民共和国网络安全法</td><td>全国人大 · 2017/6/1 起施行</td><td><a class="ext" href="http://www.npc.gov.cn/npc/c2/c30834/201705/t20170502_202558.html" target="_blank" rel="noopener">中国人大网</a></td></tr>
+          <tr><td>信息安全技术 个人信息安全规范</td><td>GB/T 35273-2020 · 推荐性国标</td><td><a class="ext" href="https://openstd.samr.gov.cn/bzgk/gb/newGbInfo" target="_blank" rel="noopener">全国标准信息公共服务平台</a></td></tr>
+        </tbody>
+      </table>
+
+      <h3><span class="hn">B</span>开源许可与合规</h3>
+      <table>
+        <thead><tr><th>名称</th><th>类型</th><th>官方文本</th></tr></thead>
+        <tbody>
+          <tr><td>MIT License</td><td>宽松型 · 本软件主许可</td><td><a class="ext" href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener">opensource.org</a></td></tr>
+          <tr><td>Apache License 2.0</td><td>宽松型 · 含专利授权</td><td><a class="ext" href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener">apache.org</a></td></tr>
+          <tr><td>GNU GPL v3</td><td>Copyleft 型</td><td><a class="ext" href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener">gnu.org</a></td></tr>
+          <tr><td>OSI 开源定义</td><td>开源判定标准</td><td><a class="ext" href="https://opensource.org/osd" target="_blank" rel="noopener">Open Source Initiative</a></td></tr>
+          <tr><td>SPDX 许可清单</td><td>许可证标识标准</td><td><a class="ext" href="https://spdx.org/licenses/" target="_blank" rel="noopener">spdx.org</a></td></tr>
+        </tbody>
+      </table>
+
+      <h3><span class="hn">C</span>本软件集成的第三方组件</h3>
+      <table>
+        <thead><tr><th>组件</th><th>用途</th><th>许可 / 官网</th></tr></thead>
+        <tbody>
+          <tr><td>Electron</td><td>跨平台桌面运行时</td><td><a class="ext" href="https://www.electronjs.org/licenses" target="_blank" rel="noopener">MIT · electronjs.org</a></td></tr>
+          <tr><td>Monaco Editor</td><td>代码编辑器内核</td><td><a class="ext" href="https://microsoft.github.io/monaco-editor/" target="_blank" rel="noopener">MIT · monaco-editor</a></td></tr>
+          <tr><td>xterm.js</td><td>终端渲染</td><td><a class="ext" href="https://xtermjs.org/" target="_blank" rel="noopener">MIT · xtermjs.org</a></td></tr>
+          <tr><td>Lucide Icons</td><td>图标集</td><td><a class="ext" href="https://lucide.dev/" target="_blank" rel="noopener">ISC · lucide.dev</a></td></tr>
+          <tr><td>Diff (jsdiff)</td><td>变更对比</td><td><a class="ext" href="https://github.com/kpdecker/jsdiff" target="_blank" rel="noopener">BSD-3 · GitHub</a></td></tr>
+        </tbody>
+      </table>
+
+      <h3><span class="hn">D</span>开发者资源</h3>
+      <ul>
+        <li><a class="ext" href="https://docs.github.com/en/site-policy" target="_blank" rel="noopener">GitHub 站点政策中心</a> —— 第三方服务条款与隐私声明</li>
+        <li><a class="ext" href="https://openai.com/policies/terms-of-use" target="_blank" rel="noopener">OpenAI 使用条款</a> —— 模型服务使用规则示例</li>
+        <li><a class="ext" href="https://docs.anthropic.com/en/docs" target="_blank" rel="noopener">Anthropic 文档</a> —— Claude 模型接入参考</li>
+        <li><a class="ext" href="https://www.gov.cn/zhengce/" target="_blank" rel="noopener">中国政府网 · 政策库</a> —— 国内合规查询入口</li>
+        <li><a class="ext" href="https://www.iso.org/standard/81245.html" target="_blank" rel="noopener">ISO/IEC 27001</a> —— 信息安全管理体系参考</li>
+      </ul>
     </section>
 
   </main>
@@ -248,12 +385,11 @@
 <footer class="foot">
   <div class="wrap foot-in">
     <span class="fm">CURSOR LOCAL</span>
-    <span>本页为通用条款模板，不构成正式法律意见，请按实际情况调整。</span>
+    <span>本页为通用条款模板，不构成正式法律意见，请按实际业务与法域调整。</span>
   </div>
 </footer>
 
 <script>
-  // 目录高亮跟随滚动
   var links = [].slice.call(document.querySelectorAll('.toc a'));
   var secs = links.map(function (a) { return document.querySelector(a.getAttribute('href')); });
   function sync() {
