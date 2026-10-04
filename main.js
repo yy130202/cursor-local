@@ -54,16 +54,22 @@ registerAuth(ipcMain, { getUserStore });
 
 /* 法律条款页（用户协议 / 隐私政策 / 免责声明）—— 独立窗口打开 */
 ipcMain.handle('legal:open', () => {
-  const already = BrowserWindow.getAllWindows().find((w) => w.__isLegal);
-  if (already) { already.focus(); return true; }
+  const already = BrowserWindow.getAllWindows().find((w) => w.__isLegal && !w.isDestroyed());
+  if (already) { already.show(); already.focus(); already.moveTop(); return true; }
   const w = new BrowserWindow({
     width: 1000, height: 920, minWidth: 560, minHeight: 480,
     title: '法律条款 · Cursor Local',
     autoHideMenuBar: true,
     backgroundColor: '#F7F6F2',
+    center: true,
+    show: false, // 等内容就绪再显示，避免白屏闪烁
     webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: false }
   });
   w.__isLegal = true;
+  w.once('ready-to-show', () => { w.show(); w.focus(); w.moveTop(); });
+  // 兜底：若 ready-to-show 未触发，1.5s 后强制显示
+  setTimeout(() => { if (!w.isDestroyed() && !w.isVisible()) { w.show(); w.focus(); } }, 1500);
+  w.on('closed', () => { w.__isLegal = false; });
   w.loadFile(path.join(__dirname, 'renderer', 'legal.html'));
   return true;
 });
@@ -442,11 +448,39 @@ function createWindow() {
   win.webContents.on('did-finish-load', () => {
     if (process.env.TEST_AGENT) runAgentTest();
     else if (process.env.DIAG) runDiag();
+    else if (process.env.TEST_LEGAL) runLegalTest();
     else if (process.env.SHOT_MODE) takeScreenshots();
   });
 }
 
 /* 视觉诊断（DIAG 模式，临时调试用） */
+async function runLegalTest() {
+  try {
+    await sleep(2500);
+    const r = await win.webContents.executeJavaScript(`(async () => {
+      const setBtn = document.getElementById('settings-btn');
+      if (setBtn) setBtn.click();
+      await new Promise(r => setTimeout(r, 500));
+      const nav = document.querySelector('.snav-item[data-page="about"]');
+      if (nav) nav.click();
+      await new Promise(r => setTimeout(r, 500));
+      const btn = document.getElementById('open-legal-btn');
+      if (!btn) return JSON.stringify({ ok: false, err: '按钮不存在' });
+      const rect = btn.getBoundingClientRect();
+      const info = { ok: true, visible: rect.width > 0 && rect.height > 0, rect: Math.round(rect.width) + 'x' + Math.round(rect.height), hasApi: !!(window.api && window.api.openLegal) };
+      try { info.res = await window.api.openLegal(); } catch (e) { info.ok = false; info.err = e.message; }
+      return JSON.stringify(info);
+    })()`);
+    console.log('[legal-test]', r);
+    await sleep(1800);
+    const wins = BrowserWindow.getAllWindows().map((x) => ({ legal: !!x.__isLegal, visible: x.isVisible(), title: x.getTitle() }));
+    console.log('[legal-test] 窗口 =', JSON.stringify(wins));
+  } catch (err) {
+    console.log('[legal-test] ERROR', err && err.message);
+  }
+  setTimeout(() => app.quit(), 1200);
+}
+
 async function runDiag() {
   try {
     await sleep(2500);
