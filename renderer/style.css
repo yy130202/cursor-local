@@ -2401,3 +2401,28 @@ svg.lucide { color: #fff; }
 .icon-file.html, .icon-file.css, .icon-file.json, .icon-file.md, .icon-file.py,
 .icon-file.xml, .icon-file.yaml, .icon-file.yml, .icon-file.sh, .icon-file.java,
 .icon-file.go, .icon-file.rs, .icon-file.c, .icon-file.cpp, .icon-file.h { color: #fff; }
+
+/* ==========================================================
+   图标底衬彻底清除（覆盖所有带背景的图标容器）
+   logo-mark / hero-mark / qc-icon / icon-tile / welcome-icon / consent-mark
+   ========================================================== */
+.logo-mark, .hero-mark, .qc-icon, .icon-tile, .welcome-icon, .consent-mark {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #fff !important;
+  border-radius: 0 !important;
+}
+.logo-mark  { width: auto !important; height: auto !important; }
+.hero-mark  { width: auto !important; height: auto !important; margin-bottom: 10px !important; }
+.qc-icon    { width: auto !important; height: auto !important; }
+.icon-tile  { width: auto !important; height: auto !important; margin: 0 !important; }
+
+/* 尺寸分档（原容器大小不一，收敛为统一的线性图标尺寸） */
+.logo-mark svg.lucide  { width: 16px; height: 16px; stroke-width: 1.9; }
+.hero-mark svg.lucide  { width: 24px; height: 24px; stroke-width: 1.6; }
+.qc-icon svg.lucide,
+.icon-tile svg.lucide  { width: 18px; height: 18px; stroke-width: 1.75; }
+
+/* hero 特性列表：去掉原本的左缩进，让图标与文字自然对齐 */
+.check-list li { gap: 7px; }
