@@ -12,8 +12,8 @@ function renderLogs() {
     const time = new Date(e.ts).toLocaleTimeString('zh-CN', { hour12: false });
     d.innerHTML =
       '<span class="log-lv">' + e.level + '</span>' +
-      '<span class="log-src">' + escapeHtml(e.source || '') + '</span>' +
-      '<span class="log-msg">' + escapeHtml(e.message) + '</span>' +
+      '<span class="log-src">' + CL.util.escapeHtml(e.source || '') + '</span>' +
+      '<span class="log-msg">' + CL.util.escapeHtml(e.message) + '</span>' +
       '<span class="log-time">' + time + '</span>';
     list.appendChild(d);
   }

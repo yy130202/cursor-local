@@ -110,10 +110,10 @@
       let g = '<div class="git-group-label">' + title + '（' + items.length + '）<span class="git-group-actions">' + allBtn + '</span></div>';
       for (const it of items) {
         const [ch, cls] = statusMeta[it.status] || ['?', 'git-m'];
-        g += '<div class="git-item" data-file="' + escapeHtml(it.file) + '" data-staged="' + (staged ? '1' : '0') + '">' +
+        g += '<div class="git-item" data-file="' + CL.util.escapeHtml(it.file) + '" data-staged="' + (staged ? '1' : '0') + '">' +
           '<button class="git-stage-btn" title="' + (staged ? '取消暂存' : '暂存') + '">' + (window.lucideIcon(staged ? 'minus' : 'plus') || (staged ? '−' : '+')) + '</button>' +
           '<span class="git-status ' + cls + '">' + ch + '</span>' +
-          '<span class="git-file">' + escapeHtml(it.file) + '</span>' +
+          '<span class="git-file">' + CL.util.escapeHtml(it.file) + '</span>' +
           numstat(it) +
         '</div>';
       }
@@ -150,13 +150,13 @@
     viewMode = 'history';
     const list = document.getElementById('git-list');
     const r = await window.api.gitLog(currentCwd);
-    if (!r.ok) { list.innerHTML = '<div class="git-empty">' + escapeHtml(r.error) + '</div>'; return; }
+    if (!r.ok) { list.innerHTML = '<div class="git-empty">' + CL.util.escapeHtml(r.error) + '</div>'; return; }
     if (!r.entries.length) { list.innerHTML = '<div class="git-empty">暂无提交记录</div>'; return; }
     list.innerHTML = '<div class="git-group-label">提交历史（' + r.entries.length + '）<span class="git-group-actions"><button class="git-all-btn" id="git-back-changes" title="返回更改视图">← 返回</button></span></div>' +
       r.entries.map((e) =>
-        '<div class="git-log-item" title="' + escapeHtml(e.message) + '">' +
-          '<span class="git-log-hash">' + escapeHtml(e.hash.slice(0, 8)) + '</span>' +
-          '<span class="git-log-msg">' + escapeHtml(e.message) + '</span>' +
+        '<div class="git-log-item" title="' + CL.util.escapeHtml(e.message) + '">' +
+          '<span class="git-log-hash">' + CL.util.escapeHtml(e.hash.slice(0, 8)) + '</span>' +
+          '<span class="git-log-msg">' + CL.util.escapeHtml(e.message) + '</span>' +
         '</div>'
       ).join('');
     const back = document.getElementById('git-back-changes');
@@ -165,7 +165,7 @@
 
   async function showDiff(file, staged) {
     const d = await window.api.gitSideBySide(currentCwd, file, staged);
-    const lang = (typeof LANG_BY_EXT !== 'undefined' && LANG_BY_EXT[extOf(file)]) || 'plaintext';
+    const lang = (typeof LANG_BY_EXT !== 'undefined' && LANG_BY_EXT[CL.util.extOf(file)]) || 'plaintext';
     document.getElementById('git-diff-head').textContent = (staged ? '已暂存 · ' : '未暂存 · ') + file;
     document.getElementById('git-diff').classList.remove('hidden');
     const body = document.getElementById('git-diff-body');
@@ -204,9 +204,9 @@
     menu.id = 'git-branch-menu';
     menu.className = 'git-branch-menu';
     menu.innerHTML = (r.branches.length ? r.branches : ['（无分支）']).map((b) =>
-      '<div class="gbm-item' + (b === r.current ? ' active' : '') + '" data-branch="' + escapeHtml(b) + '">' +
+      '<div class="gbm-item' + (b === r.current ? ' active' : '') + '" data-branch="' + CL.util.escapeHtml(b) + '">' +
         (b === r.current ? '<span class="gbm-cur">✓</span>' : '<span class="gbm-dot"></span>') +
-        '<span>' + escapeHtml(b) + '</span>' +
+        '<span>' + CL.util.escapeHtml(b) + '</span>' +
       '</div>'
     ).join('');
     document.body.appendChild(menu);

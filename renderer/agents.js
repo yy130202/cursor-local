@@ -217,7 +217,7 @@ window.api.onAgentEvent((ev) => {
       const body = node.querySelector('.body');
       const last = a.entries[a.entries.length - 1];
       if (body && last && last.streaming) {
-        body.innerHTML = escapeHtml(last.text) + '<span class="caret">▍</span>';
+        body.innerHTML = CL.util.escapeHtml(last.text) + '<span class="caret">▍</span>';
         transcriptEl.scrollTop = transcriptEl.scrollHeight;
         return;
       }
@@ -241,9 +241,9 @@ function renderAgentList() {
     el.innerHTML =
       '<div class="row1">' +
         '<span class="dot ' + a.status + '"></span>' +
-        '<span class="title">' + escapeHtml(a.task || '（未命名任务）') + '</span>' +
+        '<span class="title">' + CL.util.escapeHtml(a.task || '（未命名任务）') + '</span>' +
       '</div>' +
-      '<div class="cwd">' + escapeHtml(a.cwd) + '</div>';
+      '<div class="cwd">' + CL.util.escapeHtml(a.cwd) + '</div>';
     el.onclick = () => selectAgent(a.id);
     agentListEl.appendChild(el);
   }
@@ -307,13 +307,13 @@ function buildChangeCard(en, a) {
   let bodyHtml = '';
   if (diff.tooBig) {
     bodyHtml = '<div class="diff-note">文件过大，展示前/后并排对比</div>' +
-      '<div class="diff-side"><div class="side-label">修改前</div><pre>' + escapeHtml((en.before || '').slice(0, 4000)) + '</pre></div>' +
-      '<div class="diff-side"><div class="side-label">修改后</div><pre>' + escapeHtml((en.after || '').slice(0, 4000)) + '</pre></div>';
+      '<div class="diff-side"><div class="side-label">修改前</div><pre>' + CL.util.escapeHtml((en.before || '').slice(0, 4000)) + '</pre></div>' +
+      '<div class="diff-side"><div class="side-label">修改后</div><pre>' + CL.util.escapeHtml((en.after || '').slice(0, 4000)) + '</pre></div>';
   } else {
     const rows = diff.lines.map((l) => {
       const cls = l.t === 'add' ? 'add' : (l.t === 'del' ? 'del' : 'same');
       const sign = l.t === 'add' ? '+' : (l.t === 'del' ? '-' : ' ');
-      return '<div class="dl ' + cls + '"><span class="ln">' + sign + '</span><span class="dlx">' + escapeHtml(l.x) + '</span></div>';
+      return '<div class="dl ' + cls + '"><span class="ln">' + sign + '</span><span class="dlx">' + CL.util.escapeHtml(l.x) + '</span></div>';
     }).join('');
     bodyHtml = '<div class="diff-body">' + rows + '</div>';
   }
@@ -322,7 +322,7 @@ function buildChangeCard(en, a) {
   card.innerHTML =
     '<div class="change-head">' +
       '<span class="change-icon">' + (window.lucideIcon(ro ? 'history' : (reverted ? 'undo-2' : 'pencil')) || '') + '</span>' +
-      '<span class="change-file">' + escapeHtml(en.relPath || en.path) + '</span>' +
+      '<span class="change-file">' + CL.util.escapeHtml(en.relPath || en.path) + '</span>' +
       '<span class="change-state">' + (ro ? '历史变更' : (reverted ? '已撤销' : (en.existed ? '已修改' : '新建'))) + '</span>' +
       ((reverted || ro) ? '' : '<button class="revert-btn">' + (window.lucideIcon('undo-2') || '') + '<span>撤销改动</span></button>') +
     '</div>' + bodyHtml;
@@ -359,12 +359,12 @@ function renderTranscript() {
       // Cursor 式用户气泡
       const d = document.createElement('div');
       d.className = 'entry user-row' + inCls;
-      d.innerHTML = '<div class="user-bubble">' + escapeHtml(en.text) + '</div>';
+      d.innerHTML = '<div class="user-bubble">' + CL.util.escapeHtml(en.text) + '</div>';
       transcriptEl.appendChild(d);
     } else if (en.kind === 'agent-msg') {
       const d = document.createElement('div');
       d.className = 'entry entry-text agent-msg' + (en.streaming ? ' streaming' : '') + inCls;
-      const body = en.streaming ? escapeHtml(en.text) : miniMarkdown(en.text);
+      const body = en.streaming ? CL.util.escapeHtml(en.text) : miniMarkdown(en.text);
       d.innerHTML = '<span class="who">Agent</span><span class="body">' + body + (en.streaming ? '<span class="caret">▍</span>' : '') + '</span>';
       transcriptEl.appendChild(d);
       if (en.streaming) a.__streamNode = d; // 记录流式节点，供增量更新
@@ -381,9 +381,9 @@ function renderTranscript() {
       d.className = 'entry' + inCls;
       const card = document.createElement('div');
       card.className = 'tool-card';
-      const summary = escapeHtml(argsSummary(en.name, en.args));
+      const summary = CL.util.escapeHtml(argsSummary(en.name, en.args));
       const rSummary = en.result ? toolResultSummary(en.name, en.result)
-        : (en.live ? escapeHtml(en.live.slice(-200)) : '');
+        : (en.live ? CL.util.escapeHtml(en.live.slice(-200)) : '');
       card.innerHTML =
         '<div class="head">' +
           '<span class="tag ' + en.name + '">' + (window.lucideIcon(toolIconName(en.name)) || '') + en.name + '</span>' +
@@ -393,7 +393,7 @@ function renderTranscript() {
           '</span>' +
         '</div>' +
         (rSummary ? '<div class="tool-result">' + rSummary + '</div>' : '') +
-        '<pre>' + escapeHtml(
+        '<pre>' + CL.util.escapeHtml(
           '参数:\n' + JSON.stringify(en.args || {}, null, 2) +
           (en.result ? '\n\n结果:\n' + en.result : '')
         ) + '</pre>';
@@ -407,8 +407,8 @@ function renderTranscript() {
       const d = document.createElement('div');
       d.className = 'entry approval-card' + (en.resolved ? ' resolved' : '') + inCls;
       d.innerHTML =
-        '<div class="ap-head"><span class="ap-ico">⏳</span>待审批 · ' + escapeHtml(en.tool) + '</div>' +
-        '<pre class="ap-args">' + escapeHtml(JSON.stringify(en.args || {}, null, 2).slice(0, 400)) + '</pre>' +
+        '<div class="ap-head"><span class="ap-ico">⏳</span>待审批 · ' + CL.util.escapeHtml(en.tool) + '</div>' +
+        '<pre class="ap-args">' + CL.util.escapeHtml(JSON.stringify(en.args || {}, null, 2).slice(0, 400)) + '</pre>' +
         (en.resolved
           ? '<div class="ap-state ' + (en.allowed ? 'ok' : 'deny') + '">' + (en.allowed ? '✓ 已允许执行' : '✖ 已拒绝') + '</div>'
           : '<div class="ap-actions"><button class="ap-allow">允许执行</button><button class="ap-deny">拒绝</button></div>');
@@ -425,7 +425,7 @@ function renderTranscript() {
     } else if (en.kind === 'error') {
       const d = document.createElement('div');
       d.className = 'entry entry-error' + inCls;
-      d.innerHTML = '<span class="err-ico">' + (window.lucideIcon('alert-triangle') || '') + '</span> ' + escapeHtml(en.text);
+      d.innerHTML = '<span class="err-ico">' + (window.lucideIcon('alert-triangle') || '') + '</span> ' + CL.util.escapeHtml(en.text);
       transcriptEl.appendChild(d);
     }
   }
@@ -445,10 +445,10 @@ function renderTranscript() {
         '<div class="th-main">' +
           '<div class="th-label">' +
             (toolLabel
-              ? '<span class="th-tool">' + escapeHtml(toolLabel) + '</span>'
+              ? '<span class="th-tool">' + CL.util.escapeHtml(toolLabel) + '</span>'
               : '<span class="th-phase">正在分析</span><span class="th-shimmer">…</span>') +
           '</div>' +
-          (a.__reasoning ? '<div class="th-reason streaming">' + escapeHtml(a.__reasoning) + '</div>' : '') +
+          (a.__reasoning ? '<div class="th-reason streaming">' + CL.util.escapeHtml(a.__reasoning) + '</div>' : '') +
         '</div>';
       transcriptEl.appendChild(t);
       if (!toolLabel) {
@@ -497,7 +497,7 @@ function renderHistory() {
     const time = new Date(s.ts).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
     el.innerHTML =
       '<span class="dot ' + (s.status || 'done') + '"></span>' +
-      '<span class="ht">' + escapeHtml(s.task || '（会话）') + '</span>' +
+      '<span class="ht">' + CL.util.escapeHtml(s.task || '（会话）') + '</span>' +
       '<span class="htime">' + time + '</span>' +
       '<button class="hist-btn hist-exp" title="导出 Markdown">' + (window.lucideIcon('download') || '') + '</button>' +
       '<button class="hist-btn hist-del" title="删除会话">' + (window.lucideIcon('trash-2') || '') + '</button>';
@@ -619,7 +619,7 @@ loadHistory();
 
 /* ---- 轻量 Markdown 渲染（AI 回复的代码块/加粗/标题/列表） ---- */
 function miniMarkdown(text) {
-  let s = escapeHtml(String(text == null ? '' : text));
+  let s = CL.util.escapeHtml(String(text == null ? '' : text));
   // 提取代码块（占位符保护，避免内部换行/标签被破坏）
   const blocks = [];
   s = s.replace(/```(\w*)\n?([\s\S]*?)```/g, (m, lang, code) => {
@@ -651,7 +651,7 @@ function miniMarkdown(text) {
   // 恢复代码块
   s = s.replace(/\u0000B(\d+)\u0000/g, (m, i) => {
     const b = blocks[+i];
-    return '<div class="md-code"><div class="md-code-head"><span>' + escapeHtml(b.lang) + '</span><button class="md-copy" data-code="' + encodeURIComponent(b.code) + '">' + (window.lucideIcon('copy') || '复制') + '</button></div><pre><code>' + b.code + '</code></pre></div>';
+    return '<div class="md-code"><div class="md-code-head"><span>' + CL.util.escapeHtml(b.lang) + '</span><button class="md-copy" data-code="' + encodeURIComponent(b.code) + '">' + (window.lucideIcon('copy') || '复制') + '</button></div><pre><code>' + b.code + '</code></pre></div>';
   });
   return s;
 }
@@ -660,7 +660,7 @@ function miniMarkdown(text) {
 function toolResultSummary(name, result) {
   if (!result) return '';
   let r = String(result).replace(/\x1b\[[0-9;]*m/g, '').trim(); // 去 ANSI 颜色码
-  if (r.startsWith('ERROR')) return '<span class="tr-err">' + escapeHtml(r.slice(0, 200)) + '</span>';
+  if (r.startsWith('ERROR')) return '<span class="tr-err">' + CL.util.escapeHtml(r.slice(0, 200)) + '</span>';
   let short = r;
   if (name === 'write_file' || name === 'create_file') {
     short = r.replace(/^已写入\s*/, '').replace(/^已创建\s*/, '');
@@ -670,5 +670,5 @@ function toolResultSummary(name, result) {
   } else {
     if (short.length > 160) short = short.slice(0, 160) + '…';
   }
-  return escapeHtml(short);
+  return CL.util.escapeHtml(short);
 }

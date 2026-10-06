@@ -75,8 +75,8 @@
       item.className = 'cp-item' + (idx === 0 ? ' active' : '');
       item.innerHTML =
         '<span class="cp-ico">' + (window.lucideIcon(c.icon) || '') + '</span>' +
-        '<span class="cp-title">' + escapeHtml(c.title) + '</span>' +
-        (c.key ? '<span class="cp-key">' + escapeHtml(c.key) + '</span>' : '');
+        '<span class="cp-title">' + CL.util.escapeHtml(c.title) + '</span>' +
+        (c.key ? '<span class="cp-key">' + CL.util.escapeHtml(c.key) + '</span>' : '');
       item.onclick = () => { closePalette(); c.action(); };
       list.appendChild(item);
       idx++;
@@ -146,8 +146,8 @@
       const item = document.createElement('div');
       item.className = 'sr-item';
       item.innerHTML =
-        '<span class="sr-file">' + escapeHtml(r.file) + ':' + r.line + '</span>' +
-        '<span class="sr-text">' + escapeHtml(r.text) + '</span>';
+        '<span class="sr-file">' + CL.util.escapeHtml(r.file) + ':' + r.line + '</span>' +
+        '<span class="sr-text">' + CL.util.escapeHtml(r.text) + '</span>';
       item.onclick = async () => {
         const full = window.api.pathJoin(EditorState.currentFolder, r.file);
         await openFile(full);

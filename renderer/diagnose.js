@@ -26,7 +26,7 @@
     let r;
     try { r = await window.api.aiDiagnose(model.getValue(), model.getLanguageId()); }
     catch { r = { ok: false, error: '调用失败' }; }
-    if (!r.ok) { list.innerHTML = '<div class="diag-empty">' + escapeHtml(r.error || '诊断失败') + '</div>'; return; }
+    if (!r.ok) { list.innerHTML = '<div class="diag-empty">' + CL.util.escapeHtml(r.error || '诊断失败') + '</div>'; return; }
     renderDiagnostics(r.diagnostics || [], list, ed, model);
   };
 
@@ -37,9 +37,9 @@
       const item = document.createElement('div');
       item.className = 'diag-item ' + (d.severity || 'info');
       item.innerHTML =
-        '<span class="diag-sev">' + escapeHtml(String(d.severity || 'info').toUpperCase()) + '</span>' +
-        '<div class="diag-body"><div class="diag-msg">L' + (d.line || '?') + ' · ' + escapeHtml(d.message || '') + '</div>' +
-        (d.suggestion ? '<div class="diag-sugg">' + escapeHtml(d.suggestion) + '</div>' : '') + '</div>' +
+        '<span class="diag-sev">' + CL.util.escapeHtml(String(d.severity || 'info').toUpperCase()) + '</span>' +
+        '<div class="diag-body"><div class="diag-msg">L' + (d.line || '?') + ' · ' + CL.util.escapeHtml(d.message || '') + '</div>' +
+        (d.suggestion ? '<div class="diag-sugg">' + CL.util.escapeHtml(d.suggestion) + '</div>' : '') + '</div>' +
         '<button class="diag-fix">修复</button>';
       item.addEventListener('click', () => {
         const ln = d.line || 1;

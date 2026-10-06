@@ -43,10 +43,10 @@
     const box = panel.querySelector('.mention-list');
     if (!files.length) { box.innerHTML = '<div class="mention-empty">无匹配文件（输入 @ 后可继续输文件名过滤）</div>'; return; }
     box.innerHTML = files.map((f) =>
-      '<div class="mention-item" data-rel="' + escapeHtml(f.rel) + '">' +
-        '<span class="mi-ico">' + (window.lucideIcon ? window.lucideIcon(fileIconName(extOf(f.name))) : '') + '</span>' +
-        '<span class="mi-name">' + escapeHtml(f.name) + '</span>' +
-        '<span class="mi-path">' + escapeHtml(f.rel) + '</span>' +
+      '<div class="mention-item" data-rel="' + CL.util.escapeHtml(f.rel) + '">' +
+        '<span class="mi-ico">' + (window.lucideIcon ? window.lucideIcon(CL.util.fileIconName(CL.util.extOf(f.name))) : '') + '</span>' +
+        '<span class="mi-name">' + CL.util.escapeHtml(f.name) + '</span>' +
+        '<span class="mi-path">' + CL.util.escapeHtml(f.rel) + '</span>' +
       '</div>'
     ).join('');
     box.querySelectorAll('.mention-item').forEach((n) => { n.onclick = () => pick(n.dataset.rel); });

@@ -37,7 +37,7 @@ async function renderRecent() {
     const time = new Date(s.ts).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
     card.innerHTML =
       '<span class="dot ' + (s.status || 'done') + '"></span>' +
-      '<div class="recent-body"><div class="recent-task">' + escapeHtml(s.task || '（会话）') + '</div>' +
+      '<div class="recent-body"><div class="recent-task">' + CL.util.escapeHtml(s.task || '（会话）') + '</div>' +
       '<div class="recent-meta">' + time + '</div></div>' +
       '<button class="recent-open">打开</button>';
     card.onclick = () => { switchMode('agents'); if (typeof openHistory === 'function') openHistory(s); };
@@ -129,8 +129,8 @@ function renderKeybinds() {
     const row = document.createElement('div');
     row.className = 'srow';
     row.innerHTML =
-      '<div class="srow-main"><div class="srow-label">' + escapeHtml(c.label) + '</div></div>' +
-      '<button class="keybind-btn" data-id="' + c.id + '">' + escapeHtml(c.key) + '</button>';
+      '<div class="srow-main"><div class="srow-label">' + CL.util.escapeHtml(c.label) + '</div></div>' +
+      '<button class="keybind-btn" data-id="' + c.id + '">' + CL.util.escapeHtml(c.key) + '</button>';
     row.querySelector('.keybind-btn').onclick = () => startKeyRecord(c.id);
     list.appendChild(row);
   });
@@ -437,7 +437,7 @@ async function renderMemory() {
   const render = (list, box, scope) => {
     if (!list.length) { box.innerHTML = '<div class="mem-empty">暂无记忆，输入后点击「添加」</div>'; return; }
     box.innerHTML = list.map((m) =>
-      '<div class="mem-item"><span class="mem-text">' + escapeHtml(m.text) + '</span>' +
+      '<div class="mem-item"><span class="mem-text">' + CL.util.escapeHtml(m.text) + '</span>' +
       '<button class="mem-del" data-scope="' + scope + '" data-id="' + m.id + '" title="删除">' + (window.lucideIcon('x') || '×') + '</button></div>'
     ).join('');
     box.querySelectorAll('.mem-del').forEach((b) => {

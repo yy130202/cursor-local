@@ -2,9 +2,7 @@
 let currentUser = null;
 let authMode = 'login';
 
-function escapeHtml(s) {
-  return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-}
+/* escapeHtml 已上移至 core.js（CL.util.escapeHtml），避免重复定义。 */
 
 async function initAuth() {
   try {
@@ -23,8 +21,8 @@ function renderUserArea() {
   if (currentUser) {
     const initial = (currentUser.username || '?')[0].toUpperCase();
     area.innerHTML =
-      '<button class="avatar-btn" id="user-btn" title="' + escapeHtml(currentUser.username) + '">' +
-        '<span class="avatar">' + escapeHtml(initial) + '</span>' +
+      '<button class="avatar-btn" id="user-btn" title="' + CL.util.escapeHtml(currentUser.username) + '">' +
+        '<span class="avatar">' + CL.util.escapeHtml(initial) + '</span>' +
       '</button>';
     document.getElementById('user-btn').onclick = (e) => {
       e.stopPropagation();

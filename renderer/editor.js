@@ -22,26 +22,8 @@ const LANG_BY_EXT = {
   ini: 'ini', toml: 'ini', dockerfile: 'dockerfile'
 };
 
-function extOf(p) {
-  const base = p.split(/[\\/]/).pop().toLowerCase();
-  if (base === 'dockerfile') return 'dockerfile';
-  const i = base.lastIndexOf('.');
-  return i >= 0 ? base.slice(i + 1) : '';
-}
-
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-}
-
-/* 根据扩展名选择 lucide 图标 */
-function fileIconName(ext) {
-  if (['js', 'mjs', 'cjs', 'ts', 'jsx', 'tsx', 'py', 'java', 'go', 'rs', 'c', 'h', 'cpp', 'hpp', 'cs', 'rb', 'php', 'sh', 'bat', 'ps1', 'sql', 'html', 'htm', 'css', 'scss', 'less', 'xml', 'yml', 'yaml', 'toml', 'dockerfile'].includes(ext)) return 'file-code';
-  if (ext === 'json') return 'file-json';
-  if (ext === 'md') return 'file-text';
-  if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'ico', 'webp'].includes(ext)) return 'file-image';
-  if (['zip', 'tar', 'gz', 'rar', '7z'].includes(ext)) return 'file-archive';
-  return 'file';
-}
+/* 工具函数（escapeHtml / extOf / fileIconName / langDisplay）已上移至 core.js，
+   统一挂在 CL.util 命名空间下，供所有模块共享。 */
 
 /* ---- 状态 ---- */
 const EditorState = {
@@ -114,7 +96,7 @@ async function renderDir(dirPath, container, depth, seq, filter) {
       row.innerHTML =
         '<span class="twist">' + (open ? '▾' : '▸') + '</span>' +
         '<span class="icon icon-dir">' + (window.lucideIcon ? window.lucideIcon(open ? 'folder-open' : 'folder') : '') + '</span>' +
-        '<span class="name' + (g ? ' git-name-' + g.cls : '') + '">' + escapeHtml(ent.name) + '</span>' + gSuffix;
+        '<span class="name' + (g ? ' git-name-' + g.cls : '') + '">' + CL.util.escapeHtml(ent.name) + '</span>' + gSuffix;
       row.onclick = () => {
         if (EditorState.treeOpenDirs.has(ent.path)) EditorState.treeOpenDirs.delete(ent.path);
         else EditorState.treeOpenDirs.add(ent.path);
@@ -128,11 +110,11 @@ async function renderDir(dirPath, container, depth, seq, filter) {
         await renderDir(ent.path, childBox, depth + 1, seq, filter);
       }
     } else {
-      const ext = extOf(ent.path);
+      const ext = CL.util.extOf(ent.path);
       row.innerHTML =
         '<span class="twist"></span>' +
-        '<span class="icon icon-file ' + ext + '">' + (window.lucideIcon ? window.lucideIcon(fileIconName(ext)) : '') + '</span>' +
-        '<span class="name' + (g ? ' git-name-' + g.cls : '') + '">' + escapeHtml(ent.name) + '</span>' + gSuffix;
+        '<span class="icon icon-file ' + ext + '">' + (window.lucideIcon ? window.lucideIcon(CL.util.fileIconName(ext)) : '') + '</span>' +
+        '<span class="name' + (g ? ' git-name-' + g.cls : '') + '">' + CL.util.escapeHtml(ent.name) + '</span>' + gSuffix;
       row.onclick = () => openFile(ent.path);
       row.oncontextmenu = (ev) => { ev.preventDefault(); ev.stopPropagation(); showFileTreeMenu(ev.clientX, ev.clientY, ent, dirPath); };
       container.appendChild(row);
@@ -202,7 +184,7 @@ function startInlineRename(ent) {
   const box = document.createElement('div');
   box.className = 'tree-item';
   box.style.paddingLeft = '10px';
-  box.innerHTML = '<span class="twist"></span><input class="tree-input" value="' + escapeHtml(ent.name) + '">';
+  box.innerHTML = '<span class="twist"></span><input class="tree-input" value="' + CL.util.escapeHtml(ent.name) + '">';
   tree.prepend(box);
   const input = box.querySelector('input');
   input.focus(); input.select();
@@ -362,8 +344,8 @@ function showAiPanel(title, content, onReplace) {
     document.body.appendChild(p);
   }
   p.innerHTML =
-    '<div class="ai-panel-head"><span>' + escapeHtml(title) + '</span><button class="ai-panel-close">×</button></div>' +
-    '<pre>' + escapeHtml(content) + '</pre>';
+    '<div class="ai-panel-head"><span>' + CL.util.escapeHtml(title) + '</span><button class="ai-panel-close">×</button></div>' +
+    '<pre>' + CL.util.escapeHtml(content) + '</pre>';
   p.classList.remove('hidden');
   p.querySelector('.ai-panel-close').onclick = () => p.classList.add('hidden');
 }
@@ -400,7 +382,7 @@ async function openFile(filePath) {
     // 大文件降级：超过阈值用 plaintext（跳过 tokenization），并关闭 minimap
     const threshold = window.__largeFileThreshold ?? 1048576;
     const isLarge = (typeof r.size === 'number' ? r.size : content.length) > threshold;
-    const lang = isLarge ? 'plaintext' : (LANG_BY_EXT[extOf(filePath)] || 'plaintext');
+    const lang = isLarge ? 'plaintext' : (LANG_BY_EXT[CL.util.extOf(filePath)] || 'plaintext');
     const model = monaco.editor.createModel(content, lang);
     model.onDidChangeContent(() => {
       if (tab.__suppressDirty) return;
@@ -436,14 +418,10 @@ async function openFile(filePath) {
   updateMdPreview();
   applyGitDecorations(tab); // gutter 变更行标记（异步）
   const langEl = document.getElementById('status-lang');
-  if (langEl) langEl.textContent = langDisplay(tab.large ? 'plaintext' : (LANG_BY_EXT[extOf(filePath)] || 'plaintext'));
+  if (langEl) langEl.textContent = CL.util.langDisplay(tab.large ? 'plaintext' : (LANG_BY_EXT[CL.util.extOf(filePath)] || 'plaintext'));
 }
 
-/* 语言显示名 */
-function langDisplay(id) {
-  const map = { javascript: 'JavaScript', typescript: 'TypeScript', json: 'JSON', html: 'HTML', css: 'CSS', markdown: 'Markdown', python: 'Python', shell: 'Shell', yaml: 'YAML', xml: 'XML', sql: 'SQL', plaintext: '纯文本' };
-  return map[id] || (id ? id : '纯文本');
-}
+/* 语言显示名 → 已上移至 core.js（CL.util.langDisplay） */
 
 /* 编辑器 gutter：git 变更行标记（绿条） */
 async function applyGitDecorations(tab) {
@@ -555,7 +533,7 @@ function renderTabs() {
     el.className = 'tab' + (t.path === EditorState.activePath ? ' active' : '');
     el.draggable = true;
     el.innerHTML =
-      '<span>' + escapeHtml(t.name) + '</span>' +
+      '<span>' + CL.util.escapeHtml(t.name) + '</span>' +
       (t.dirty ? '<span class="dirty">●</span>' : '') +
       '<span class="close" title="关闭">×</span>';
     el.onclick = () => openFile(t.path);
@@ -751,7 +729,7 @@ function updateBreadcrumb() {
   let rel = tab.path;
   if (cwd && tab.path.startsWith(cwd)) rel = tab.path.slice(cwd.length).replace(/^[\\/]/, '');
   const parts = rel.split(/[\\/]/);
-  let html = '<span class="bc-seg bc-file"><span class="bc-icon">' + (window.lucideIcon ? window.lucideIcon(fileIconName(extOf(tab.path))) : '') + '</span>' + escapeHtml(parts[parts.length - 1] || rel) + '</span>';
+  let html = '<span class="bc-seg bc-file"><span class="bc-icon">' + (window.lucideIcon ? window.lucideIcon(CL.util.fileIconName(CL.util.extOf(tab.path))) : '') + '</span>' + CL.util.escapeHtml(parts[parts.length - 1] || rel) + '</span>';
   el.innerHTML = html;
   // 符号（异步）：光标所在作用域链
   const line = (ed.getPosition() || { lineNumber: 1 }).lineNumber;
@@ -759,7 +737,7 @@ function updateBreadcrumb() {
     const path = [];
     findSymbolPath(syms, line, path);
     let sh = '';
-    for (const s of path) sh += '<span class="bc-sep">›</span><span class="bc-seg bc-symbol" data-line="' + s.range.startLineNumber + '">' + escapeHtml(s.name) + '</span>';
+    for (const s of path) sh += '<span class="bc-sep">›</span><span class="bc-seg bc-symbol" data-line="' + s.range.startLineNumber + '">' + CL.util.escapeHtml(s.name) + '</span>';
     const fileSeg = el.querySelector('.bc-file');
     if (fileSeg) fileSeg.insertAdjacentHTML('afterend', sh);
     el.querySelectorAll('.bc-symbol').forEach((n) => {
@@ -789,7 +767,7 @@ window.openSymbols = function () {
     box.innerHTML = list.map((s) =>
       '<div class="sym-item" data-line="' + s.line + '">' +
         '<span class="sym-kind">' + symbolKindLabel(s.kind) + '</span>' +
-        '<span class="sym-name" style="padding-left:' + (s.depth * 14) + 'px">' + escapeHtml(s.name) + '</span>' +
+        '<span class="sym-name" style="padding-left:' + (s.depth * 14) + 'px">' + CL.util.escapeHtml(s.name) + '</span>' +
         '<span class="sym-line">' + s.line + '</span>' +
       '</div>'
     ).join('');
@@ -822,7 +800,7 @@ function updateMdPreview() {
   const ed = EditorState.editor;
   const content = ed ? ed.getValue() : '';
   const body = document.getElementById('mdp-body');
-  if (body) body.innerHTML = (typeof miniMarkdown === 'function') ? miniMarkdown(content) : escapeHtml(content);
+  if (body) body.innerHTML = (typeof miniMarkdown === 'function') ? miniMarkdown(content) : CL.util.escapeHtml(content);
 }
 window.updateMdPreview = updateMdPreview;
 
@@ -876,10 +854,10 @@ async function showFileViewer(filePath, kind) {
   updateFileViewerState(true);
   body.className = 'fv-body' + (kind === 'archive' ? ' fv-list' : '');
   const name = filePath.split(/[\\/]/).pop();
-  if (title) title.innerHTML = '<span class="fv-name">' + escapeHtml(name) + '</span><span class="fv-kind">' + VIEW_LABEL[kind] + '</span>';
+  if (title) title.innerHTML = '<span class="fv-name">' + CL.util.escapeHtml(name) + '</span><span class="fv-kind">' + VIEW_LABEL[kind] + '</span>';
   const url = fileUrlOf(filePath);
   if (kind === 'image') {
-    body.innerHTML = '<div class="fv-media"><img src="' + url + '" alt="' + escapeHtml(name) + '"></div>';
+    body.innerHTML = '<div class="fv-media"><img src="' + url + '" alt="' + CL.util.escapeHtml(name) + '"></div>';
   } else if (kind === 'audio') {
     body.innerHTML = '<div class="fv-media fv-audio"><div class="fv-audio-ico">' + (window.lucideIcon('music') || '') + '</div><audio controls src="' + url + '"></audio></div>';
   } else if (kind === 'video') {
@@ -888,11 +866,11 @@ async function showFileViewer(filePath, kind) {
     body.innerHTML = '<div class="fv-loading">正在读取压缩包…</div>';
     try {
       const r = await window.api.listArchive(filePath);
-      if (!r.ok) { body.innerHTML = '<div class="fv-error">' + escapeHtml(r.error || '读取失败') + '</div>'; return; }
+      if (!r.ok) { body.innerHTML = '<div class="fv-error">' + CL.util.escapeHtml(r.error || '读取失败') + '</div>'; return; }
       if (!r.entries || !r.entries.length) { body.innerHTML = '<div class="fv-error">压缩包为空</div>'; return; }
       body.innerHTML = '<div class="fv-arch-head">' + r.entries.length + ' 个条目</div>' +
         r.entries.slice(0, 1000).map((e) =>
-          '<div class="fv-arch-item"><span class="fai-ico">' + (window.lucideIcon(/\/$/.test(e) ? 'folder' : 'file') || '') + '</span><span class="fai-name">' + escapeHtml(e) + '</span></div>'
+          '<div class="fv-arch-item"><span class="fai-ico">' + (window.lucideIcon(/\/$/.test(e) ? 'folder' : 'file') || '') + '</span><span class="fai-name">' + CL.util.escapeHtml(e) + '</span></div>'
         ).join('') + (r.entries.length > 1000 ? '<div class="fv-arch-more">…仅显示前 1000 条</div>' : '');
     } catch { body.innerHTML = '<div class="fv-error">读取失败</div>'; }
   }
