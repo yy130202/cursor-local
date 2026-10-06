@@ -1,0 +1,1028 @@
+
+> cursor-local@0.1.0 test
+> node --test test/*.test.js
+
+TAP version 13
+# Subtest: Ask mode rejects write_file before invoking a handler
+ok 1 - Ask mode rejects write_file before invoking a handler
+  ---
+  duration_ms: 38.1393
+  type: 'test'
+  ...
+# Subtest: Ask mode rejects create_file before invoking a handler
+ok 2 - Ask mode rejects create_file before invoking a handler
+  ---
+  duration_ms: 4.4231
+  type: 'test'
+  ...
+# Subtest: Ask mode rejects create_dir before invoking a handler
+ok 3 - Ask mode rejects create_dir before invoking a handler
+  ---
+  duration_ms: 5.3326
+  type: 'test'
+  ...
+# Subtest: Ask mode rejects delete_file before invoking a handler
+ok 4 - Ask mode rejects delete_file before invoking a handler
+  ---
+  duration_ms: 3.3399
+  type: 'test'
+  ...
+# Subtest: Ask mode rejects delete_path before invoking a handler
+ok 5 - Ask mode rejects delete_path before invoking a handler
+  ---
+  duration_ms: 6.5514
+  type: 'test'
+  ...
+# Subtest: Ask mode rejects move_file before invoking a handler
+ok 6 - Ask mode rejects move_file before invoking a handler
+  ---
+  duration_ms: 3.5093
+  type: 'test'
+  ...
+# Subtest: Ask mode rejects move_path before invoking a handler
+ok 7 - Ask mode rejects move_path before invoking a handler
+  ---
+  duration_ms: 3.4435
+  type: 'test'
+  ...
+# Subtest: Ask mode rejects apply_patch before invoking a handler
+ok 8 - Ask mode rejects apply_patch before invoking a handler
+  ---
+  duration_ms: 3.679
+  type: 'test'
+  ...
+# Subtest: Ask mode rejects run_command before invoking a handler
+ok 9 - Ask mode rejects run_command before invoking a handler
+  ---
+  duration_ms: 24.9897
+  type: 'test'
+  ...
+# Subtest: unknown tools return a diagnostic without filesystem access
+ok 10 - unknown tools return a diagnostic without filesystem access
+  ---
+  duration_ms: 7.7197
+  type: 'test'
+  ...
+# Subtest: tool dispatch resolves paths and wraps IO errors with an error log
+ok 11 - tool dispatch resolves paths and wraps IO errors with an error log
+  ---
+  duration_ms: 9.1409
+  type: 'test'
+  ...
+# Subtest: configuration failure defaults to restricted path access
+ok 12 - configuration failure defaults to restricted path access
+  ---
+  duration_ms: 6.0973
+  type: 'test'
+  ...
+# Subtest: guard allows the workspace itself and rejects lexical escape and sibling prefixes
+ok 13 - guard allows the workspace itself and rejects lexical escape and sibling prefixes
+  ---
+  duration_ms: 9.9354
+  type: 'test'
+  ...
+# Subtest: guard resolves symlinks before allowing an existing file
+ok 14 - guard resolves symlinks before allowing an existing file
+  ---
+  duration_ms: 9.9113
+  type: 'test'
+  ...
+# Subtest: guard rejects creation through an external symlink even when several parents are missing
+ok 15 - guard rejects creation through an external symlink even when several parents are missing
+  ---
+  duration_ms: 8.832
+  type: 'test'
+  ...
+# Subtest: guard permits creating nested paths inside the workspace
+ok 16 - guard permits creating nested paths inside the workspace
+  ---
+  duration_ms: 11.7899
+  type: 'test'
+  ...
+# Subtest: guard permits legitimate dot-prefixed child names and links inside the workspace
+ok 17 - guard permits legitimate dot-prefixed child names and links inside the workspace
+  ---
+  duration_ms: 12.1762
+  type: 'test'
+  ...
+# Subtest: guard uses lexical fallback if the workspace cannot be resolved
+ok 18 - guard uses lexical fallback if the workspace cannot be resolved
+  ---
+  duration_ms: 4.7538
+  type: 'test'
+  ...
+# Subtest: full-control mode skips the path guard while restricted modes enforce it
+ok 19 - full-control mode skips the path guard while restricted modes enforce it
+  ---
+  duration_ms: 8.2864
+  type: 'test'
+  ...
+# Subtest: Plan mode blocks tool execution without touching the filesystem
+ok 20 - Plan mode blocks tool execution without touching the filesystem
+  ---
+  duration_ms: 7.1473
+  type: 'test'
+  ...
+# Subtest: list_dir defaults to cwd, sorts directories first and names alphabetically
+ok 21 - list_dir defaults to cwd, sorts directories first and names alphabetically
+  ---
+  duration_ms: 72.8844
+  type: 'test'
+  ...
+# Subtest: list_dir handles an empty directory and limits output to 300 entries
+ok 22 - list_dir handles an empty directory and limits output to 300 entries
+  ---
+  duration_ms: 114.7335
+  type: 'test'
+  ...
+# Subtest: list_tree skips dependencies and git directories and respects the requested depth
+ok 23 - list_tree skips dependencies and git directories and respects the requested depth
+  ---
+  duration_ms: 11.7403
+  type: 'test'
+  ...
+# Subtest: list_tree uses a default depth, caps it at six and caps each directory at 60 entries
+ok 24 - list_tree uses a default depth, caps it at six and caps each directory at 60 entries
+  ---
+  duration_ms: 37.2257
+  type: 'test'
+  ...
+# Subtest: list_tree tolerates an unreadable subtree
+ok 25 - list_tree tolerates an unreadable subtree
+  ---
+  duration_ms: 5.6072
+  type: 'test'
+  ...
+# Subtest: read_file distinguishes empty content and truncates oversized content
+ok 26 - read_file distinguishes empty content and truncates oversized content
+  ---
+  duration_ms: 6.8771
+  type: 'test'
+  ...
+# Subtest: write_file records original content for rollback and notifies the renderer
+ok 27 - write_file records original content for rollback and notifies the renderer
+  ---
+  duration_ms: 7.9311
+  type: 'test'
+  ...
+# Subtest: write_file records new-file provenance and skips redundant changes
+ok 28 - write_file records new-file provenance and skips redundant changes
+  ---
+  duration_ms: 12.1794
+  type: 'test'
+  ...
+# Subtest: file writes succeed without an available renderer window
+ok 29 - file writes succeed without an available renderer window
+  ---
+  duration_ms: 18.3046
+  type: 'test'
+  ...
+# Subtest: delete_file is forced and nonrecursive and refreshes the changed path
+ok 30 - delete_file is forced and nonrecursive and refreshes the changed path
+  ---
+  duration_ms: 11.9109
+  type: 'test'
+  ...
+# Subtest: move_file checks both endpoints and creates the destination parent
+ok 31 - move_file checks both endpoints and creates the destination parent
+  ---
+  duration_ms: 15.1364
+  type: 'test'
+  ...
+# Subtest: get_file_info describes files, directories and files without an extension
+ok 32 - get_file_info describes files, directories and files without an extension
+  ---
+  duration_ms: 87.609
+  type: 'test'
+  ...
+# Subtest: search_files is case-insensitive, emits relative line numbers and excludes generated directories
+ok 33 - search_files is case-insensitive, emits relative line numbers and excludes generated directories
+  ---
+  duration_ms: 15.6284
+  type: 'test'
+  ...
+# Subtest: search_files refuses to read an external symlink encountered below the root
+ok 34 - search_files refuses to read an external symlink encountered below the root
+  ---
+  duration_ms: 6.9822
+  type: 'test'
+  ...
+# Subtest: recursive search uses the agent workspace guard rather than restricting links to its starting folder
+ok 35 - recursive search uses the agent workspace guard rather than restricting links to its starting folder
+  ---
+  duration_ms: 7.6815
+  type: 'test'
+  ...
+# Subtest: full-control recursive search permits external links while restricted search blocks them
+ok 36 - full-control recursive search permits external links while restricted search blocks them
+  ---
+  duration_ms: 9.7101
+  type: 'test'
+  ...
+# Subtest: a failed write does not record a change or notify the renderer
+ok 37 - a failed write does not record a change or notify the renderer
+  ---
+  duration_ms: 5.2306
+  type: 'test'
+  ...
+# Subtest: list_tree does not descend through directory entries resolving outside the workspace
+ok 38 - list_tree does not descend through directory entries resolving outside the workspace
+  ---
+  duration_ms: 6.1825
+  type: 'test'
+  ...
+# Subtest: searchInDir caps results, limits line length and stops at maximum depth
+ok 39 - searchInDir caps results, limits line length and stops at maximum depth
+  ---
+  duration_ms: 19.1422
+  type: 'test'
+  ...
+# Subtest: searchInDir ignores unreadable directories and files without failing the search
+ok 40 - searchInDir ignores unreadable directories and files without failing the search
+  ---
+  duration_ms: 5.9023
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "rm -rf folder" without spawning
+ok 41 - restricted command filtering blocks "rm -rf folder" without spawning
+  ---
+  duration_ms: 5.7168
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "rm -fr folder" without spawning
+ok 42 - restricted command filtering blocks "rm -fr folder" without spawning
+  ---
+  duration_ms: 8.2112
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "rm -r -f folder" without spawning
+ok 43 - restricted command filtering blocks "rm -r -f folder" without spawning
+  ---
+  duration_ms: 3.7575
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "rm -f -r folder" without spawning
+ok 44 - restricted command filtering blocks "rm -f -r folder" without spawning
+  ---
+  duration_ms: 3.464
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "rm --recursive folder" without spawning
+ok 45 - restricted command filtering blocks "rm --recursive folder" without spawning
+  ---
+  duration_ms: 3.3602
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "rm --force folder" without spawning
+ok 46 - restricted command filtering blocks "rm --force folder" without spawning
+  ---
+  duration_ms: 4.2705
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "rd /s folder" without spawning
+ok 47 - restricted command filtering blocks "rd /s folder" without spawning
+  ---
+  duration_ms: 3.7477
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "rd /q folder" without spawning
+ok 48 - restricted command filtering blocks "rd /q folder" without spawning
+  ---
+  duration_ms: 3.1213
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "rmdir /s /q folder" without spawning
+ok 49 - restricted command filtering blocks "rmdir /s /q folder" without spawning
+  ---
+  duration_ms: 3.0188
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "del /f file" without spawning
+ok 50 - restricted command filtering blocks "del /f file" without spawning
+  ---
+  duration_ms: 4.4589
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "del /s /q file" without spawning
+ok 51 - restricted command filtering blocks "del /s /q file" without spawning
+  ---
+  duration_ms: 5.0234
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "Remove-Item -r folder" without spawning
+ok 52 - restricted command filtering blocks "Remove-Item -r folder" without spawning
+  ---
+  duration_ms: 2.6766
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "Remove-Item -Recurse folder" without spawning
+ok 53 - restricted command filtering blocks "Remove-Item -Recurse folder" without spawning
+  ---
+  duration_ms: 2.2555
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "Remove-Item -Force file" without spawning
+ok 54 - restricted command filtering blocks "Remove-Item -Force file" without spawning
+  ---
+  duration_ms: 2.3924
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "format Z:" without spawning
+ok 55 - restricted command filtering blocks "format Z:" without spawning
+  ---
+  duration_ms: 3.7129
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "mkfs.ext4 virtual-device" without spawning
+ok 56 - restricted command filtering blocks "mkfs.ext4 virtual-device" without spawning
+  ---
+  duration_ms: 3.8387
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "dd if=input of=output" without spawning
+ok 57 - restricted command filtering blocks "dd if=input of=output" without spawning
+  ---
+  duration_ms: 5.096
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "shutdown /s" without spawning
+ok 58 - restricted command filtering blocks "shutdown /s" without spawning
+  ---
+  duration_ms: 3.4602
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "reboot" without spawning
+ok 59 - restricted command filtering blocks "reboot" without spawning
+  ---
+  duration_ms: 8.566
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "diskpart" without spawning
+ok 60 - restricted command filtering blocks "diskpart" without spawning
+  ---
+  duration_ms: 3.4825
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "chmod -R 777 folder" without spawning
+ok 61 - restricted command filtering blocks "chmod -R 777 folder" without spawning
+  ---
+  duration_ms: 3.4076
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "git push --force" without spawning
+ok 62 - restricted command filtering blocks "git push --force" without spawning
+  ---
+  duration_ms: 4.2328
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "npm publish" without spawning
+ok 63 - restricted command filtering blocks "npm publish" without spawning
+  ---
+  duration_ms: 4.2439
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "npm unpublish" without spawning
+ok 64 - restricted command filtering blocks "npm unpublish" without spawning
+  ---
+  duration_ms: 3.4328
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "cipher /w:folder" without spawning
+ok 65 - restricted command filtering blocks "cipher /w:folder" without spawning
+  ---
+  duration_ms: 2.8918
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "takeown /r folder" without spawning
+ok 66 - restricted command filtering blocks "takeown /r folder" without spawning
+  ---
+  duration_ms: 4.0365
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "reg delete test-key" without spawning
+ok 67 - restricted command filtering blocks "reg delete test-key" without spawning
+  ---
+  duration_ms: 4.1589
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "find folder -delete" without spawning
+ok 68 - restricted command filtering blocks "find folder -delete" without spawning
+  ---
+  duration_ms: 2.8423
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "mv file /dev/null" without spawning
+ok 69 - restricted command filtering blocks "mv file /dev/null" without spawning
+  ---
+  duration_ms: 2.3313
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "RM \\"-rf\\" folder" without spawning
+ok 70 - restricted command filtering blocks "RM \\"-rf\\" folder" without spawning
+  ---
+  duration_ms: 2.0447
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "rm\\t-r\\n-f folder" without spawning
+ok 71 - restricted command filtering blocks "rm\\t-r\\n-f folder" without spawning
+  ---
+  duration_ms: 2.1055
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "\\u001b[31mshutdown\\u001b[0m /s" without spawning
+ok 72 - restricted command filtering blocks "\\u001b[31mshutdown\\u001b[0m /s" without spawning
+  ---
+  duration_ms: 5.5325
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks "sh\\\\utdown /s" without spawning
+ok 73 - restricted command filtering blocks "sh\\\\utdown /s" without spawning
+  ---
+  duration_ms: 5.1123
+  type: 'test'
+  ...
+# Subtest: restricted command filtering blocks ":(){ :|:& };:" without spawning
+ok 74 - restricted command filtering blocks ":(){ :|:& };:" without spawning
+  ---
+  duration_ms: 3.1141
+  type: 'test'
+  ...
+# Subtest: full control still rejects catastrophic command "format Z:"
+ok 75 - full control still rejects catastrophic command "format Z:"
+  ---
+  duration_ms: 3.4531
+  type: 'test'
+  ...
+# Subtest: full control still rejects catastrophic command "mkfs.ext4 disk"
+ok 76 - full control still rejects catastrophic command "mkfs.ext4 disk"
+  ---
+  duration_ms: 6.3976
+  type: 'test'
+  ...
+# Subtest: full control still rejects catastrophic command "dd if=input of=output"
+ok 77 - full control still rejects catastrophic command "dd if=input of=output"
+  ---
+  duration_ms: 4.8811
+  type: 'test'
+  ...
+# Subtest: full control still rejects catastrophic command "shutdown /s"
+ok 78 - full control still rejects catastrophic command "shutdown /s"
+  ---
+  duration_ms: 2.9098
+  type: 'test'
+  ...
+# Subtest: full control still rejects catastrophic command "reboot"
+ok 79 - full control still rejects catastrophic command "reboot"
+  ---
+  duration_ms: 3.4379
+  type: 'test'
+  ...
+# Subtest: full control still rejects catastrophic command "diskpart"
+ok 80 - full control still rejects catastrophic command "diskpart"
+  ---
+  duration_ms: 4.0603
+  type: 'test'
+  ...
+# Subtest: full control still rejects catastrophic command ":(){ :|:& };:"
+ok 81 - full control still rejects catastrophic command ":(){ :|:& };:"
+  ---
+  duration_ms: 3.0051
+  type: 'test'
+  ...
+# Subtest: ordinary development commands pass both command filters
+ok 82 - ordinary development commands pass both command filters
+  ---
+  duration_ms: 4.4538
+  type: 'test'
+  ...
+# Subtest: run_command forwards cwd and exit output and reports nonzero exits
+ok 83 - run_command forwards cwd and exit output and reports nonzero exits
+  ---
+  duration_ms: 16.4483
+  type: 'test'
+  ...
+# Subtest: full-control command execution permits noncatastrophic commands and logs permission use
+ok 84 - full-control command execution permits noncatastrophic commands and logs permission use
+  ---
+  duration_ms: 9.0123
+  type: 'test'
+  ...
+# Subtest: run_command supplies its fallback command when no command argument is provided
+ok 85 - run_command supplies its fallback command when no command argument is provided
+  ---
+  duration_ms: 6.874
+  type: 'test'
+  ...
+# Subtest: runAgent stops immediately when no API key is configured
+ok 86 - runAgent stops immediately when no API key is configured
+  ---
+  duration_ms: 50.6999
+  type: 'test'
+  ...
+# Subtest: runAgent builds authenticated stream requests and completes a text-only response
+ok 87 - runAgent builds authenticated stream requests and completes a text-only response
+  ---
+  duration_ms: 14.3366
+  type: 'test'
+  ...
+# Subtest: stream parser assembles split UTF-8, reasoning, repeated names and argument fragments
+ok 88 - stream parser assembles split UTF-8, reasoning, repeated names and argument fragments
+  ---
+  duration_ms: 16.1154
+  type: 'test'
+  ...
+# Subtest: stream parser handles multiple tool indices, no index and a final unterminated line
+ok 89 - stream parser handles multiple tool indices, no index and a final unterminated line
+  ---
+  duration_ms: 166.0674
+  type: 'test'
+  ...
+# Subtest: invalid tool arguments become an empty object and handler failures are returned to the model
+ok 90 - invalid tool arguments become an empty object and handler failures are returned to the model
+  ---
+  duration_ms: 6.4954
+  type: 'test'
+  ...
+# Subtest: tool output is limited separately for UI events and model history
+ok 91 - tool output is limited separately for UI events and model history
+  ---
+  duration_ms: 5.8789
+  type: 'test'
+  ...
+# Subtest: SSE parser ignores empty choices, null deltas and incomplete tool fragments
+ok 92 - SSE parser ignores empty choices, null deltas and incomplete tool fragments
+  ---
+  duration_ms: 12.342
+  type: 'test'
+  ...
+# Subtest: an empty completion requests a summary only once
+ok 93 - an empty completion requests a summary only once
+  ---
+  duration_ms: 6.5712
+  type: 'test'
+  ...
+# Subtest: the 30-round cap prevents endless tool-only responses and saves a bounded log
+ok 94 - the 30-round cap prevents endless tool-only responses and saves a bounded log
+  ---
+  duration_ms: 75.4116
+  type: 'test'
+  ...
+# Subtest: HTTP errors transition to error, truncate details and still save the session
+ok 95 - HTTP errors transition to error, truncate details and still save the session
+  ---
+  duration_ms: 8.2872
+  type: 'test'
+  ...
+# Subtest: network and stream failures are reported as agent errors without unhandled rejection
+ok 96 - network and stream failures are reported as agent errors without unhandled rejection
+  ---
+  duration_ms: 10.0617
+  type: 'test'
+  ...
+# Subtest: memory and rule injection includes populated entries and tolerates missing or failed sources
+ok 97 - memory and rule injection includes populated entries and tolerates missing or failed sources
+  ---
+  duration_ms: 22.6138
+  type: 'test'
+  ...
+# Subtest: permission and mode instructions reflect full, manual, Ask and Plan states
+ok 98 - permission and mode instructions reflect full, manual, Ask and Plan states
+  ---
+  duration_ms: 21.5851
+  type: 'test'
+  ...
+# Subtest: manual approval gates a write until explicitly allowed and clears its timeout
+ok 99 - manual approval gates a write until explicitly allowed and clears its timeout
+  ---
+  duration_ms: 17.8651
+  type: 'test'
+  ...
+# Subtest: manual denial returns a tool result without performing the rejected write
+ok 100 - manual denial returns a tool result without performing the rejected write
+  ---
+  duration_ms: 8.4071
+  type: 'test'
+  ...
+# Subtest: manual approval timeout rejects once and ignores late approval messages
+ok 101 - manual approval timeout rejects once and ignores late approval messages
+  ---
+  duration_ms: 5.9631
+  type: 'test'
+  ...
+# Subtest: read-only tools in manual mode and writes in Ask mode never request approval
+ok 102 - read-only tools in manual mode and writes in Ask mode never request approval
+  ---
+  duration_ms: 12.8281
+  type: 'test'
+  ...
+# Subtest: stopping while approval is pending cancels all remaining tools in that response
+ok 103 - stopping while approval is pending cancels all remaining tools in that response
+  ---
+  duration_ms: 5.407
+  type: 'test'
+  ...
+# Subtest: an error state set during a completion prevents its late tools from executing
+ok 104 - an error state set during a completion prevents its late tools from executing
+  ---
+  duration_ms: 4.098
+  type: 'test'
+  ...
+# Subtest: stopping a completion suppresses late reasoning chunks as well as content
+ok 105 - stopping a completion suppresses late reasoning chunks as well as content
+  ---
+  duration_ms: 5.6067
+  type: 'test'
+  ...
+# Subtest: an unexpected dispatcher failure becomes a model-visible tool result
+ok 106 - an unexpected dispatcher failure becomes a model-visible tool result
+  ---
+  duration_ms: 5.3924
+  type: 'test'
+  ...
+# Subtest: stopping an in-flight completion suppresses late tools, deltas and done status
+ok 107 - stopping an in-flight completion suppresses late tools, deltas and done status
+  ---
+  duration_ms: 13.0318
+  type: 'test'
+  ...
+# Subtest: stopping during the first tool skips later tools from the same completion
+ok 108 - stopping during the first tool skips later tools from the same completion
+  ---
+  duration_ms: 5.2746
+  type: 'test'
+  ...
+# Subtest: a network failure arriving after stop does not overwrite stopped with error
+ok 109 - a network failure arriving after stop does not overwrite stopped with error
+  ---
+  duration_ms: 4.6617
+  type: 'test'
+  ...
+# Subtest: Plan responses containing tool calls are rejected without execution or approval
+ok 110 - Plan responses containing tool calls are rejected without execution or approval
+  ---
+  duration_ms: 5.6171
+  type: 'test'
+  ...
+# Subtest: IPC create trims task, supplies defaults and assigns unique agent identifiers
+ok 111 - IPC create trims task, supplies defaults and assigns unique agent identifiers
+  ---
+  duration_ms: 4.0924
+  type: 'test'
+  ...
+# Subtest: IPC stop handles unknown IDs and caps existing logs before publishing stopped
+ok 112 - IPC stop handles unknown IDs and caps existing logs before publishing stopped
+  ---
+  duration_ms: 3.1593
+  type: 'test'
+  ...
+# Subtest: IPC followup rejects absent, running, empty-task and empty-history agents
+ok 113 - IPC followup rejects absent, running, empty-task and empty-history agents
+  ---
+  duration_ms: 3.5709
+  type: 'test'
+  ...
+# Subtest: IPC followup appends a trimmed user message and resumes the existing conversation
+ok 114 - IPC followup appends a trimmed user message and resumes the existing conversation
+  ---
+  duration_ms: 6.1296
+  type: 'test'
+  ...
+# Subtest: mock LLM mode bypasses the network while exercising the tool loop
+ok 115 - mock LLM mode bypasses the network while exercising the tool loop
+  ---
+  duration_ms: 16.1399
+  type: 'test'
+  ...
+# Subtest: emitAgent records timestamped events and only sends to a live renderer
+ok 116 - emitAgent records timestamped events and only sends to a live renderer
+  ---
+  duration_ms: 8.807
+  type: 'test'
+  ...
+# Subtest: runCommand streams stdout and stderr and clears its timer on normal exit
+ok 117 - runCommand streams stdout and stderr and clears its timer on normal exit
+  ---
+  duration_ms: 9.7269
+  type: 'test'
+  ...
+# Subtest: runCommand supplies empty-output text and supports execution without an agent
+ok 118 - runCommand supplies empty-output text and supports execution without an agent
+  ---
+  duration_ms: 3.5178
+  type: 'test'
+  ...
+# Subtest: runCommand reports startup errors and ignores duplicate terminal events
+ok 119 - runCommand reports startup errors and ignores duplicate terminal events
+  ---
+  duration_ms: 12.2676
+  type: 'test'
+  ...
+# Subtest: runCommand truncates large buffered output and handles GBK output
+ok 120 - runCommand truncates large buffered output and handles GBK output
+  ---
+  duration_ms: 7.7597
+  type: 'test'
+  ...
+# Subtest: runCommand timeout terminates the child on win32 and settles once
+ok 121 - runCommand timeout terminates the child on win32 and settles once
+  ---
+  duration_ms: 5.3387
+  type: 'test'
+  ...
+# Subtest: killChildren snapshots and clears tracked children on win32
+ok 122 - killChildren snapshots and clears tracked children on win32
+  ---
+  duration_ms: 2.8466
+  type: 'test'
+  ...
+# Subtest: runCommand timeout terminates the child on linux and settles once
+ok 123 - runCommand timeout terminates the child on linux and settles once
+  ---
+  duration_ms: 2.3535
+  type: 'test'
+  ...
+# Subtest: killChildren snapshots and clears tracked children on linux
+ok 124 - killChildren snapshots and clears tracked children on linux
+  ---
+  duration_ms: 2.0042
+  type: 'test'
+  ...
+# Subtest: child cleanup tolerates individual kill failures and proceeds with remaining children
+ok 125 - child cleanup tolerates individual kill failures and proceeds with remaining children
+  ---
+  duration_ms: 2.3856
+  type: 'test'
+  ...
+# Subtest: config: default path and environment override
+ok 126 - config: default path and environment override
+  ---
+  duration_ms: 16.0495
+  type: 'test'
+  ...
+# Subtest: config: missing returns all defaults
+ok 127 - config: missing returns all defaults
+  ---
+  duration_ms: 14.5318
+  type: 'test'
+  ...
+# Subtest: config: invalid JSON returns all defaults
+ok 128 - config: invalid JSON returns all defaults
+  ---
+  duration_ms: 5.3516
+  type: 'test'
+  ...
+# Subtest: config: null JSON returns all defaults
+ok 129 - config: null JSON returns all defaults
+  ---
+  duration_ms: 28.9533
+  type: 'test'
+  ...
+# Subtest: config: stored settings override defaults while retaining new defaults
+ok 130 - config: stored settings override defaults while retaining new defaults
+  ---
+  duration_ms: 10.664
+  type: 'test'
+  ...
+# Subtest: config: encrypted key round-trips without mutating the caller
+ok 131 - config: encrypted key round-trips without mutating the caller
+  ---
+  duration_ms: 7.7468
+  type: 'test'
+  ...
+# Subtest: config: saving a legacy plaintext configuration migrates its key
+ok 132 - config: saving a legacy plaintext configuration migrates its key
+  ---
+  duration_ms: 7.1336
+  type: 'test'
+  ...
+# Subtest: config: legacy plaintext takes precedence over a stale encrypted key
+ok 133 - config: legacy plaintext takes precedence over a stale encrypted key
+  ---
+  duration_ms: 4.1872
+  type: 'test'
+  ...
+# Subtest: config: unreadable encrypted key returns an empty key {"available":false}
+ok 134 - config: unreadable encrypted key returns an empty key {"available":false}
+  ---
+  duration_ms: 8.8457
+  type: 'test'
+  ...
+# Subtest: config: unreadable encrypted key returns an empty key {"decryptError":true}
+ok 135 - config: unreadable encrypted key returns an empty key {"decryptError":true}
+  ---
+  duration_ms: 10.9224
+  type: 'test'
+  ...
+# Subtest: config: unavailable encryption uses the documented fallback and warns
+ok 136 - config: unavailable encryption uses the documented fallback and warns
+  ---
+  duration_ms: 6.3595
+  type: 'test'
+  ...
+# Subtest: config: clearing a key removes both persisted representations
+ok 137 - config: clearing a key removes both persisted representations
+  ---
+  duration_ms: 4.5282
+  type: 'test'
+  ...
+# Subtest: config: IPC partial updates preserve existing settings and persist changes
+ok 138 - config: IPC partial updates preserve existing settings and persist changes
+  ---
+  duration_ms: 8.6885
+  type: 'test'
+  ...
+# Subtest: config: mkdir and write failures propagate to the caller
+ok 139 - config: mkdir and write failures propagate to the caller
+  ---
+  duration_ms: 6.7747
+  type: 'test'
+  ...
+# Subtest: session: save stores public transcript and omits live handles
+ok 140 - session: save stores public transcript and omits live handles
+  ---
+  duration_ms: 25.4092
+  type: 'test'
+  ...
+# Subtest: session: environment override controls save and load location
+ok 141 - session: environment override controls save and load location
+  ---
+  duration_ms: 7.5981
+  type: 'test'
+  ...
+# Subtest: session: missing directory and read failures produce an empty list
+ok 142 - session: missing directory and read failures produce an empty list
+  ---
+  duration_ms: 6.5913
+  type: 'test'
+  ...
+# Subtest: session: load skips corrupt/non-JSON files and orders newest first
+ok 143 - session: load skips corrupt/non-JSON files and orders newest first
+  ---
+  duration_ms: 11.1036
+  type: 'test'
+  ...
+# Subtest: session: save failure is logged without crashing the Agent
+ok 144 - session: save failure is logged without crashing the Agent
+  ---
+  duration_ms: 6.5882
+  type: 'test'
+  ...
+# Subtest: session: deleting a session leaves unrelated sessions and logs success
+ok 145 - session: deleting a session leaves unrelated sessions and logs success
+  ---
+  duration_ms: 4.1933
+  type: 'test'
+  ...
+# Subtest: session: clear removes only session JSON files
+ok 146 - session: clear removes only session JSON files
+  ---
+  duration_ms: 6.5085
+  type: 'test'
+  ...
+# Subtest: session: deletion and clear failures are returned as false
+ok 147 - session: deletion and clear failures are returned as false
+  ---
+  duration_ms: 8.5384
+  type: 'test'
+  ...
+# Subtest: session: export renders supported transcript entries and skips metadata
+ok 148 - session: export renders supported transcript entries and skips metadata
+  ---
+  duration_ms: 104.6943
+  type: 'test'
+  ...
+# Subtest: session: export defaults and missing/corrupt export paths
+ok 149 - session: export defaults and missing/corrupt export paths
+  ---
+  duration_ms: 9.2536
+  type: 'test'
+  ...
+# Subtest: session: revert restores old text, including empty and null snapshots
+ok 150 - session: revert restores old text, including empty and null snapshots
+  ---
+  duration_ms: 4.0567
+  type: 'test'
+  ...
+# Subtest: session: reverting a new or already absent file is idempotent
+ok 151 - session: reverting a new or already absent file is idempotent
+  ---
+  duration_ms: 2.4524
+  type: 'test'
+  ...
+# Subtest: session: revert works without a live window
+ok 152 - session: revert works without a live window
+  ---
+  duration_ms: 6.9555
+  type: 'test'
+  ...
+# Subtest: session: failed revert propagates and does not notify the renderer
+ok 153 - session: failed revert propagates and does not notify the renderer
+  ---
+  duration_ms: 3.0556
+  type: 'test'
+  ...
+# Subtest: hashPassword uses a random 16-byte salt and a 64-byte scrypt hash
+ok 154 - hashPassword uses a random 16-byte salt and a 64-byte scrypt hash
+  ---
+  duration_ms: 878.6551
+  type: 'test'
+  ...
+# Subtest: password verification rejects a wrong password and malformed stored hashes
+ok 155 - password verification rejects a wrong password and malformed stored hashes
+  ---
+  duration_ms: 1255.5298
+  type: 'test'
+  ...
+# Subtest: password hashing supports empty and Unicode passwords consistently
+ok 156 - password hashing supports empty and Unicode passwords consistently
+  ---
+  duration_ms: 783.5374
+  type: 'test'
+  ...
+# Subtest: sanitizeUser removes only passwordHash and leaves its input untouched
+ok 157 - sanitizeUser removes only passwordHash and leaves its input untouched
+  ---
+  duration_ms: 7.6274
+  type: 'test'
+  ...
+# Subtest: missing, corrupt or non-array user data initializes an empty store
+ok 158 - missing, corrupt or non-array user data initializes an empty store
+  ---
+  duration_ms: 5.8643
+  type: 'test'
+  ...
+# Subtest: createUser trims username, normalizes email and persists only a hash
+ok 159 - createUser trims username, normalizes email and persists only a hash
+  ---
+  duration_ms: 297.3554
+  type: 'test'
+  ...
+# Subtest: independent store instances reload before creating and preserve existing users
+ok 160 - independent store instances reload before creating and preserve existing users
+  ---
+  duration_ms: 238.1844
+  type: 'test'
+  ...
+# Subtest: username lookup trims whitespace and preserves case-sensitive identity
+ok 161 - username lookup trims whitespace and preserves case-sensitive identity
+  ---
+  duration_ms: 2.195
+  type: 'test'
+  ...
+# Subtest: email lookup trims whitespace and ignores letter case
+ok 162 - email lookup trims whitespace and ignores letter case
+  ---
+  duration_ms: 6.9465
+  type: 'test'
+  ...
+# Subtest: store-level password verification delegates to the stored hash
+ok 163 - store-level password verification delegates to the stored hash
+  ---
+  duration_ms: 480.7449
+  type: 'test'
+  ...
+# Subtest: updateUser changes supported profile fields and protects identity and credentials
+ok 164 - updateUser changes supported profile fields and protects identity and credentials
+  ---
+  duration_ms: 154.5029
+  type: 'test'
+  ...
+# Subtest: partial profile updates preserve omitted fields and can intentionally clear fields
+ok 165 - partial profile updates preserve omitted fields and can intentionally clear fields
+  ---
+  duration_ms: 134.1635
+  type: 'test'
+  ...
+# Subtest: updating or reading an unknown user returns null without writing
+ok 166 - updating or reading an unknown user returns null without writing
+  ---
+  duration_ms: 1.8377
+  type: 'test'
+  ...
+# Subtest: getUser returns a sanitized copy and reloads externally changed data
+ok 167 - getUser returns a sanitized copy and reloads externally changed data
+  ---
+  duration_ms: 1.8497
+  type: 'test'
+  ...
+# Subtest: persistence failures propagate from user creation
+ok 168 - persistence failures propagate from user creation
+  ---
+  duration_ms: 146.1244
+  type: 'test'
+  ...
+# Subtest: CloudUserStore fails explicitly while the implementation is unavailable
+ok 169 - CloudUserStore fails explicitly while the implementation is unavailable
+  ---
+  duration_ms: 2.3467
+  type: 'test'
+  ...
+1..169
+# tests 169
+# suites 0
+# pass 169
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 6294.2273

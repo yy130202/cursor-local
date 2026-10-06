@@ -61,7 +61,7 @@ function createToolHandlers(deps) {
       const walk = async (d, prefix, level) => {
         if (level > depth) return;
         let entries;
-        try { entries = await fsp.readdir(d, { withFileTypes: true }); } catch { return; }
+        try { await guard(d); entries = await fsp.readdir(d, { withFileTypes: true }); } catch { return; }
         entries.sort((a, b) => (b.isDirectory() - a.isDirectory()) || a.name.localeCompare(b.name));
         for (const ent of entries.slice(0, 60)) {
           if (ent.name === 'node_modules' || ent.name === '.git') continue;
@@ -84,7 +84,7 @@ function createToolHandlers(deps) {
     async search_files({ args, resolve, guard }) {
       const dir = resolve(args.path || '.');
       await guard(dir);
-      const hits = await searchInDir(dir, args.pattern || '');
+      const hits = await searchInDir(dir, args.pattern || '', 50, guard);
       return hits.join('\n') || '[无匹配]';
     },
 

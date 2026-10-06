@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>核心逻辑单元测试验证结果</title>
+<style>
+:root{color-scheme:light;--ink:#152638;--muted:#54677a;--border:#dbe4ec;--accent:#126349;--soft:#edf8f2}
+*{box-sizing:border-box}
+body{margin:0;background:#f3f6f9;color:var(--ink);font:15px/1.75 "Segoe UI","Microsoft YaHei",sans-serif}
+main{max-width:1040px;margin:32px auto;padding:36px 42px;background:#fff;border:1px solid var(--border);border-radius:14px}
+header{border-bottom:1px solid var(--border);padding-bottom:24px}
+.eyebrow{margin:0;color:var(--accent);font-size:13px;font-weight:700;letter-spacing:.04em}
+h1{font-size:30px;line-height:1.35;margin:8px 0 12px}h2{font-size:20px;margin:30px 0 12px}p{margin:10px 0}.muted{color:var(--muted)}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0}
+.metric{padding:17px 18px;border:1px solid var(--border);border-radius:10px;background:#f8fafc}
+.metric strong{display:block;font-size:29px;line-height:1.3}.metric span{color:var(--muted);font-size:13px}.metric:first-child{background:var(--soft);border-color:#c2e4d3}.metric:first-child strong{color:var(--accent)}
+.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--border)}th{background:#f5f8fb;font-size:13px;color:var(--muted)}td:not(:first-child){font-variant-numeric:tabular-nums}tfoot{font-weight:700;background:var(--soft)}
+code,pre{font-family:Consolas,"Cascadia Code",monospace}code{font-size:.92em;background:#f1f5f8;padding:2px 5px;border-radius:4px}pre{margin:12px 0;padding:16px 20px;background:#f4f7fa;border:1px solid var(--border);border-radius:8px;line-height:1.6;overflow:auto;font-size:14px}
+ul,ol{padding-left:24px}li{margin:7px 0}.note{padding:15px 19px;background:#f8fafc;border-left:3px solid #88a1b7;border-radius:0 7px 7px 0}footer{margin-top:30px;padding-top:16px;border-top:1px solid var(--border);color:var(--muted);font-size:13px}
+@media(max-width:720px){main{margin:0;border:0;border-radius:0;padding:24px 18px}.metrics{grid-template-columns:repeat(2,1fr)}h1{font-size:25px}th,td{padding:9px 8px}}
+@media print{body{background:white}main{border:0;margin:0;padding:12px;max-width:none}h2,table,.metrics{break-inside:avoid}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<p class="eyebrow">验证日期 · 2026-10-06</p>
+<h1>核心逻辑单元测试验证结果</h1>
+<p>169 项测试全部通过；失败、取消、跳过及待办用例均为 0。覆盖 Agent 引擎及工具、配置管理、会话持久化与回滚、用户存储。</p>
+<p class="muted">使用 Node 内置测试工具和断言库。文件系统、网络、子进程、审批计时器与窗口接口均在内存中替换；不需要启动 Electron 或安装新增测试依赖。</p>
+</header>
+<section class="metrics" aria-label="总体测试结果">
+<div class="metric"><strong>169 / 169</strong><span>测试通过</span></div>
+<div class="metric"><strong>98.94%</strong><span>五个核心源文件行覆盖率</span></div>
+<div class="metric"><strong>95.42%</strong><span>五个核心源文件分支覆盖率</span></div>
+<div class="metric"><strong>100%</strong><span>五个核心源文件函数覆盖率</span></div>
+</section>
+<section>
+<h2>逐文件覆盖率</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>被测源文件</th><th>行覆盖率</th><th>分支覆盖率</th><th>函数覆盖率</th></tr></thead>
+<tbody>
+<tr><td><code>modules/agent.js</code></td><td>98.17%</td><td>93.10%</td><td>100.00%</td></tr>
+<tr><td><code>modules/agent/tools.js</code></td><td>100.00%</td><td>98.72%</td><td>100.00%</td></tr>
+<tr><td><code>modules/config.js</code></td><td>100.00%</td><td>100.00%</td><td>100.00%</td></tr>
+<tr><td><code>modules/session.js</code></td><td>100.00%</td><td>98.18%</td><td>100.00%</td></tr>
+<tr><td><code>store/user-store.js</code></td><td>100.00%</td><td>100.00%</td><td>100.00%</td></tr>
+</tbody>
+<tfoot><tr><td>合计</td><td>98.94%</td><td>95.42%</td><td>100.00%</td></tr></tfoot>
+</table>
+</div>
+<p class="muted">覆盖率统计只包含表中五个源文件，不代表整个应用。未执行的源代码行位于 <code>modules/agent.js:338–348</code>，对应非流式请求分支；当前正常 Agent 循环使用流式请求。</p>
+</section>
+<section>
+<h2>已验证的修复</h2>
+<ol>
+<li><strong>任务停止与错误状态：</strong>在模型响应返回后、每次工具调用前、审批返回后及工具执行返回后复查状态；停止后不会继续执行后续工具、输出迟到的文本或推理内容，或把状态改回完成。</li>
+<li><strong>审批清理：</strong>批准、拒绝、超时、停止和任务收尾都会移除待审批记录并清除对应计时器；迟到的批准消息不会重复执行操作。</li>
+<li><strong>计划模式：</strong>工具分发层强制拦截工具调用，不再仅依赖提示词；计划模式不会请求修改审批或写入文件。</li>
+<li><strong>路径边界：</strong>创建多层新目录时解析最近的已存在祖先，阻止通过指向工作区外的符号链接写入；允许工作区内合法的链接及以两个点开头的普通子目录名。</li>
+<li><strong>递归读取边界：</strong>搜索中的文件和目录逐一接受真实路径校验，目录树遍历在读取子目录前再次校验；从子目录搜索时，仍允许工作区内其他目录的链接目标。完全访问模式保持其原有权限。</li>
+<li><strong>命令过滤：</strong>补齐递归删除参数的反向顺序、PowerShell 完整递归选项，以及高危进程递归命令的匹配。测试仅检查字符串和模拟调用，不运行危险命令。</li>
+</ol>
+<p>生产修复集中在 <code>modules/agent.js</code> 与 <code>modules/agent/tools.js</code>。此外，<code>package.json</code> 新增测试入口；测试辅助代码修正了日志依赖注入，使异常分发用例能真正触发并验证错误处理。</p>
+</section>
+<section>
+<h2>测试文件与覆盖范围</h2>
+<ul>
+<li><code>test/agent-tools.test.js</code>：只读权限、路径与符号链接、文件工具、递归读取、命令过滤和命令输出。</li>
+<li><code>test/agent.test.js</code>：流式 UTF-8 分片、工具参数聚合、审批、取消、异常、轮次上限、会话续接及子进程清理。</li>
+<li><code>test/config.test.js</code>：默认值、损坏配置、加密密钥读写、旧配置迁移及保存失败。</li>
+<li><code>test/session.test.js</code>：会话保存、读取、删除、导出、文件回滚与失败处理。</li>
+<li><code>test/user-store.test.js</code>：密码哈希与校验、资料规范化、凭据字段保护、重载和持久化失败。</li>
+</ul>
+<p class="muted">共两份测试辅助文件：<code>test/helpers/harness.js</code> 与 <code>test/helpers/agent-harness.js</code>。真实宿主读取仅用于加载被测源码。</p>
+</section>
+<section>
+<h2>重复运行</h2>
+<p>在项目根目录执行。测试依赖均为 Node 内置模块，无需新增依赖安装。</p>
+<pre>npm test
+npm run test:unit
+npm run test:coverage</pre>
+<p>已实际运行 <code>npm test</code> 和 <code>npm run test:coverage</code>，两次均通过 169 项。默认测试入口与 <code>test:unit</code> 使用相同测试命令；覆盖率入口额外启用源文件范围过滤。<code>npm run test:agent</code> 保留为原有 Electron 集成入口。</p>
+<p>本轮测试使用 Node 22。交付压缩包 <code>unit-tests-delivery.zip</code> 包含五个被测源文件、五份测试文件、两份测试辅助代码、原项目运行脚本配置和验证结果。解压后可直接从其根目录运行上面的单元测试入口。</p>
+</section>
+<section>
+<h2>验证范围与现有边界</h2>
+<div class="note">
+<ul>
+<li>本轮验证是隔离单元测试，未启动 Electron，也未执行真实模型接口、系统命令或图形界面端到端测试。</li>
+<li><code>run_command</code> 使用命令字符串过滤和执行目录设置，并未提供操作系统级文件访问沙箱。</li>
+<li>停止任务会抑制迟到响应及后续工具操作；当前实现没有主动中止在途 HTTP 请求，也不保证撤销已经开始的文件操作。</li>
+<li>现有边界尚保留：<code>runAgent</code> 初始化阶段读取配置异常会向调用方抛出；缺少 API Key 的提前返回不保存会话；续接任务没有重置空响应总结标志。这些不属于本轮已修复清单。</li>
+</ul>
+</div>
+</section>
+<footer>逐项测试结果和覆盖率原始输出见同目录的 <code>unit-test-results.txt</code>；默认入口输出见 <code>unit-test-default-results.txt</code>。所有测试数据为合成数据。</footer>
+</main>
+</body>
+</html>

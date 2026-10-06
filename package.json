@@ -7,6 +7,9 @@
   "scripts": {
     "start": "electron .",
     "screenshot": "node screenshot-run.js",
+    "test": "node --test test/*.test.js",
+    "test:unit": "node --test test/*.test.js",
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=modules/agent.js --test-coverage-include=modules/agent/tools.js --test-coverage-include=modules/config.js --test-coverage-include=modules/session.js --test-coverage-include=store/user-store.js test/*.test.js",
     "test:agent": "node test-agent.js"
   },
   "dependencies": {

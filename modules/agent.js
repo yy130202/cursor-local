@@ -78,7 +78,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
     try { rel = path.relative(path.resolve(cwd), path.resolve(target)); } catch { rel = target; }
     // Windows 路径大小写不敏感：先按原值判，再按小写判，任一判定在工作区内才放行
     const relLc = rel.toLowerCase();
-    const inside = (r) => r === '' || (!r.startsWith('..') && !path.isAbsolute(r));
+    const inside = (r) => r === '' || (r !== '..' && !r.startsWith('..' + path.sep) && !path.isAbsolute(r));
     if (inside(rel) && inside(relLc)) return;
     throw new Error(`沙箱拦截：禁止访问工作目录之外的路径（${target}）`);
   }
@@ -88,12 +88,13 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
     { re: /\brm\b[^\n]*\s-[a-z]*r[a-z]*f\b/i, desc: 'rm 递归强制删除' },
     { re: /\brm\b[^\n]*\s-[a-z]*f[a-z]*r\b/i, desc: 'rm 递归强制删除' },
     { re: /\brm\b[^\n]*\s-[a-z]*r\b[^\n]*\s-[a-z]*f\b/i, desc: 'rm -r -f 递归强制删除' },
+    { re: /\brm\b[^\n]*\s-[a-z]*f\b[^\n]*\s-[a-z]*r\b/i, desc: 'rm -f -r 递归强制删除' },
     { re: /\brm\b[^\n]*\s--(recursive|force)\b/i, desc: 'rm --recursive/--force 递归删除' },
     { re: /\brd\b[^\n]*\s\/[a-z]*s\b/i, desc: 'rd /s 递归删除目录' },
     { re: /\brd\b[^\n]*\s\/[a-z]*q\b/i, desc: 'rd /q 静默删除目录' },
     { re: /\brmdir\b[^\n]*\s\/[a-z]*[sq]\b/i, desc: 'rmdir /s /q 递归删除目录' },
     { re: /\bdel\b[^\n]*\s\/[a-z]*[fsq]\b/i, desc: 'del /s /f /q 递归强制删除' },
-    { re: /\bremove-item\b[^\n]*\s-[a-z]*r\b/i, desc: 'PowerShell Remove-Item 递归删除' },
+    { re: /\bremove-item\b[^\n]*\s-(r|recurse)\b/i, desc: 'PowerShell Remove-Item 递归删除' },
     { re: /\bremove-item\b[^\n]*\s-[a-z]*fo/i, desc: 'PowerShell Remove-Item 强制删除' },
     { re: /\bformat\b/i, desc: '格式化磁盘' },
     { re: /\bmkfs(\.\w+)?\b/i, desc: '创建文件系统（格式化）' },
@@ -123,6 +124,8 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
   }
 
   function checkDangerousCommand(command) {
+    const catastrophic = checkCatastrophic(command);
+    if (catastrophic) return catastrophic;
     const c = normalizeCommand(command);
     for (const { re, desc } of DANGEROUS_PATTERNS) {
       if (re.test(c)) return desc;
@@ -136,7 +139,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
     { re: /\bdd\s+if=/i, desc: 'dd 磁盘写入' },
     { re: /\bshutdown\b/i, desc: '关机' },
     { re: /\breboot\b/i, desc: '重启' },
-    { re: /\b:\(\)\s*\{\s*:\|:\s*&\s*\};:/, desc: 'fork 炸弹' },
+    { re: /:\(\)\s*\{\s*:\|:\s*&\s*\}\s*;\s*:/, desc: 'fork 炸弹' },
     { re: /\bdiskpart\b/i, desc: '磁盘分区' }
   ];
   function checkCatastrophic(command) {
@@ -156,7 +159,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
   const pendingApprovals = new Map();
   let approvalSeq = 0;
   function needsApproval(agent, tool) {
-    if (agent.readonly) return false;
+    if (agent.readonly || agent.mode === 'plan') return false;
     let perm = 'safe';
     try { perm = loadConfig().permission || 'safe'; } catch { /* ignore */ }
     if (perm !== 'manual') return false;
@@ -165,15 +168,22 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
   function requestApproval(agent, tool, args) {
     return new Promise((resolve) => {
       const callId = 'ap-' + Date.now() + '-' + (++approvalSeq);
+      let timer;
       const entry = {
         agentId: agent.id, resolve,
-        settle: (v) => { if (pendingApprovals.has(callId)) { pendingApprovals.delete(callId); resolve(v); } }
+        settle: (v) => {
+          if (!pendingApprovals.has(callId)) return;
+          pendingApprovals.delete(callId);
+          agent.__pending.delete(callId);
+          clearTimeout(timer);
+          resolve(v);
+        }
       };
       pendingApprovals.set(callId, entry);
       agent.__pending = agent.__pending || new Set();
       agent.__pending.add(callId);
+      timer = setTimeout(() => entry.settle(false), 120000);
       emitAgent(agent, 'approval', { callId, tool, args });
-      setTimeout(() => entry.settle(false), 120000);
     });
   }
 
@@ -187,7 +197,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
     agent.__pending.clear();
   }
 
-  async function searchInDir(folder, pattern, maxResults = 50) {
+  async function searchInDir(folder, pattern, maxResults = 50, guard = (target) => assertRealInsideWorkspace(folder, target)) {
     const results = [];
     const needle = String(pattern).toLowerCase();
     async function walk(dir, depth) {
@@ -198,6 +208,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
         if (results.length >= maxResults) return;
         if (ent.name === 'node_modules' || ent.name === '.git' || ent.name === 'dist') continue;
         const p = path.join(dir, ent.name);
+        try { await guard(p); } catch { continue; }
         if (ent.isDirectory()) { await walk(p, depth + 1); continue; }
         try {
           const stat = await fsp.stat(p);
@@ -235,12 +246,26 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
   async function assertRealInsideWorkspace(cwd, target) {
     try {
       const realCwd = await fsp.realpath(path.resolve(cwd));
+      let ancestor = path.resolve(target);
+      const missing = [];
       let realTarget;
-      try { realTarget = await fsp.realpath(path.resolve(target)); }
-      catch { realTarget = await fsp.realpath(path.dirname(path.resolve(target))).then((d) => path.join(d, path.basename(target))).catch(() => path.resolve(target)); }
+      // 新文件的多个父目录可能还不存在；找到最近的已存在祖先后再拼回路径，
+      // 避免 link/new/deep/file.txt 在 link 指向界外时回退到未经解析的词法路径。
+      while (true) {
+        try {
+          realTarget = path.join(await fsp.realpath(ancestor), ...missing);
+          break;
+        } catch (err) {
+          if (!err || err.code !== 'ENOENT') throw err;
+          const parent = path.dirname(ancestor);
+          if (parent === ancestor) throw err;
+          missing.unshift(path.basename(ancestor));
+          ancestor = parent;
+        }
+      }
       const rel = path.relative(realCwd, realTarget);
       const relLc = rel.toLowerCase();
-      const inside = (r) => r === '' || (!r.startsWith('..') && !path.isAbsolute(r));
+      const inside = (r) => r === '' || (r !== '..' && !r.startsWith('..' + path.sep) && !path.isAbsolute(r));
       if (inside(rel) && inside(relLc)) return;
       throw new Error(`沙箱拦截：解析后路径在工作目录之外（${target}）`);
     } catch (e) {
@@ -266,6 +291,9 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
   /* 工具分发器：只负责「模式拦截 → 构造上下文 → 表驱动调用 → 统一错误包装」。
      新增工具只需在 tools.js 追加处理器，本函数永远不需要改动。 */
   async function executeTool(agent, name, args) {
+    if (agent.mode === 'plan') {
+      return 'ERROR: 当前为计划模式，已拦截工具调用 ' + name;
+    }
     if (agent.readonly && APPROVAL_TOOLS.has(name)) {
       return 'ERROR: 当前为 Ask 只读模式，已拦截修改类操作 ' + name;
     }
@@ -435,6 +463,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
         let calls = [];
         if (process.env.MOCK_LLM) {
           const resp = await chatCompletion(cfg, agent.messages);
+          if (agent.status === 'stopped' || agent.status === 'error') return;
           const msg = resp.choices && resp.choices[0] && resp.choices[0].message;
           if (!msg) throw new Error('API 返回格式异常');
           content = msg.content || '';
@@ -443,10 +472,11 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
           agent.messages.push(msg);
         } else {
           const r = await chatCompletionStream(cfg, agent.messages, (delta) => {
-            emitAgent(agent, 'text_delta', { text: delta });
+            if (agent.status === 'running') emitAgent(agent, 'text_delta', { text: delta });
           }, (rc) => {
-            emitAgent(agent, 'reasoning_delta', { text: rc });
+            if (agent.status === 'running') emitAgent(agent, 'reasoning_delta', { text: rc });
           });
+          if (agent.status === 'stopped' || agent.status === 'error') return;
           content = r.content;
           calls = r.tool_calls;
           agent.messages.push({ role: 'assistant', content: content || null, tool_calls: calls.length ? calls : undefined });
@@ -463,6 +493,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
           return;
         }
         for (const tc of calls) {
+          if (agent.status === 'stopped' || agent.status === 'error') return;
           let fnName = tc.function && tc.function.name || 'unknown';
           let args = {};
           try { args = JSON.parse(tc.function.arguments || '{}'); } catch { /* 忽略 */ }
@@ -471,6 +502,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
           // 手动审批：敏感操作等用户确认
           if (needsApproval(agent, fnName)) {
             const ok = await requestApproval(agent, fnName, args);
+            if (agent.status === 'stopped' || agent.status === 'error') return;
             if (!ok) {
               result = '用户拒绝执行 ' + fnName + '，请调整方案或先向用户说明理由。';
               emitAgent(agent, 'tool_result', { name: fnName, result });
@@ -480,6 +512,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
           }
           try { result = await executeTool(agent, fnName, args); }
           catch (err) { result = 'ERROR: ' + err.message; }
+          if (agent.status === 'stopped' || agent.status === 'error') return;
           result = String(result);
           emitAgent(agent, 'tool_result', { name: fnName, result: result.slice(0, 3000) });
           agent.messages.push({ role: 'tool', tool_call_id: tc.id, content: result.slice(0, 12000) });
@@ -489,6 +522,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
       emitAgent(agent, 'status', { status: 'done' });
       addLog('info', 'agent', `Agent 完成：${agent.task.slice(0, 60)}`);
     } catch (err) {
+      if (agent.status === 'stopped') return;
       agent.status = 'error';
       emitAgent(agent, 'error', { text: String(err.message || err) });
       addLog('error', 'agent', `Agent 出错：${String(err.message || err).slice(0, 200)}`);
@@ -539,8 +573,8 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
         a.status = 'stopped';
         clearPendingApprovals(a); // 先拒绝挂起审批，再杀进程
         killChildren(a);
-        if (a.log.length > 200) a.log = a.log.slice(-200);
         emitAgent(a, 'status', { status: 'stopped' });
+        if (a.log.length > 200) a.log = a.log.slice(-200);
       }
       return true;
     });
