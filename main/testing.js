@@ -130,7 +130,7 @@ function createTesting({ winRef, agents, rootDir, config, agentApi, sessionApi, 
     await winRef().webContents.executeJavaScript(
       `window.__openFolderForDemo(${JSON.stringify(rootDir)}); switchMode('editor');`
     );
-    await sleep(1000);
+    await sleep(1800);
     const dbg = await winRef().webContents.executeJavaScript('JSON.stringify(window.__debugState())');
     console.log('[debug editor]', dbg);
     // 选区颜色诊断：从主题服务读取实际选区颜色值
@@ -141,6 +141,8 @@ function createTesting({ winRef, agents, rootDir, config, agentApi, sessionApi, 
       return JSON.stringify({ selection: c ? c.toString() : 'none', themeName: ed._themeService ? ed._themeService.getColorTheme().themeName : '?' });
     })()`);
     console.log('[debug deco]', deco);
+    await captureTo(path.join(shotDir, '02-editor.png'));
+    // 主题诊断放在截图之后（连续切主题会污染画面）
     const themeTest = await winRef().webContents.executeJavaScript(`(async () => {
       const r = {};
       try {
@@ -154,7 +156,6 @@ function createTesting({ winRef, agents, rootDir, config, agentApi, sessionApi, 
       return JSON.stringify(r);
     })()`);
     console.log('[debug theme]', themeTest);
-    await captureTo(path.join(shotDir, '02-editor.png'));
 
     // 3. Agents
     await winRef().webContents.executeJavaScript(`switchMode('agents'); window.__demoAgentEntry();`);

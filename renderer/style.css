@@ -2426,3 +2426,56 @@ svg.lucide { color: #fff; }
 
 /* hero 特性列表：去掉原本的左缩进，让图标与文字自然对齐 */
 .check-list li { gap: 7px; }
+
+/* ==========================================================
+   文件树图标：恢复按类型着色（VS Code 风格）
+   作用域限定 #filetree，不影响主页/提及面板等其他位置的白色图标
+   ========================================================== */
+#filetree .icon-dir { color: #6ba7d8; }           /* 文件夹：蓝 */
+#filetree .icon-file { color: #a9a9a9; }          /* 未知/无扩展名：灰 */
+
+/* 前端 */
+#filetree .icon-file.js,
+#filetree .icon-file.mjs,
+#filetree .icon-file.cjs,
+#filetree .icon-file.json { color: #e8d44d; }
+#filetree .icon-file.ts,
+#filetree .icon-file.tsx { color: #4a9eff; }
+#filetree .icon-file.jsx { color: #61dafb; }
+#filetree .icon-file.html,
+#filetree .icon-file.htm { color: #e7684c; }
+#filetree .icon-file.css { color: #b57edc; }
+#filetree .icon-file.scss,
+#filetree .icon-file.less { color: #e07bd3; }
+#filetree .icon-file.vue { color: #7fc9a8; }
+
+/* 后端 / 编译型 */
+#filetree .icon-file.py { color: #5aa9e6; }
+#filetree .icon-file.java { color: #e07b39; }
+#filetree .icon-file.go { color: #4ec9b0; }
+#filetree .icon-file.rs { color: #e8a33d; }
+#filetree .icon-file.c,
+#filetree .icon-file.h,
+#filetree .icon-file.cpp,
+#filetree .icon-file.hpp { color: #6ba7d8; }
+#filetree .icon-file.cs { color: #9b4f96; }
+#filetree .icon-file.php { color: #7c9fd6; }
+
+/* 构建 / 脚本 */
+#filetree .icon-file.gradle,
+#filetree .icon-file.sh,
+#filetree .icon-file.bash,
+#filetree .icon-file.xml { color: #7ee787; }
+#filetree .icon-file.bat,
+#filetree .icon-file.cmd,
+#filetree .icon-file.ps1 { color: #9ece6a; }
+#filetree .icon-file.toml,
+#filetree .icon-file.properties { color: #9c9c9c; }
+#filetree .icon-file.yml,
+#filetree .icon-file.yaml { color: #d18f52; }
+
+/* 文档 / 数据 */
+#filetree .icon-file.md,
+#filetree .icon-file.markdown { color: #6ba7d8; }
+#filetree .icon-file.sql { color: #e38c8c; }
+#filetree .icon-file.dockerfile { color: #6ba7d8; }
