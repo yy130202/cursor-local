@@ -332,7 +332,7 @@ function updateCwdChip() {
     document.getElementById('workdir-label').textContent = cfg.lastFolder;
     document.getElementById('status-right').textContent = '工作目录: ' + cfg.lastFolder;
     updateCwdChip();
-    renderTree();
+    CL.editor.filetree.render();
   }
   // 主题 + 用户系统初始化
   if (typeof initTheme === 'function') initTheme();
@@ -373,7 +373,7 @@ function updateCwdChip() {
     const cwd = (typeof EditorState !== 'undefined' && EditorState.currentFolder) || null;
     if (!cwd) { if (typeof openFolder === 'function') openFolder(); return; }
     if (typeof switchMode === 'function') switchMode('editor');
-    if (typeof window.startInlineCreate === 'function') window.startInlineCreate(cwd, false);
+    if (typeof CL.editor.filetree.startCreate === 'function') CL.editor.filetree.startCreate(cwd, false);
   });
 })();
 

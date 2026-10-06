@@ -76,7 +76,7 @@
     // 同步 git 状态缓存 → 文件树着色
     window.__gitStatusMap = new Map();
     [...r.staged, ...r.unstaged].forEach((f) => window.__gitStatusMap.set(f.file, { status: f.status, staged: f.staged }));
-    if (typeof renderTree === 'function') renderTree();
+    if (typeof renderTree === 'function') CL.editor.filetree.render();
     if (viewMode === 'changes') renderList(r);
   }
 

@@ -8,7 +8,7 @@
 
   const MENUS = [
     { label: '文件(F)', items: [
-      { label: '新建文件', key: 'Ctrl+N', run: () => { const c = cwd(); if (!c) return; if (typeof switchMode === 'function') switchMode('editor'); if (window.startInlineCreate) window.startInlineCreate(c, false); } },
+      { label: '新建文件', key: 'Ctrl+N', run: () => { const c = cwd(); if (!c) return; if (typeof switchMode === 'function') switchMode('editor'); if (CL.editor.filetree.startCreate) CL.editor.filetree.startCreate(c, false); } },
       { label: '打开文件夹…', key: 'Ctrl+K Ctrl+O', run: () => { if (typeof openFolder === 'function') openFolder(); } },
       { sep: true },
       { label: '保存', key: 'Ctrl+S', run: () => { if (typeof saveActive === 'function') saveActive(); } },
