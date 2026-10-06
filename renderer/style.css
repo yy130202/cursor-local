@@ -2282,3 +2282,122 @@ svg.lucide { width: 15px; height: 15px; }
 .consent-btn.primary { background: var(--accent); color: var(--accent-contrast); }
 .consent-btn.primary:hover:not(:disabled) { filter: brightness(1.1); }
 .consent-btn.primary:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ==========================================================
+   纯黑紧凑主题（全局覆盖层）
+   1) 页面背景纯黑 #000，面板用半透明白保留层次
+   2) 图标一律「无底衬 + 亮白」，去掉彩色背景方块
+   3) 按钮 / 图标整体缩小，布局更紧凑
+   ========================================================== */
+:root {
+  --bg: #000000;
+  --panel-solid: #0b0b0d;
+  --ico: 14px;          /* 通用图标尺寸 */
+  --ico-sm: 12px;
+  --ico-lg: 16px;
+  --btn-py: 3px;
+  --btn-px: 7px;
+}
+
+/* ---- 背景纯黑，面板靠半透明白区分层次 ---- */
+body { background: var(--bg); }
+#topbar, #sidebar, #editor-main, #panel {
+  background: rgba(255, 255, 255, .028);
+}
+.snav-item, .tree-item, .agent-item, .tab, .card, .welcome-card {
+  background-color: transparent;
+}
+.snav-item:hover, .tree-item:hover, .agent-item:hover { background: rgba(255, 255, 255, .055); }
+.snav-item.active, .tree-item.active, .agent-item.selected, .tab.active {
+  background: rgba(255, 255, 255, .085);
+}
+
+/* ---- 图标：去背景 + 亮白 ---- */
+.welcome-icon {
+  width: auto; height: auto;
+  margin: 0 auto 10px;
+  background: none !important;
+  border-radius: 0;
+  box-shadow: none;
+  color: #fff;
+}
+.welcome-icon svg.lucide { width: 22px; height: 22px; stroke-width: 1.75; }
+
+.consent-mark {
+  background: none !important;
+  color: #fff;
+  width: auto; height: auto;
+}
+.consent-mark svg.lucide { width: 20px; height: 20px; }
+
+/* 通用：任何带底衬的图标容器一律透明 */
+.entry-icon, .tool-ico, .ai-panel-ico, .empty-icon, .onboarding-ico {
+  background: none !important;
+  color: #fff;
+}
+
+/* ---- 按钮与图标缩小 ---- */
+.icon-btn { padding: var(--btn-py) var(--btn-px); }
+.icon-btn svg.lucide { width: var(--ico); height: var(--ico); }
+.action.icon-btn svg.lucide { width: var(--ico); height: var(--ico); }
+
+#menubar .mb-top { font-size: 11.5px; padding: 3px 7px; }
+.mode-switch button { padding: 3px 8px; font-size: 11px; }
+.open-agents-btn { padding: 4px 9px; font-size: 11.5px; }
+.top-search { height: 24px; font-size: 11.5px; }
+
+.win-controls button { width: 40px; height: 28px; }
+.win-controls button svg.lucide { width: 13px; height: 13px; }
+
+.tree-item { padding: 3px 8px; font-size: 11.5px; }
+.snav-item { padding: 5px 10px; font-size: 12px; }
+.tab { padding: 4px 9px; font-size: 11.5px; }
+.agent-item { padding: 6px 9px; }
+.git-item { padding: 3px 8px; }
+
+/* 状态/徽标类同步缩小 */
+.badge, .pill, .tag { font-size: 10px; padding: 1px 7px; }
+.thinking { padding: 9px 12px 10px; }
+.th-orbit { width: 17px; height: 17px; }
+.th-core { inset: 6px; }
+.th-label { font-size: 12px; }
+.th-reason { font-size: 11px; }
+
+.entry-text { font-size: 12px; }
+.tool-card, .change-card { font-size: 11.5px; }
+
+/* ---- 图标统一亮白（状态语义色圆点除外） ---- */
+svg.lucide { color: #fff; }
+/* 保留状态指示器的语义色，避免丢失信息 */
+.status-dot, .dot, .agent-status-dot, .branch-dot { color: initial; }
+.status-dot svg, .dot svg { color: initial; }
+
+/* 文件树 / 压缩包列表图标：去黄化 */
+.tree-item svg.lucide, .fai-ico svg.lucide, .tab svg.lucide,
+.agent-item svg.lucide, .snav-item svg.lucide, .card-icon svg.lucide { color: #fff; }
+
+/* ---- 状态栏改纯黑 ---- */
+#statusbar {
+  background: #000;
+  color: #cfcfcf;
+  border-top: 1px solid rgba(255, 255, 255, .09);
+  font-size: 11px;
+  height: 22px;
+  padding: 0 10px;
+}
+#statusbar .warn { background: rgba(255, 255, 255, .08); }
+
+/* ---- 顶部模式切换胶囊去蓝底 ---- */
+.mode-switch { background: rgba(255, 255, 255, .05); border-color: rgba(255, 255, 255, .09); }
+.mode-switch button.active { background: rgba(255, 255, 255, .12); color: #fff; }
+.mode-switch button { color: #bdbdbd; }
+.open-agents-btn { background: rgba(255, 255, 255, .08); color: #fff; }
+.open-agents-btn:hover { background: rgba(255, 255, 255, .14); }
+
+/* ---- 文件树图标：取消按扩展名着色，统一亮白 ---- */
+.icon-dir,
+.icon-file,
+.icon-file.js, .icon-file.ts, .icon-file.jsx, .icon-file.mjs, .icon-file.cjs,
+.icon-file.html, .icon-file.css, .icon-file.json, .icon-file.md, .icon-file.py,
+.icon-file.xml, .icon-file.yaml, .icon-file.yml, .icon-file.sh, .icon-file.java,
+.icon-file.go, .icon-file.rs, .icon-file.c, .icon-file.cpp, .icon-file.h { color: #fff; }
