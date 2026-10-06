@@ -2,6 +2,7 @@
 const path = require('path');
 const fsp = require('fs').promises;
 const { spawn } = require('child_process');
+const { createToolHandlers } = require('./agent/tools');
 
 function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, rootDir, memory }) {
   const win = () => winRef();
@@ -255,122 +256,32 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
     if (w && !w.isDestroyed()) w.webContents.send('agent:event', { id: agent.id, kind, ...payload });
   }
 
+  /* 工具处理器表：工具行为在 modules/agent/tools.js，此处仅做依赖注入 */
+  const TOOL_HANDLERS = createToolHandlers({
+    fsp, path, win, addLog, runCommand, searchInDir,
+    resolveAgentPath, assertRealInsideWorkspace, emitAgent,
+    checkDangerousCommand, checkCatastrophic
+  });
+
+  /* 工具分发器：只负责「模式拦截 → 构造上下文 → 表驱动调用 → 统一错误包装」。
+     新增工具只需在 tools.js 追加处理器，本函数永远不需要改动。 */
   async function executeTool(agent, name, args) {
-    const cwd = agent.cwd;
-    // Ask 只读模式：拦截修改类操作
     if (agent.readonly && APPROVAL_TOOLS.has(name)) {
       return 'ERROR: 当前为 Ask 只读模式，已拦截修改类操作 ' + name;
     }
+    const handler = TOOL_HANDLERS[name];
+    if (!handler) return `[未知工具 ${name}]`;
     const full = isFullControl();
-    const guard = (target) => (full ? Promise.resolve() : assertRealInsideWorkspace(cwd, target));
     addLog('debug', 'tool', `${name} ${JSON.stringify(args || {}).slice(0, 140)}`);
+    const cwd = agent.cwd;
+    const ctx = {
+      agent, args, cwd, full,
+      resolve: (p) => resolveAgentPath(cwd, p),
+      guard: (target) => (full ? Promise.resolve() : assertRealInsideWorkspace(cwd, target)),
+      log: (level, msg) => addLog(level, 'tool', msg)
+    };
     try {
-      switch (name) {
-        case 'list_dir': {
-          const dir = resolveAgentPath(cwd, args.path || '.');
-          await guard(dir);
-          const entries = await fsp.readdir(dir, { withFileTypes: true });
-          return entries.slice(0, 300)
-            .sort((a, b) => (b.isDirectory() - a.isDirectory()) || a.name.localeCompare(b.name))
-            .map((e) => (e.isDirectory() ? e.name + '/' : e.name))
-            .join('\n') || '[空目录]';
-        }
-        case 'list_tree': {
-          const dir = resolveAgentPath(cwd, args.path || '.');
-          await guard(dir);
-          const depth = Math.min(parseInt(args.depth, 10) || 3, 6);
-          const lines = [];
-          async function walk(d, prefix, level) {
-            if (level > depth) return;
-            let entries;
-            try { entries = await fsp.readdir(d, { withFileTypes: true }); } catch { return; }
-            entries.sort((a, b) => (b.isDirectory() - a.isDirectory()) || a.name.localeCompare(b.name));
-            for (const ent of entries.slice(0, 60)) {
-              if (ent.name === 'node_modules' || ent.name === '.git') continue;
-              lines.push(prefix + ent.name + (ent.isDirectory() ? '/' : ''));
-              if (ent.isDirectory()) await walk(path.join(d, ent.name), prefix + '  ', level + 1);
-            }
-          }
-          await walk(dir, '', 0);
-          return lines.join('\n') || '[空]';
-        }
-        case 'read_file': {
-          const f = resolveAgentPath(cwd, args.path);
-          await guard(f);
-          let content = await fsp.readFile(f, 'utf8');
-          if (content.length > 80000) content = content.slice(0, 80000) + '\n...[文件过长已截断]';
-          return content || '[空文件]';
-        }
-        case 'write_file': {
-          const f = resolveAgentPath(cwd, args.path);
-          await guard(f);
-          const newContent = args.content ?? '';
-          let before = null, existed = false;
-          try { before = await fsp.readFile(f, 'utf8'); existed = true; } catch { /* 新文件 */ }
-          await fsp.mkdir(path.dirname(f), { recursive: true });
-          await fsp.writeFile(f, newContent, 'utf8');
-          addLog('info', 'tool', '写入文件 ' + f);
-          if (before !== newContent) {
-            const change = { path: f, relPath: path.relative(cwd, f), before, after: newContent, existed };
-            agent.changes = agent.changes || [];
-            agent.changes.push(change);
-            emitAgent(agent, 'change', change);
-          }
-          const w = win();
-          if (w && !w.isDestroyed()) w.webContents.send('fs:changed', { path: f });
-          return `[OK] 已写入 ${f}（${newContent.length} 字符）`;
-        }
-        case 'delete_file': {
-          const f = resolveAgentPath(cwd, args.path);
-          await guard(f);
-          await fsp.rm(f, { recursive: false, force: true });
-          addLog('warning', 'tool', '删除文件 ' + f);
-          const w = win();
-          if (w && !w.isDestroyed()) w.webContents.send('fs:changed', { path: f });
-          return '[OK] 已删除 ' + f;
-        }
-        case 'move_file': {
-          const from = resolveAgentPath(cwd, args.from);
-          const to = resolveAgentPath(cwd, args.to);
-          await guard(from); await guard(to);
-          await fsp.mkdir(path.dirname(to), { recursive: true });
-          await fsp.rename(from, to);
-          addLog('info', 'tool', '移动 ' + from + ' → ' + to);
-          const w = win();
-          if (w && !w.isDestroyed()) w.webContents.send('fs:changed', { path: from });
-          return '[OK] 已移动 ' + from + ' → ' + to;
-        }
-        case 'search_files': {
-          const dir = resolveAgentPath(cwd, args.path || '.');
-          await guard(dir);
-          const r = await searchInDir(dir, args.pattern || '');
-          return r.join('\n') || '[无匹配]';
-        }
-        case 'get_file_info': {
-          const f = resolveAgentPath(cwd, args.path);
-          await guard(f);
-          const st = await fsp.stat(f);
-          const ext = path.extname(f).slice(1) || '无';
-          return `大小: ${st.size} 字节\n修改时间: ${new Date(st.mtimeMs).toLocaleString('zh-CN')}\n类型: ${st.isDirectory() ? '目录' : (ext + ' 文件')}`;
-        }
-        case 'run_command': {
-          const cmd = args.command || 'echo no-command';
-          let blocked = null;
-          if (!full) blocked = checkDangerousCommand(cmd);
-          else blocked = checkCatastrophic(cmd);
-          if (blocked) {
-            addLog('warning', 'tool', '拦截命令: ' + cmd + '（' + blocked + '）');
-            return `[已拦截危险命令] 检测到「${blocked}」，已拒绝执行。\n如需执行请手动在系统终端操作。`;
-          }
-          if (full) addLog('warning', 'tool', '[完全控制] 执行: ' + cmd);
-          const r = await runCommand(cwd, cmd, agent);
-          if (r.code !== 0) addLog('warning', 'tool', '命令退出码 ' + r.code + ': ' + cmd);
-          else addLog('info', 'tool', '命令成功: ' + cmd);
-          return `退出码: ${r.code}\n${r.output}`;
-        }
-        default:
-          return `[未知工具 ${name}]`;
-      }
+      return await handler(ctx);
     } catch (err) {
       addLog('error', 'tool', `${name} 失败: ${err.message}`);
       return 'ERROR: ' + err.message;
