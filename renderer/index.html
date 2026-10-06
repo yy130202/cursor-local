@@ -278,6 +278,48 @@
   </div>
 
   <!-- 登录 / 注册 -->
+  <div id="consent-modal" class="modal hidden">
+    <div class="modal-box consent-box">
+      <div class="consent-head">
+        <span class="consent-mark"><i data-lucide="shield-check"></i></span>
+        <div>
+          <div class="consent-title">欢迎使用 Cursor Local</div>
+          <div class="consent-sub">开始之前，请阅读并同意以下条款</div>
+        </div>
+      </div>
+      <div class="consent-body">
+        <p>本软件遵循 <strong>local-first</strong> 设计理念：你的代码、记忆与偏好全部留在本机，不因使用本软件而向作者或任何服务器上传。</p>
+        <div class="consent-list">
+          <button class="consent-item" data-legal>
+            <i data-lucide="file-text"></i>
+            <span class="ci-body"><span class="ci-name">用户服务协议</span><span class="ci-desc">服务边界、许可授予与使用规范</span></span>
+            <i data-lucide="external-link" class="ci-ext"></i>
+          </button>
+          <button class="consent-item" data-legal>
+            <i data-lucide="shield"></i>
+            <span class="ci-body"><span class="ci-name">隐私政策</span><span class="ci-desc">本地优先，不收集任何数据</span></span>
+            <i data-lucide="external-link" class="ci-ext"></i>
+          </button>
+          <button class="consent-item" data-legal>
+            <i data-lucide="alert-triangle"></i>
+            <span class="ci-body"><span class="ci-name">免责声明</span><span class="ci-desc">AI 输出可能出错，须人工审阅</span></span>
+            <i data-lucide="external-link" class="ci-ext"></i>
+          </button>
+        </div>
+      </div>
+      <label class="consent-check" for="consent-checkbox">
+        <input type="checkbox" id="consent-checkbox">
+        <span class="cc-box"><i data-lucide="check"></i></span>
+        <span class="cc-text">我已阅读并同意上述全部条款</span>
+      </label>
+      <div class="consent-actions">
+        <span class="consent-ver" id="consent-ver">条款版本 v0.1.0</span>
+        <button class="consent-btn ghost" id="consent-exit">不同意并退出</button>
+        <button class="consent-btn primary" id="consent-accept" disabled>同意并开始使用</button>
+      </div>
+    </div>
+  </div>
+
   <div id="auth-modal" class="modal hidden">
     <div class="modal-box auth-box">
       <h3 id="auth-title">登录</h3>
@@ -483,6 +525,7 @@
     if (typeof define === 'function' && window.__amdFlag !== undefined) { try { define.amd = window.__amdFlag; } catch (e) {} }
     delete window.__amdFlag;
   </script>
+  <script src="consent.js"></script>
   <script src="core.js"></script>
   <script src="editor/filetree.js"></script>
   <script src="editor/breadcrumb.js"></script>

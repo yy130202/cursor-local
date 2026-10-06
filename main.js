@@ -85,6 +85,9 @@ ipcMain.handle('legal:open', () => {
   w.loadFile(path.join(__dirname, 'renderer', 'legal.html'));
   return true;
 });
+/* 供「不同意条款」等场景优雅退出 */
+ipcMain.handle('app:quit', () => { app.quit(); return true; });
+
 ipcMain.handle('billing:query', (_e, userId) => billing.queryBilling(userId));
 // 窗口全屏切换（F11）
 ipcMain.handle('window:toggleFullscreen', () => {
@@ -148,6 +151,7 @@ function createWindow() {
     if (process.env.TEST_AGENT) testing.runAgentTest();
     else if (process.env.DIAG) testing.runDiag();
     else if (process.env.TEST_LEGAL) testing.runLegalTest();
+    else if (process.env.TEST_CONSENT) testing.runConsentTest();
     else if (process.env.SHOT_MODE) testing.takeScreenshots();
   });
 }

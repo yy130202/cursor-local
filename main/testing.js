@@ -387,7 +387,55 @@ process.on('uncaughtException', (e) => console.error('[uncaughtException]', e));
 
 /* ---------------- 窗口 ---------------- */
 
-  return { takeScreenshots, runAgentTest, runLegalTest, runDiag };
+  /* 同意框专项测试：校验首次运行弹窗、勾选交互与按钮启用逻辑 */
+  async function runConsentTest() {
+    try {
+      await sleep(2000);
+      // 清空同意记录并重载 —— 真实模拟「首次运行」
+      await winRef().webContents.executeJavaScript(
+        `try { localStorage.removeItem('cl_consent'); } catch (e) {}\nlocation.reload();`
+      );
+      await sleep(3000);
+      // 穿过锁屏（正常用户会按任意键/点击进入）
+      await winRef().webContents.executeJavaScript(
+        `(() => { const ls = document.getElementById('lockscreen'); if (ls) ls.click(); })()`
+      );
+      await sleep(900);
+      const r = await winRef().webContents.executeJavaScript(`(async () => {
+        const m = document.getElementById('consent-modal');
+        const cb = document.getElementById('consent-checkbox');
+        const btn = document.getElementById('consent-accept');
+        const exit = document.getElementById('consent-exit');
+        if (!m) return JSON.stringify({ ok: false, err: '弹窗元素不存在' });
+        const out = {
+          ok: true,
+          visible: !m.classList.contains('hidden'),
+          hasCheckbox: !!cb,
+          hasExit: !!exit,
+          btnDisabledBefore: btn ? btn.disabled : null
+        };
+        if (cb) { cb.checked = true; cb.dispatchEvent(new Event('change')); await new Promise(r => setTimeout(r, 200)); }
+        out.btnEnabledAfter = btn ? !btn.disabled : null;
+        return JSON.stringify(out);
+      })()`);
+      console.log('[consent-test]', r);
+      await sleep(400);
+      try {
+        await winRef().webContents.invalidate();
+        await sleep(500);
+        const img = await winRef().webContents.capturePage();
+        const dir = path.join(rootDir, 'screenshots');
+        fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync(path.join(dir, '00-consent.png'), img.toPNG());
+        console.log('[consent-test] 弹窗截图已保存');
+      } catch (e) { console.log('[consent-test] 截图失败', e.message); }
+    } catch (err) {
+      console.log('[consent-test] ERROR', err && err.message);
+    }
+    setTimeout(() => app.quit(), 1000);
+  }
+
+  return { takeScreenshots, runAgentTest, runLegalTest, runDiag, runConsentTest };
 }
 
 module.exports = { createTesting };

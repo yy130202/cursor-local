@@ -1,5 +1,12 @@
 // Cursor Local - 预加载脚本（contextBridge 安全暴露 IPC）
 const { contextBridge, ipcRenderer } = require('electron');
+
+/* 自动化环境标志：截图/测试模式下不弹协议同意框，避免遮挡与阻塞 */
+contextBridge.exposeInMainWorld('__ENV__', {
+  shotMode: !!process.env.SHOT_MODE,
+  testMode: !!process.env.TEST_AGENT || !!process.env.TEST_LEGAL || !!process.env.DIAG,
+  keepConsent: !!process.env.TEST_CONSENT   // 同意框专项测试：保留弹窗不自动跳过
+});
 const path = require('path');
 
 contextBridge.exposeInMainWorld('api', {
@@ -8,6 +15,7 @@ contextBridge.exposeInMainWorld('api', {
   listArchive: (f) => ipcRenderer.invoke('fs:listArchive', f),
   openExternal: (f) => ipcRenderer.invoke('fs:openExternal', f),
   openLegal: () => ipcRenderer.invoke('legal:open'),
+  quit: () => ipcRenderer.invoke('app:quit'),
   readFile: (p) => ipcRenderer.invoke('fs:readFile', p),
   writeFile: (p, c) => ipcRenderer.invoke('fs:writeFile', p, c),
   createFile: (p) => ipcRenderer.invoke('fs:createFile', p),
