@@ -10,6 +10,8 @@
     "test": "node --test test/*.test.js",
     "test:unit": "node --test test/*.test.js",
     "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=modules/agent.js --test-coverage-include=modules/agent/tools.js --test-coverage-include=modules/config.js --test-coverage-include=modules/session.js --test-coverage-include=store/user-store.js test/*.test.js",
+    "test:coverage:perf": "node --test --experimental-test-coverage --test-coverage-include=modules/git.js --test-coverage-include=modules/fs.js test/git.test.js test/fs-grep.test.js",
+    "test:perf": "node --test test/agents-render.test.js test/filetree-gitmark.test.js test/fs-grep.test.js test/git.test.js",
     "test:agent": "node test-agent.js"
   },
   "dependencies": {

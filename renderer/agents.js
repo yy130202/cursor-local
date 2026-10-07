@@ -58,7 +58,17 @@ function closeStreaming(a) {
   const last = a.entries[a.entries.length - 1];
   if (last && last.streaming) last.streaming = false;
   a.__streamNode = null;
+  a.__streamNodeEntry = null;
+  a.__streamLen = 0;
+  a.__liveEntry = null;
+  a.__liveCard = null;
 }
+
+/* 帧节流：把高频 DOM 写入合并到下一帧（cmd_delta / 流式追加），
+   避免每个 token 都触发一次布局。退化环境无 rAF 时退回 setTimeout。 */
+const scheduleFrame = typeof requestAnimationFrame === 'function'
+  ? (fn) => requestAnimationFrame(fn)
+  : (fn) => setTimeout(fn, 16);
 
 /* ---- 运行时长表盘（UI 灵感风：SVG 圆环） ---- */
 let dialTimer = null, dialAgentId = null;
@@ -232,23 +242,56 @@ function statusLabel(s) {
   return { running: '运行中', done: '已完成', error: '出错', stopped: '已停止' }[s] || s;
 }
 
+/* Agent 列表：按签名增量更新（原先每个事件都全量重建 40 个节点，
+   并级联 renderHistory —— 历史列表与 agent 事件无关，纯属浪费）。
+   签名：task + cwd + status + 是否选中。任一变化才重建该行。 */
+function agentItemSig(a) {
+  return a.task + '' + a.cwd + '' + a.status + '' + (a.id === agentsState.selectedId ? '1' : '0');
+}
+
 function renderAgentList() {
   const list = [...agentsState.agents.values()].reverse();
-  agentListEl.innerHTML = '';
-  for (const a of list) {
-    const el = document.createElement('div');
-    el.className = 'agent-item' + (a.id === agentsState.selectedId ? ' selected' : '');
-    el.innerHTML =
-      '<div class="row1">' +
-        '<span class="dot ' + a.status + '"></span>' +
-        '<span class="title">' + CL.util.escapeHtml(a.task || '（未命名任务）') + '</span>' +
-      '</div>' +
-      '<div class="cwd">' + CL.util.escapeHtml(a.cwd) + '</div>';
-    el.onclick = () => selectAgent(a.id);
-    agentListEl.appendChild(el);
+  const items = agentsState.__listItems || (agentsState.__listItems = []);
+  // 数量变化 → 增删尾部节点；数量不变 → 逐行按签名复用
+  for (let i = list.length; i < items.length; i++) {
+    if (items[i]) items[i].remove();
   }
-  agentsEmptyEl.style.display = list.length ? 'none' : 'flex';
-  renderHistory();
+  items.length = list.length;
+  let structural = false;
+  for (let i = 0; i < list.length; i++) {
+    const a = list[i];
+    const sig = agentItemSig(a);
+    let el = items[i];
+    if (el && el.__sig !== sig && el.isConnected) {
+      el.innerHTML =
+        '<div class="row1">' +
+          '<span class="dot ' + a.status + '"></span>' +
+          '<span class="title">' + CL.util.escapeHtml(a.task || '（未命名任务）') + '</span>' +
+        '</div>' +
+        '<div class="cwd">' + CL.util.escapeHtml(a.cwd) + '</div>';
+      el.__sig = sig;
+      if (el.__id !== a.id) { el.__id = a.id; el.onclick = () => selectAgent(el.__id); }
+    } else if (!el) {
+      el = document.createElement('div');
+      el.className = 'agent-item';
+      el.innerHTML =
+        '<div class="row1">' +
+          '<span class="dot ' + a.status + '"></span>' +
+          '<span class="title">' + CL.util.escapeHtml(a.task || '（未命名任务）') + '</span>' +
+        '</div>' +
+        '<div class="cwd">' + CL.util.escapeHtml(a.cwd) + '</div>';
+      el.__sig = sig;
+      el.__id = a.id;
+      el.onclick = () => selectAgent(el.__id);
+      agentListEl.appendChild(el);
+      items[i] = el;
+      structural = true;
+    }
+    const wantCls = 'agent-item' + (a.id === agentsState.selectedId ? ' selected' : '');
+    if (el.className !== wantCls) el.className = wantCls;
+  }
+  const emptyDisp = list.length ? 'none' : 'flex';
+  if (agentsEmptyEl.style.display !== emptyDisp) agentsEmptyEl.style.display = emptyDisp;
 }
 
 function selectAgent(id) {
@@ -265,7 +308,20 @@ function argsSummary(name, args) {
 }
 
 /* ---- 行级 diff（LCS）---- */
+/* 记忆化：同一份 before/after 反复重建卡片时避免重算 O(n·m) LCS。
+   以内容本身为键（变更卡内容不会原地改写），容量上限 24 条，超出按插入顺序淘汰。 */
+const diffCache = new Map();
 function lineDiff(before, after) {
+  const key = (before == null ? '' : before) + '\u0001' + (after == null ? '' : after);
+  const hit = diffCache.get(key);
+  if (hit) return hit;
+  const r = computeLineDiff(before, after);
+  if (diffCache.size >= 24) diffCache.delete(diffCache.keys().next().value);
+  diffCache.set(key, r);
+  return r;
+}
+
+function computeLineDiff(before, after) {
   const a = (before == null ? '' : before).split('\n');
   const b = (after == null ? '' : after).split('\n');
   if (a.length > 500 || b.length > 500) {
@@ -273,17 +329,20 @@ function lineDiff(before, after) {
     return { tooBig: true, before: a, after: b };
   }
   const n = a.length, m = b.length;
-  const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  // 扁平 Int32Array 存 DP 表：与二维数组同算法同结果，但内存连续、分配更快
+  const w = m + 1;
+  const dp = new Int32Array((n + 1) * w);
   for (let i = n - 1; i >= 0; i--) {
+    const row = i * w, next = row + w;
     for (let j = m - 1; j >= 0; j--) {
-      dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+      dp[row + j] = a[i] === b[j] ? dp[next + j + 1] + 1 : Math.max(dp[next + j], dp[row + j + 1]);
     }
   }
   const out = [];
   let i = 0, j = 0;
   while (i < n && j < m) {
     if (a[i] === b[j]) { out.push({ t: 'same', x: a[i] }); i++; j++; }
-    else if (dp[i + 1][j] >= dp[i][j + 1]) { out.push({ t: 'del', x: a[i] }); i++; }
+    else if (dp[(i + 1) * w + j] >= dp[i * w + j + 1]) { out.push({ t: 'del', x: a[i] }); i++; }
     else { out.push({ t: 'add', x: b[j] }); j++; }
   }
   while (i < n) out.push({ t: 'del', x: a[i++] });
@@ -337,131 +396,210 @@ function buildChangeCard(en, a) {
   return card;
 }
 
+/* ---- 渲染 ----
+ *
+ * 增量策略：每个 entry 用「渲染签名」判断是否需要重建 DOM。
+ *  - sigOf(entry) 覆盖该类型 entry 的全部可见状态（result / live / reverted / resolved / 文本）；
+ *  - 签名一致 → 直接复用已渲染节点，跳过 miniMarkdown、事件重绑与 diff 重算；
+ *  - 签名变化 → 只重建这一个节点，并原地 replaceChild 保持位置（不产生滚动跳动）。
+ * 对照原实现：原先每个非流式事件都会 innerHTML='' 重建整棵 transcript，
+ * 现在 tool_result / change / approval 等事件只触碰受影响的那一个卡片。
+ */
+function sigOf(en) {
+  switch (en.kind) {
+    case 'user': return 'u:' + en.text;
+    case 'agent-msg': return 'm:' + (en.streaming ? '1' : '0') + ':' + en.text;
+    case 'tool': return 't:' + en.name + ':' + (en.result ? 1 : 0) + ':' + (en.live ? en.live.length : 0);
+    case 'approval': return 'a:' + (en.resolved ? (en.allowed ? '1' : '0') : 'p');
+    case 'change': return 'c:' + (en.reverted ? '1' : '0');
+    case 'error': return 'e:' + en.text;
+    default: return 'x:' + en.kind;
+  }
+}
+
+/* 构造单个 entry 的 DOM 节点；needStreamNode 标记流式消息节点供增量追加复用 */
+function buildEntryNode(en, isLast) {
+  const inCls = isLast ? ' entry-in' : ''; // 仅最新消息播放入场动效，避免整树重播
+  const d = document.createElement('div');
+  if (en.kind === 'user') {
+    // Cursor 式用户气泡
+    d.className = 'entry user-row' + inCls;
+    d.innerHTML = '<div class="user-bubble">' + CL.util.escapeHtml(en.text) + '</div>';
+    return { node: d };
+  }
+  if (en.kind === 'agent-msg') {
+    d.className = 'entry entry-text agent-msg' + (en.streaming ? ' streaming' : '') + inCls;
+    const body = en.streaming ? CL.util.escapeHtml(en.text) : miniMarkdown(en.text);
+    d.innerHTML = '<span class="who">Agent</span><span class="body">' + body + (en.streaming ? '<span class="caret">▍</span>' : '') + '</span>';
+    // 代码块复制按钮
+    d.querySelectorAll('.md-copy').forEach((b) => {
+      b.onclick = (e) => {
+        e.stopPropagation();
+        try { navigator.clipboard.writeText(decodeURIComponent(b.dataset.code)); flashStatus('已复制代码'); }
+        catch { /* ignore */ }
+      };
+    });
+    return { node: d, needStreamNode: !!en.streaming };
+  }
+  if (en.kind === 'tool') {
+    d.className = 'entry' + inCls;
+    const card = document.createElement('div');
+    card.className = 'tool-card';
+    const summary = CL.util.escapeHtml(argsSummary(en.name, en.args));
+    const rSummary = en.result ? toolResultSummary(en.name, en.result)
+      : (en.live ? CL.util.escapeHtml(en.live.slice(-200)) : '');
+    card.innerHTML =
+      '<div class="head">' +
+        '<span class="tag ' + en.name + '">' + (window.lucideIcon(toolIconName(en.name)) || '') + en.name + '</span>' +
+        '<span class="args">' + summary + '</span>' +
+        '<span class="tw ' + (en.result ? (en.result.startsWith('ERROR') || en.result.includes('拦截') ? 'err' : 'ok') : 'wait') + '">' +
+          (en.result ? (en.result.startsWith('ERROR') || en.result.includes('拦截') ? (window.lucideIcon('circle-x') || '') : (window.lucideIcon('circle-check') || '')) : (window.lucideIcon('loader-circle') || '')) +
+        '</span>' +
+      '</div>' +
+      (rSummary ? '<div class="tool-result">' + rSummary + '</div>' : '') +
+      '<pre>' + CL.util.escapeHtml(
+        '参数:\n' + JSON.stringify(en.args || {}, null, 2) +
+        (en.result ? '\n\n结果:\n' + en.result : '')
+      ) + '</pre>';
+    card.querySelector('.head').onclick = () => card.classList.toggle('open');
+    const trEl = card.querySelector('.tool-result');
+    if (trEl) trEl.onclick = () => card.classList.toggle('open');
+    d.appendChild(card);
+    return { node: d };
+  }
+  if (en.kind === 'approval') {
+    // 手动审批确认卡（参考 CodeBuddy 三档权限）
+    d.className = 'entry approval-card' + (en.resolved ? ' resolved' : '') + inCls;
+    d.innerHTML =
+      '<div class="ap-head"><span class="ap-ico">⏳</span>待审批 · ' + CL.util.escapeHtml(en.tool) + '</div>' +
+      '<pre class="ap-args">' + CL.util.escapeHtml(JSON.stringify(en.args || {}, null, 2).slice(0, 400)) + '</pre>' +
+      (en.resolved
+        ? '<div class="ap-state ' + (en.allowed ? 'ok' : 'deny') + '">' + (en.allowed ? '✓ 已允许执行' : '✖ 已拒绝') + '</div>'
+        : '<div class="ap-actions"><button class="ap-allow">允许执行</button><button class="ap-deny">拒绝</button></div>');
+    if (!en.resolved) {
+      d.querySelector('.ap-allow').onclick = () => { en.resolved = true; en.allowed = true; window.api.agentApproval(en.callId, true); renderTranscript(); };
+      d.querySelector('.ap-deny').onclick = () => { en.resolved = true; en.allowed = false; window.api.agentApproval(en.callId, false); renderTranscript(); };
+    }
+    return { node: d };
+  }
+  if (en.kind === 'change') {
+    d.className = 'entry' + inCls;
+    d.appendChild(buildChangeCard(en, null));
+    return { node: d };
+  }
+  if (en.kind === 'error') {
+    d.className = 'entry entry-error' + inCls;
+    d.innerHTML = '<span class="err-ico">' + (window.lucideIcon('alert-triangle') || '') + '</span> ' + CL.util.escapeHtml(en.text);
+    return { node: d };
+  }
+  d.className = 'entry' + inCls;
+  return { node: d };
+}
+
 function renderTranscript() {
   const a = agentsState.agents.get(agentsState.selectedId);
-  transcriptEl.innerHTML = '';
+  // 切换会话（或首次）→ 整体重建一次；同一会话内走增量路径
+  if (transcriptEl.__agentId !== agentsState.selectedId) {
+    transcriptEl.innerHTML = '';
+    transcriptEl.__agentId = a ? agentsState.selectedId : null;
+  }
   if (!a) return;
+
   mainHeadEl.classList.remove('hidden');
-  document.getElementById('agent-head-task').textContent = a.task;
-  document.getElementById('agent-head-dot').className = 'dot ' + a.status;
+  const headTask = document.getElementById('agent-head-task');
+  if (headTask.textContent !== a.task) headTask.textContent = a.task;
+  const headDot = document.getElementById('agent-head-dot');
+  const headDotCls = 'dot ' + a.status;
+  if (headDot.className !== headDotCls) headDot.className = headDotCls;
   const badge = document.getElementById('agent-head-status');
-  badge.textContent = statusLabel(a.status);
+  const badgeTxt = statusLabel(a.status);
+  if (badge.textContent !== badgeTxt) badge.textContent = badgeTxt;
   // 运行时长表盘
   if (a.status === 'running') startDial(a); else stopDial(a.status === 'done');
-  document.getElementById('agent-stop-btn').style.display =
-    (a.status === 'running' && !a.readonly) ? '' : 'none';
+  const stopBtn = document.getElementById('agent-stop-btn');
+  const stopDisp = (a.status === 'running' && !a.readonly) ? '' : 'none';
+  if (stopBtn.style.display !== stopDisp) stopBtn.style.display = stopDisp;
 
-  for (let i = 0; i < a.entries.length; i++) {
-    const en = a.entries[i];
-    const isLast = i === a.entries.length - 1;
-    const inCls = isLast ? ' entry-in' : ''; // 仅最新消息播放入场动效，避免整树重播
-    if (en.kind === 'user') {
-      // Cursor 式用户气泡
-      const d = document.createElement('div');
-      d.className = 'entry user-row' + inCls;
-      d.innerHTML = '<div class="user-bubble">' + CL.util.escapeHtml(en.text) + '</div>';
-      transcriptEl.appendChild(d);
-    } else if (en.kind === 'agent-msg') {
-      const d = document.createElement('div');
-      d.className = 'entry entry-text agent-msg' + (en.streaming ? ' streaming' : '') + inCls;
-      const body = en.streaming ? CL.util.escapeHtml(en.text) : miniMarkdown(en.text);
-      d.innerHTML = '<span class="who">Agent</span><span class="body">' + body + (en.streaming ? '<span class="caret">▍</span>' : '') + '</span>';
-      transcriptEl.appendChild(d);
-      if (en.streaming) a.__streamNode = d; // 记录流式节点，供增量更新
-      // 代码块复制按钮
-      d.querySelectorAll('.md-copy').forEach((b) => {
-        b.onclick = (e) => {
-          e.stopPropagation();
-          try { navigator.clipboard.writeText(decodeURIComponent(b.dataset.code)); flashStatus('已复制代码'); }
-          catch { /* ignore */ }
-        };
-      });
-    } else if (en.kind === 'tool') {
-      const d = document.createElement('div');
-      d.className = 'entry' + inCls;
-      const card = document.createElement('div');
-      card.className = 'tool-card';
-      const summary = CL.util.escapeHtml(argsSummary(en.name, en.args));
-      const rSummary = en.result ? toolResultSummary(en.name, en.result)
-        : (en.live ? CL.util.escapeHtml(en.live.slice(-200)) : '');
-      card.innerHTML =
-        '<div class="head">' +
-          '<span class="tag ' + en.name + '">' + (window.lucideIcon(toolIconName(en.name)) || '') + en.name + '</span>' +
-          '<span class="args">' + summary + '</span>' +
-          '<span class="tw ' + (en.result ? (en.result.startsWith('ERROR') || en.result.includes('拦截') ? 'err' : 'ok') : 'wait') + '">' +
-            (en.result ? (en.result.startsWith('ERROR') || en.result.includes('拦截') ? (window.lucideIcon('circle-x') || '') : (window.lucideIcon('circle-check') || '')) : (window.lucideIcon('loader-circle') || '')) +
-          '</span>' +
-        '</div>' +
-        (rSummary ? '<div class="tool-result">' + rSummary + '</div>' : '') +
-        '<pre>' + CL.util.escapeHtml(
-          '参数:\n' + JSON.stringify(en.args || {}, null, 2) +
-          (en.result ? '\n\n结果:\n' + en.result : '')
-        ) + '</pre>';
-      card.querySelector('.head').onclick = () => card.classList.toggle('open');
-      const trEl = card.querySelector('.tool-result');
-      if (trEl) trEl.onclick = () => card.classList.toggle('open');
-      d.appendChild(card);
-      transcriptEl.appendChild(d);
-    } else if (en.kind === 'approval') {
-      // 手动审批确认卡（参考 CodeBuddy 三档权限）
-      const d = document.createElement('div');
-      d.className = 'entry approval-card' + (en.resolved ? ' resolved' : '') + inCls;
-      d.innerHTML =
-        '<div class="ap-head"><span class="ap-ico">⏳</span>待审批 · ' + CL.util.escapeHtml(en.tool) + '</div>' +
-        '<pre class="ap-args">' + CL.util.escapeHtml(JSON.stringify(en.args || {}, null, 2).slice(0, 400)) + '</pre>' +
-        (en.resolved
-          ? '<div class="ap-state ' + (en.allowed ? 'ok' : 'deny') + '">' + (en.allowed ? '✓ 已允许执行' : '✖ 已拒绝') + '</div>'
-          : '<div class="ap-actions"><button class="ap-allow">允许执行</button><button class="ap-deny">拒绝</button></div>');
-      if (!en.resolved) {
-        d.querySelector('.ap-allow').onclick = () => { en.resolved = true; en.allowed = true; window.api.agentApproval(en.callId, true); renderTranscript(); };
-        d.querySelector('.ap-deny').onclick = () => { en.resolved = true; en.allowed = false; window.api.agentApproval(en.callId, false); renderTranscript(); };
-      }
-      transcriptEl.appendChild(d);
-    } else if (en.kind === 'change') {
-      const d = document.createElement('div');
-      d.className = 'entry' + inCls;
-      d.appendChild(buildChangeCard(en, a));
-      transcriptEl.appendChild(d);
-    } else if (en.kind === 'error') {
-      const d = document.createElement('div');
-      d.className = 'entry entry-error' + inCls;
-      d.innerHTML = '<span class="err-ico">' + (window.lucideIcon('alert-triangle') || '') + '</span> ' + CL.util.escapeHtml(en.text);
-      transcriptEl.appendChild(d);
-    }
+  // 思考指示器：先摘除（保证 entry 节点顺序稳定），条件成立时再挂回末尾
+  const lastEntry = a.entries.length ? a.entries[a.entries.length - 1] : null;
+  const wantThink = a.status === 'running' && !a.readonly && !(lastEntry && lastEntry.streaming);
+  if (a.__thinkTimer) { clearInterval(a.__thinkTimer); a.__thinkTimer = null; }
+  if (a.__thinkNode) {
+    if (a.__thinkNode.isConnected) a.__thinkNode.remove();
+    a.__thinkNode = null;
+    a.__thinkKey = null;
   }
+
+  const entries = a.entries;
+  const nodes = a.__nodes || (a.__nodes = []);
+  // 状态事件会截断 entries 头部（>200 保留尾部），节点数组同步丢弃对应前缀
+  if (nodes.length > entries.length) {
+    for (let i = entries.length; i < nodes.length; i++) {
+      if (nodes[i] && nodes[i].node && nodes[i].node.parentNode) nodes[i].node.parentNode.removeChild(nodes[i].node);
+    }
+    nodes.length = entries.length;
+    a.__nodes = null; // 前缀截断后下标已错位，强制下一帧整体重建
+    return renderTranscript();
+  }
+
+  const prevLastNode = entries.length ? (nodes[entries.length - 1] && nodes[entries.length - 1].node) : null;
+  let appended = 0;
+  for (let i = 0; i < entries.length; i++) {
+    const en = entries[i];
+    const sig = sigOf(en);
+    const slot = nodes[i];
+    if (slot && slot.sig === sig && slot.node && slot.node.isConnected) {
+      if (en.streaming) { a.__streamNode = slot.node; a.__streamNodeEntry = en; }
+      continue;
+    }
+    const built = buildEntryNode(en, i === entries.length - 1);
+    const node = built.node;
+    if (slot && slot.node && slot.node.parentNode) {
+      // 原地替换：保留位置，避免重新 append 造成的滚动跳动
+      slot.node.parentNode.replaceChild(node, slot.node);
+    } else {
+      transcriptEl.appendChild(node);
+    }
+    nodes[i] = { sig, node };
+    appended++;
+    if (built.needStreamNode) { a.__streamNode = node; a.__streamNodeEntry = en; }
+  }
+
+  // 入场动效只给最新一条：新增节点后把上一条的 entry-in 摘掉
+  if (appended > 0 && entries.length) {
+    if (prevLastNode && prevLastNode !== nodes[entries.length - 1].node) prevLastNode.classList.remove('entry-in');
+  }
+
   // 思考指示器：运行中且非流式打字时，显示三点跳动（AI 思考中）
-  if (a.status === 'running' && !a.readonly) {
-    const last = a.entries[a.entries.length - 1];
-    if (!last || !last.streaming) {
-      clearInterval(a.__thinkTimer);
+  if (wantThink) {
+    // 正在执行工具 → 显示工具名；否则轮播思考阶段文案
+    const toolLabel = (lastEntry && lastEntry.kind === 'tool' && !lastEntry.result) ? lastEntry.name : '';
+    const t = document.createElement('div');
+    t.className = 'thinking entry-in';
+    t.innerHTML =
+      '<div class="th-orbit"><span class="th-core"></span></div>' +
+      '<div class="th-main">' +
+        '<div class="th-label">' +
+          (toolLabel
+            ? '<span class="th-tool">' + CL.util.escapeHtml(toolLabel) + '</span>'
+            : '<span class="th-phase">正在分析</span><span class="th-shimmer">…</span>') +
+        '</div>' +
+        (a.__reasoning ? '<div class="th-reason streaming">' + CL.util.escapeHtml(a.__reasoning) + '</div>' : '') +
+      '</div>';
+    transcriptEl.appendChild(t);
+    a.__thinkNode = t;
+    if (!toolLabel) {
       let ti = 0;
-      const t = document.createElement('div');
-      t.className = 'thinking entry-in';
-      // 正在执行工具 → 显示工具名；否则轮播思考阶段文案
-      let toolLabel = '';
-      if (last && last.kind === 'tool' && !last.result) toolLabel = last.name;
-      t.innerHTML =
-        '<div class="th-orbit"><span class="th-core"></span></div>' +
-        '<div class="th-main">' +
-          '<div class="th-label">' +
-            (toolLabel
-              ? '<span class="th-tool">' + CL.util.escapeHtml(toolLabel) + '</span>'
-              : '<span class="th-phase">正在分析</span><span class="th-shimmer">…</span>') +
-          '</div>' +
-          (a.__reasoning ? '<div class="th-reason streaming">' + CL.util.escapeHtml(a.__reasoning) + '</div>' : '') +
-        '</div>';
-      transcriptEl.appendChild(t);
-      if (!toolLabel) {
-        a.__thinkTimer = setInterval(() => {
-          const el = t.querySelector('.th-phase');
-          if (!el || !el.isConnected) { clearInterval(a.__thinkTimer); return; }
-          ti = (ti + 1) % THINK_PHASES.length;
-          el.textContent = THINK_PHASES[ti];
-        }, 2600);
-      }
+      a.__thinkTimer = setInterval(() => {
+        const el = t.querySelector('.th-phase');
+        if (!el || !el.isConnected) { clearInterval(a.__thinkTimer); a.__thinkTimer = null; return; }
+        ti = (ti + 1) % THINK_PHASES.length;
+        el.textContent = THINK_PHASES[ti];
+      }, 2600);
     }
   }
-  transcriptEl.scrollTop = transcriptEl.scrollHeight;
+
+  if (appended > 0) transcriptEl.scrollTop = transcriptEl.scrollHeight;
 }
 
 /* ---- 历史会话（时间分组：今天 / 昨天 / 本周 / 更早） ---- */

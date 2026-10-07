@@ -76,7 +76,12 @@
     // 同步 git 状态缓存 → 文件树着色
     window.__gitStatusMap = new Map();
     [...r.staged, ...r.unstaged].forEach((f) => window.__gitStatusMap.set(f.file, { status: f.status, staged: f.staged }));
-    if (typeof renderTree === 'function') CL.editor.filetree.render();
+    // 重建文件树用的祖先目录集合（否则 gitMarkOf 会退化为逐目录遍历全表）
+    if (CL.editor.filetree.invalidateGitMarks) CL.editor.filetree.invalidateGitMarks();
+    // 注意：renderTree 是 filetree.js 的模块内私有函数，不是全局，
+    // 原先 `typeof renderTree === 'function'` 恒为 false，导致 git 刷新后文件树从不重绘。
+    // 这里改走已导出的 CL.editor.filetree.render()。
+    if (CL.editor.filetree && CL.editor.filetree.render) CL.editor.filetree.render();
     if (viewMode === 'changes') renderList(r);
   }
 

@@ -11,17 +11,34 @@
 
 /* ---- 文件树 ---- */
 let treeRenderSeq = 0;
+/* 每次 renderTree 的共享目录读取缓存：同一目录在过滤判定与实际渲染中
+   往往被读两次（dirHasMatch 一次、renderDir 一次），缓存后省掉一半 IPC。
+   生命周期仅限单次渲染，不做跨渲染缓存，避免文件变更后读到陈旧内容。 */
+let treeDirCache = null;
+
 function currentTreeFilter() {
   const el = document.getElementById('tree-filter');
   return el ? el.value.trim().toLowerCase() : '';
+}
+async function readDirCached(dirPath) {
+  if (!treeDirCache) return window.api.readDir(dirPath);
+  if (!treeDirCache.has(dirPath)) {
+    treeDirCache.set(dirPath, await window.api.readDir(dirPath));
+  }
+  return treeDirCache.get(dirPath);
 }
 async function renderTree() {
   const seq = ++treeRenderSeq;
   const tree = document.getElementById('filetree');
   if (!EditorState.currentFolder) return;
   tree.innerHTML = '';
+  treeDirCache = new Map();
   const filter = currentTreeFilter();
-  await renderDir(EditorState.currentFolder, tree, 0, seq, filter);
+  try {
+    await renderDir(EditorState.currentFolder, tree, 0, seq, filter);
+  } finally {
+    treeDirCache = null;
+  }
 }
 
 /* 轻量更新选中高亮（点文件时用，避免整树重建导致滚动跳动） */
@@ -30,11 +47,12 @@ function updateTreeActive() {
   rows.forEach((r) => r.classList.toggle('active', r.dataset.path === EditorState.activePath));
 }
 
-/* 目录是否含匹配过滤词的文件（递归，限深） */
+/* 目录是否含匹配过滤词的文件（递归，限深）
+   用 readDirCached 复用同一次渲染中已读过的目录，避免重复 IPC 往返。 */
 async function dirHasMatch(dirPath, filter, depth = 0) {
   if (depth > 6) return false;
   let entries;
-  try { entries = await window.api.readDir(dirPath); } catch { return false; }
+  try { entries = await readDirCached(dirPath); } catch { return false; }
   for (const ent of entries) {
     if (ent.isDir) { if (await dirHasMatch(ent.path, filter, depth + 1)) return true; }
     else if (ent.name.toLowerCase().includes(filter)) return true;
@@ -43,7 +61,7 @@ async function dirHasMatch(dirPath, filter, depth = 0) {
 }
 
 async function renderDir(dirPath, container, depth, seq, filter) {
-  const entries = await window.api.readDir(dirPath);
+  const entries = await readDirCached(dirPath);
   if (seq !== treeRenderSeq) return; // 已被更新的渲染取代，丢弃过期结果
   const BATCH = 50; // 每帧渲染条数，避免大目录一次性 append 卡顿
   for (let i = 0; i < entries.length; i++) {
@@ -103,15 +121,41 @@ function relTreePath(absPath) {
   if (!cwd || !absPath.startsWith(cwd)) return absPath.replace(/\\/g, '/');
   return absPath.slice(cwd.length + 1).replace(/\\/g, '/');
 }
+
+/* 目录 git 标记的祖先集合：gitStatusMap 每次刷新后调用一次，
+   把所有变更文件的所有祖先目录收集成 Set，查询由 O(变更数) 降为 O(1)。
+   原实现对每个目录 entry 遍历整个 map.keys()，大仓库下是 O(目录数 × 变更数)。 */
+function buildGitDirSet() {
+  const map = window.__gitStatusMap;
+  const set = new Set();
+  if (!map || !map.size) return set;
+  for (const key of map.keys()) {
+    // 逐级收集祖先：a/b/c.ts → a, a/b
+    let i = key.indexOf('/');
+    while (i >= 0) {
+      set.add(key.slice(0, i));
+      i = key.indexOf('/', i + 1);
+    }
+  }
+  return set;
+}
+
+/* 供 git 面板在设置 __gitStatusMap 后调用，刷新派生缓存 */
+function invalidateGitMarks() {
+  gitDirSet = buildGitDirSet();
+  gitDirSetFor = window.__gitStatusMap;
+}
+let gitDirSet = new Set();
+let gitDirSetFor = null;
+
 function gitMarkOf(absPath, isDir) {
   const map = window.__gitStatusMap;
   if (!map || !map.size) return null;
   const rel = relTreePath(absPath);
   if (isDir) {
-    // 目录：任一子文件有变更 → 标记 modified 样式圆点
-    for (const key of map.keys()) {
-      if (key === rel || key.startsWith(rel + '/')) return { ch: '●', cls: 'm' };
-    }
+    // 目录：任一子文件有变更 → 标记 modified 样式圆点（Set O(1) 查询）
+    if (gitDirSetFor !== map) invalidateGitMarks();
+    if (gitDirSet.has(rel) || map.has(rel)) return { ch: '●', cls: 'm' };
     return null;
   }
   const hit = map.get(rel);
@@ -206,6 +250,7 @@ function startInlineCreate(dirPath, isDir) {
     updateActive: updateTreeActive,
     relPath: relTreePath,
     gitMark: gitMarkOf,
+    invalidateGitMarks: invalidateGitMarks,
     startCreate: startInlineCreate,
     startRename: startInlineRename
   };

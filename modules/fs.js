@@ -4,6 +4,9 @@ const fsp = require('fs').promises;
 const { dialog, shell } = require('electron');
 const { spawn } = require('child_process');
 
+/* 全局搜索的并发上限：同时在飞的 stat/readFile 数量 */
+const CONC_GREP = 8;
+
 /* 压缩包内容列表：用系统 tar（Windows 10+ 自带 bsdtar，支持 zip/tar/gz/bz2/xz） */
 function listArchive(file, timeoutMs = 60000) {
   return new Promise((resolve) => {
@@ -74,34 +77,74 @@ function registerFs(ipcMain, { winRef, addLog, loadConfig, saveConfig }) {
     return listArchive(filePath);
   });
 
-  /* 全局搜索：递归 grep（跳过 node_modules/.git，限制规模） */
+  /* 全局搜索：递归 grep（跳过 node_modules/.git，限制规模）
+     原为纯串行 walk —— 每个文件都 await stat + readFile，磁盘 I/O 串行排队。
+     改为「固定大小分块并发 + 块内按序提交」：
+       · 块内并发读（块大小 = CONC_GREP），块与块之间串行；
+       · 块的 Promise.all 天然按输入顺序返回，故按序合并即可保证结果顺序
+         与改造前「按 readdir 序逐文件串行」完全一致；
+       · maxResults 在块级边界检查，命中上限不会被并发越界。 */
   ipcMain.handle('search:grep', async (_e, { folder, pattern }) => {
     if (!folder || !pattern) return [];
     const results = [];
     const maxResults = 500;
+    const maxDepth = 10;
+    const maxFileBytes = 500000;
     const needle = String(pattern).toLowerCase();
+    const SKIP = new Set(['node_modules', '.git', 'dist', '.test-sessions']);
+
+    // 扫描单个文件，返回其命中行数组（不直接写 results，保证提交顺序可控）
+    async function scanFile(p) {
+      try {
+        const stat = await fsp.stat(p);
+        if (stat.size > maxFileBytes) return [];
+        const content = await fsp.readFile(p, 'utf8');
+        const lines = content.split('\n');
+        const hits = [];
+        for (let i = 0; i < lines.length; i++) {
+          const idx = lines[i].toLowerCase().indexOf(needle);
+          if (idx >= 0) {
+            hits.push({ file: path.relative(folder, p), line: i + 1, col: idx + 1, text: lines[i].slice(0, 200) });
+            if (hits.length >= maxResults) break;
+          }
+        }
+        return hits;
+      } catch {
+        return []; // 忽略二进制/读取失败/无权限
+      }
+    }
+
+    // 分块并发处理一批文件：块内 Promise.all 保序，块间串行
+    async function scanFilesOrdered(files) {
+      for (let start = 0; start < files.length && results.length < maxResults; start += CONC_GREP) {
+        const chunk = files.slice(start, start + CONC_GREP);
+        const chunkHits = await Promise.all(chunk.map(scanFile)); // 按 chunk 顺序返回
+        for (const hits of chunkHits) {
+          for (const h of hits) {
+            if (results.length >= maxResults) return;
+            results.push(h);
+          }
+        }
+      }
+    }
+
     async function walk(dir, depth) {
-      if (results.length >= maxResults || depth > 10) return;
+      if (results.length >= maxResults || depth > maxDepth) return;
       let entries;
       try { entries = await fsp.readdir(dir, { withFileTypes: true }); } catch { return; }
+      const files = [];
+      const subdirs = [];
       for (const ent of entries) {
         if (results.length >= maxResults) return;
-        if (ent.name === 'node_modules' || ent.name === '.git' || ent.name === 'dist' || ent.name === '.test-sessions') continue;
+        if (SKIP.has(ent.name)) continue;
         const p = path.join(dir, ent.name);
-        if (ent.isDirectory()) { await walk(p, depth + 1); continue; }
-        try {
-          const stat = await fsp.stat(p);
-          if (stat.size > 500000) continue;
-          const content = await fsp.readFile(p, 'utf8');
-          const lines = content.split('\n');
-          for (let i = 0; i < lines.length; i++) {
-            const idx = lines[i].toLowerCase().indexOf(needle);
-            if (idx >= 0) {
-              results.push({ file: path.relative(folder, p), line: i + 1, col: idx + 1, text: lines[i].slice(0, 200) });
-              if (results.length >= maxResults) return;
-            }
-          }
-        } catch { /* 忽略二进制/读取失败 */ }
+        if (ent.isDirectory()) subdirs.push(p);
+        else files.push(p);
+      }
+      if (files.length) await scanFilesOrdered(files);
+      for (const sd of subdirs) {
+        if (results.length >= maxResults) return;
+        await walk(sd, depth + 1);
       }
     }
     await walk(folder, 0);

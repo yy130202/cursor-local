@@ -81,13 +81,30 @@ function createGitModule({ winRef, addLog }) {
     return map;
   }
 
-  async function gitStatus(cwd) {
-    const r = await runGit(cwd, ['status', '--porcelain', '-b']);
+  /* git status 短 TTL 缓存：git 面板刷新、文件树着色、gutter 标记会在很短时间内
+     反复请求同一仓库状态。每次真实计算要起 3 个 git 子进程，代价不小。
+     TTL 极短（默认 1200ms），只用于吸收同一波操作里的重复请求；
+     任何写操作（stage/commit/checkout/pull/…）都会立即失效缓存。 */
+  const STATUS_TTL_MS = 1200;
+  const statusCache = new Map(); // cwd -> { at, promise, value }
+
+  function invalidateStatus(cwd) {
+    if (cwd) statusCache.delete(cwd);
+    else statusCache.clear();
+  }
+
+  async function gitStatusUncached(cwd) {
+    // 三个命令相互无依赖，并行执行（原为串行：status 完成后才依次跑两次 numstat）
+    const [st, nsU, nsS] = await Promise.all([
+      runGit(cwd, ['status', '--porcelain', '-b']),
+      numstatMap(cwd, false),
+      numstatMap(cwd, true)
+    ]);
+    const r = st;
     if (r.code !== 0) return { ok: false, error: r.stderr || 'git status 失败' };
     let branch = '';
     const staged = [];
     const unstaged = [];
-    const [nsU, nsS] = await Promise.all([numstatMap(cwd, false), numstatMap(cwd, true)]);
     for (const line of r.stdout.split('\n')) {
       if (!line) continue;
       if (line.startsWith('## ')) {
@@ -110,6 +127,22 @@ function createGitModule({ winRef, addLog }) {
       }
     }
     return { ok: true, branch, staged, unstaged };
+  }
+
+  async function gitStatus(cwd) {
+    const hit = statusCache.get(cwd);
+    const now = Date.now();
+    if (hit && (now - hit.at) < STATUS_TTL_MS) return hit.promise;
+    // 同一 cwd 的并发请求共享同一个 in-flight promise，避免同时起 6 个子进程
+    const promise = gitStatusUncached(cwd).then((v) => {
+      statusCache.set(cwd, { at: Date.now(), promise: Promise.resolve(v), value: v });
+      return v;
+    }).catch((err) => {
+      statusCache.delete(cwd);
+      throw err;
+    });
+    statusCache.set(cwd, { at: now, promise });
+    return promise;
   }
 
   /* 并排 diff：返回 old / new 两端文本（IDEA 式 side-by-side），统一行尾防异常行终止符标记 */
@@ -155,6 +188,7 @@ function createGitModule({ winRef, addLog }) {
     if (!list.length) return { ok: false, error: '没有暂存的更改可提交' };
     const msg = String(message || '').trim();
     if (!msg) return { ok: false, error: '提交信息不能为空' };
+    invalidateStatus(cwd);
     const c = await runGit(cwd, ['commit', '-m', msg, '-o', '--', ...list]);
     if (c.code !== 0) return { ok: false, error: c.stderr || c.stdout || 'git commit 失败' };
     addLog('info', 'git', '提交 ' + list.length + ' 个文件：' + msg.slice(0, 60));
@@ -162,24 +196,28 @@ function createGitModule({ winRef, addLog }) {
   }
 
   async function gitStage(cwd, file) {
+    invalidateStatus(cwd);
     const r = await runGit(cwd, ['add', '--', file]);
     addLog('info', 'git', '暂存 ' + file);
     return r.code === 0;
   }
 
   async function gitUnstage(cwd, file) {
+    invalidateStatus(cwd);
     const r = await runGit(cwd, ['reset', 'HEAD', '--', file]);
     addLog('info', 'git', '取消暂存 ' + file);
     return r.code === 0;
   }
 
   async function gitStageAll(cwd) {
+    invalidateStatus(cwd);
     const r = await runGit(cwd, ['add', '-A']);
     addLog('info', 'git', '全部暂存');
     return { ok: r.code === 0, error: r.stderr };
   }
 
   async function gitUnstageAll(cwd) {
+    invalidateStatus(cwd);
     const r = await runGit(cwd, ['reset', '-q']);
     addLog('info', 'git', '全部取消暂存');
     return { ok: r.code === 0, error: r.stderr };
@@ -192,6 +230,7 @@ function createGitModule({ winRef, addLog }) {
   }
 
   async function gitPush(cwd) {
+    invalidateStatus(cwd);
     const r = await runGit(cwd, ['push'], 60000);
     if (r.code !== 0) return { ok: false, error: r.stderr || r.stdout || 'git push 失败' };
     addLog('info', 'git', '已推送到远端');
@@ -215,6 +254,7 @@ function createGitModule({ winRef, addLog }) {
 
   /* 切换分支 */
   async function gitCheckout(cwd, branch) {
+    invalidateStatus(cwd);
     const r = await runGit(cwd, ['checkout', branch]);
     if (r.code !== 0) return { ok: false, error: r.stderr || '切换分支失败' };
     addLog('info', 'git', '切换到分支 ' + branch);
@@ -223,6 +263,7 @@ function createGitModule({ winRef, addLog }) {
 
   /* 拉取远端 */
   async function gitPull(cwd) {
+    invalidateStatus(cwd);
     const r = await runGit(cwd, ['pull'], 60000);
     if (r.code !== 0) return { ok: false, error: r.stderr || r.stdout || 'git pull 失败' };
     addLog('info', 'git', '已拉取远端更新');
@@ -242,6 +283,7 @@ function createGitModule({ winRef, addLog }) {
 
   /* 初始化仓库 */
   async function gitInit(cwd) {
+    invalidateStatus(cwd);
     const r = await runGit(cwd, ['init']);
     if (r.code !== 0) return { ok: false, error: r.stderr || 'git init 失败' };
     addLog('info', 'git', '初始化仓库');
@@ -266,7 +308,14 @@ function createGitModule({ winRef, addLog }) {
     ipcMain.handle('git:init', (_e, cwd) => gitInit(cwd));
   }
 
-  return { register };
+  return {
+    register,
+    // 测试专用出口：把内部函数暴露给单元测试，避免为了可测性改写生产调用路径
+    __test: {
+      gitStatus, invalidateStatus, numstatMap, unquotePath, parsePorcelainName, parseNumstatName,
+      gitStage, gitUnstage, gitStageAll, gitUnstageAll, gitCommitFiles, gitCheckout, gitPull, gitPush, gitInit
+    }
+  };
 }
 
 module.exports = { createGitModule };
