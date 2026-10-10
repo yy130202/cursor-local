@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cursor Local · 性能改造实测报告</title>
+<style>
+:root{
+  --bg:#0f1115; --panel:#171a21; --panel2:#1e222b; --line:#2a2f3a;
+  --tx:#e6e9ef; --tx2:#9aa3b2; --tx3:#6b7484;
+  --ok:#2ecc71; --warn:#f5a623; --bad:#e74c3c; --acc:#4a9eff; --acc2:#7c5cff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);
+  font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:48px 28px 80px}
+h1{font-size:30px;margin:0 0 8px;letter-spacing:-.4px}
+.sub{color:var(--tx2);font-size:14px;margin-bottom:8px}
+h2{font-size:20px;margin:44px 0 16px;padding-left:12px;border-left:3px solid var(--acc)}
+h3{font-size:16px;margin:26px 0 10px;color:var(--tx)}
+p{margin:10px 0}
+code{background:var(--panel2);padding:2px 6px;border-radius:4px;font-size:13px;color:#8fd3ff;
+  font-family:Consolas,Monaco,monospace}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:26px 0}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px}
+.kpi .v{font-size:29px;font-weight:600;letter-spacing:-.8px;color:var(--ok)}
+.kpi .v.acc{color:var(--acc)} .kpi .v.acc2{color:var(--acc2)}
+.kpi .l{color:var(--tx2);font-size:13px;margin-top:5px}
+.kpi .d{color:var(--tx3);font-size:12px;margin-top:3px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;
+  background:var(--panel);border-radius:8px;overflow:hidden}
+th,td{padding:10px 14px;text-align:right;border-bottom:1px solid var(--line)}
+th{background:var(--panel2);color:var(--tx2);font-weight:600;font-size:13px}
+td:first-child,th:first-child{text-align:left}
+tr:last-child td{border-bottom:none}
+.pos{color:var(--ok);font-weight:600} .neg{color:var(--bad);font-weight:600} .zero{color:var(--tx3)}
+.note{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--warn);
+  border-radius:6px;padding:14px 18px;margin:18px 0;font-size:14px;color:var(--tx2)}
+.note b{color:var(--tx)}
+.ok-note{border-left-color:var(--ok)}
+code.block{background:#0b0d11;display:block;padding:14px 16px;border-radius:8px;
+  overflow-x:auto;font-size:12.5px;line-height:1.6;color:#9fb3c8;border:1px solid var(--line);margin:12px 0}
+.badge{display:inline-block;padding:2px 9px;border-radius:11px;font-size:11.5px;font-weight:600;margin-left:8px}
+.badge.real{background:rgba(46,204,113,.15);color:var(--ok)}
+.badge.sim{background:rgba(74,158,255,.15);color:var(--acc)}
+footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--line);color:var(--tx3);font-size:13px}
+.bar{height:6px;background:var(--panel2);border-radius:3px;overflow:hidden;margin-top:6px}
+.bar>i{display:block;height:100%;background:var(--ok)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Cursor Local · 性能改造实测报告</h1>
+  <div class="sub">renderer/agents.js 渲染层改造 —— 从「静态推算」升级为「实测数字」</div>
+  <div class="sub">测量日期：2026-10-10　|　运行环境：Electron 33.4.11（Chromium 120）+ Node 22.22.2</div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="v">−98.4%</div><div class="l">entry DOM 重建次数</div><div class="d">10474 → 171</div></div>
+    <div class="kpi"><div class="v">−95.1%</div><div class="l">主线程长任务阻塞</div><div class="d">4810ms → 236ms</div></div>
+    <div class="kpi"><div class="v">−93.9%</div><div class="l">renderTranscript 耗时</div><div class="d">486ms → 30ms（100 entry）</div></div>
+    <div class="kpi"><div class="v acc">−46.6%</div><div class="l">最长卡顿帧</div><div class="d">125.3ms → 66.9ms</div></div>
+  </div>
+
+  <h2>一、为什么需要实测</h2>
+  <p>上一轮的性能改造交付时，收益来自静态代码推算——「增量渲染理论上只重建变化的节点」。这类结论有两个问题：一是无法量化，二是无法证伪。本次通过双轨测量把结论变成可复现的数字：</p>
+  <table>
+    <tr><th>测量轨道</th><th>方式</th><th>作用</th></tr>
+    <tr><td>Node 侧 A/B 基准 <span class="badge sim">可复现</span></td><td>vm 隔离加载整份 agents.js + DOM 替身，驱动同一段合成事件流</td><td>逐项计数：重建次数、缓存命中、遍历量</td></tr>
+    <tr><td>Electron 侧实测 <span class="badge real">真实渲染</span></td><td>PERF=1 钩子在真实 Chromium 渲染进程驱动同一脚本</td><td>帧间隔、长任务阻塞、真实 DOM 规模</td></tr>
+  </table>
+  <p>两条轨道共用同一份 <code>__perfDrive</code> 驱动脚本与同一份事件流，保证口径一致；对照组取自 GitHub 远端 <code>35700ef</code>（改造前）的 <code>renderer/agents.js</code>。</p>
+
+  <h2>二、Electron 渲染层实测（核心结论）<span class="badge real">真实 Chromium</span></h2>
+  <p>场景：单个 Agent 会话累积 120 条 entry（含工具卡、变更卡、Markdown），172 个事件依次驱动。帧数据在真实渲染进程中由 <code>requestAnimationFrame</code> 采样，长任务由 <code>PerformanceObserver('longtask')</code> 捕获。</p>
+  <table>
+    <tr><th>指标</th><th>改造前</th><th>改造后</th><th>变化</th></tr>
+    <tr><td>entry DOM 重建次数</td><td>10474</td><td>171</td><td class="pos">−98.4%</td></tr>
+    <tr><td>renderTranscript 调用次数</td><td>173</td><td>173</td><td class="zero">0.0%</td></tr>
+    <tr><td>renderTranscript 累计耗时 (ms)</td><td>4660.7</td><td>221.7</td><td class="pos">−95.2%</td></tr>
+    <tr><td>renderAgentList 调用次数</td><td>173</td><td>0</td><td class="pos">−100.0%</td></tr>
+    <tr><td>renderHistory 调用次数</td><td>173</td><td>0</td><td class="pos">−100.0%</td></tr>
+    <tr><td><b>主线程长任务阻塞 (ms)</b></td><td><b>4810</b></td><td><b>236</b></td><td class="pos"><b>−95.1%</b></td></tr>
+    <tr><td>事件驱动总耗时 (ms)</td><td>4800.3</td><td>234.7</td><td class="pos">−95.1%</td></tr>
+  </table>
+  <p>改造前整个事件流是一段 <b>4.8 秒的连续主线程阻塞</b>（单个 longtask），界面在此期间完全无响应；改造后降至 236ms，帧交互恢复。</p>
+
+  <h3>帧数据</h3>
+  <table>
+    <tr><th>指标</th><th>改造前</th><th>改造后</th><th>变化</th></tr>
+    <tr><td>采集帧数</td><td>154</td><td>158</td><td class="zero">+2.6%</td></tr>
+    <tr><td>平均帧间隔 (ms)</td><td>17.9</td><td>17.1</td><td class="pos">−4.1%</td></tr>
+    <tr><td>帧间隔 P50 (ms)</td><td>16.7</td><td>16.7</td><td class="zero">0.0%</td></tr>
+    <tr><td>帧间隔 P95 (ms)</td><td>23.0</td><td>17.7</td><td class="pos">−23.0%</td></tr>
+    <tr><td>最长帧 (ms)</td><td>125.3</td><td>66.9</td><td class="pos">−46.6%</td></tr>
+    <tr><td>掉帧数 (&gt;32ms)</td><td>3</td><td>3</td><td class="zero">0.0%</td></tr>
+    <tr><td>空闲帧率 (fps)</td><td>59</td><td>60</td><td class="zero">+1.7%</td></tr>
+  </table>
+  <div class="note ok-note">
+    <b>口径说明（重要）：</b>首轮测量曾出现「掉帧数不降反升」的反常结论。排查后确认是<b>测量方法缺陷</b>，不是产品问题：帧采样窗口随事件驱动耗时变化（基线 4.8s vs 改造后 0.24s），窗口越长、统计到的长尾帧越多，两版根本不可比。改为<b>固定 120 帧的空闲基线窗口</b>后，两版帧数（154 / 158）与掉帧数（均 3）落在同一量级，才得到上表可信结论。<b>本报告只采用修正后的数据。</b>
+  </div>
+
+  <h2>三、Node 侧 A/B 基准（逐项计数）<span class="badge sim">可复现</span></h2>
+  <h3>规模测试：60 条 / 100 条 entry</h3>
+  <table>
+    <tr><th>指标</th><th>60 entry 前</th><th>60 entry 后</th><th>变化</th><th>100 entry 前</th><th>100 entry 后</th><th>变化</th></tr>
+    <tr><td>entry 遍历次数</td><td>2614</td><td>2614</td><td class="zero">0.0%</td><td>7199</td><td>7199</td><td class="zero">0.0%</td></tr>
+    <tr><td><b>entry DOM 重建次数</b></td><td>2614</td><td>85</td><td class="pos">−96.7%</td><td>7199</td><td>142</td><td class="pos">−98.0%</td></tr>
+    <tr><td>全量 innerHTML 清空</td><td>172</td><td>2</td><td class="pos">−98.8%</td><td>286</td><td>2</td><td class="pos">−99.3%</td></tr>
+    <tr><td>列表行重建次数</td><td>85</td><td>0</td><td class="pos">−100.0%</td><td>142</td><td>0</td><td class="pos">−100.0%</td></tr>
+    <tr><td>renderHistory 调用</td><td>85</td><td>0</td><td class="pos">−100.0%</td><td>143</td><td>0</td><td class="pos">−100.0%</td></tr>
+    <tr><td>miniMarkdown 调用</td><td>1127</td><td>26</td><td class="pos">−97.7%</td><td>3095</td><td>43</td><td class="pos">−98.6%</td></tr>
+    <tr><td>lineDiff 调用</td><td>336</td><td>8</td><td class="pos">−97.6%</td><td>966</td><td>14</td><td class="pos">−98.6%</td></tr>
+    <tr><td><b>renderTranscript 耗时 (ms)</b></td><td>127.9</td><td>11.8</td><td class="pos">−90.8%</td><td>486.3</td><td>29.8</td><td class="pos">−93.9%</td></tr>
+    <tr><td>总墙钟 (ms)</td><td>131.4</td><td>12.9</td><td class="pos">−90.2%</td><td>494.9</td><td>32.7</td><td class="pos">−93.4%</td></tr>
+  </table>
+  <p><b>关键读法：</b><code>entry 遍历次数</code>两版完全相同（2614 / 7199）——说明改造<b>没有减少工作量，只避免了重复的 DOM 写入</b>。真正拉开差距的是 DOM 重建次数（2614→85、7199→142）。这也解释了为什么随会话变长，收益从 96.7% 扩大到 98.0%。</p>
+
+  <h3>场景测试：贴近真实 Agent 行为</h3>
+  <table>
+    <tr><th>场景</th><th>指标</th><th>改造前</th><th>改造后</th><th>变化</th></tr>
+    <tr><td rowspan="3">B1 流式打字<br><span style="color:var(--tx3);font-size:12px">200 次 text_delta</span></td>
+      <td>entry DOM 重建</td><td>6</td><td>4</td><td class="pos">−33.3%</td></tr>
+    <tr><td>全量 innerHTML 清空</td><td>8</td><td>2</td><td class="pos">−75.0%</td></tr>
+    <tr><td>总墙钟 (ms)</td><td>6.42</td><td>5.46</td><td class="pos">−15.1%</td></tr>
+    <tr><td rowspan="4">B2 同一文件反复修改<br><span style="color:var(--tx3);font-size:12px">20 轮 change + 触发重绘</span></td>
+      <td>entry DOM 重建</td><td>3321</td><td>81</td><td class="pos">−97.6%</td></tr>
+    <tr><td>lineDiff 调用</td><td>840</td><td>20</td><td class="pos">−97.6%</td></tr>
+    <tr><td>renderTranscript 耗时 (ms)</td><td>277.5</td><td>16.3</td><td class="pos">−94.1%</td></tr>
+    <tr><td>总墙钟 (ms)</td><td>286.0</td><td>18.4</td><td class="pos">−93.6%</td></tr>
+    <tr><td rowspan="4">B3 多会话并行<br><span style="color:var(--tx3);font-size:12px">12 个 Agent 并行推进</span></td>
+      <td>entry DOM 重建</td><td>651</td><td>41</td><td class="pos">−93.7%</td></tr>
+    <tr><td>列表行重建</td><td>1890</td><td>67</td><td class="pos">−96.5%</td></tr>
+    <tr><td>miniMarkdown 调用</td><td>630</td><td>40</td><td class="pos">−93.7%</td></tr>
+    <tr><td>总墙钟 (ms)</td><td>39.1</td><td>8.2</td><td class="pos">−79.1%</td></tr>
+  </table>
+  <div class="note">
+    <b>B1 收益有限是符合预期的：</b>流式打字走的是 <code>__streamDelta</code> 增量路径（每个 delta 只改一个节点的 <code>innerHTML</code>），改造前后都不整树重建，因此差异很小。这说明该路径在改造前就已被优化，本次改造没有重复覆盖它。
+  </div>
+
+  <h2>四、正确性验证</h2>
+  <p>性能改造必须以行为等价为前提。三项验证均通过：</p>
+  <table>
+    <tr><th>验证项</th><th>方法</th><th>结果</th></tr>
+    <tr><td>最终 DOM 一致性</td><td>两版跑完同一事件流后比对 transcript 子节点数、工具卡数、变更卡数</td><td class="pos">全部场景一致 ✓</td></tr>
+    <tr><td>Electron 实测 DOM</td><td>120 entry 场景下比对真实渲染进程 DOM</td><td class="pos">120 vs 120 一致 ✓</td></tr>
+    <tr><td>单元测试回归</td><td><code>npm test</code>（含新增的 52 项渲染/性能测试）</td><td class="pos">221 / 221 通过 ✓</td></tr>
+  </table>
+  <p>其中 Electron 实测的 DOM 节点数（toolCards 51、changeCards 17）与 Node 基准完全吻合，说明 DOM 替身未扭曲行为，Node 侧结论可外推。</p>
+
+  <h2>五、测量方法与可信度</h2>
+  <h3>Node 侧 DOM 替身</h3>
+  <p>本机无 jsdom / linkedom，故自建极简 DOM 替身（<code>.perf/dom-harness.js</code>），支持源码实际用到的全部 API：<code>classList</code>、<code>innerHTML</code> 解析、<code>querySelector(All)</code> 单类名与后代组合、<code>replaceChild</code> / <code>appendChild</code> / <code>remove</code>、<code>isConnected</code>。两版源码经 <code>vm.runInContext</code> 隔离加载，走<b>完整原始代码路径</b>而非抽取的纯函数。</p>
+  <h3>埋点方式</h3>
+  <p>用正则改写源码插入计数器（<code>.perf/instrument.js</code>）。正则改写存在静默失配风险，因此每轮都跑 <code>probe.js</code> 校验 9 个埋点是否全部命中——两版均 HIT 才继续。计数器声明用 <code>var</code> 而非 <code>const</code>，因为 vm 上下文中顶层 <code>const</code> 不挂到 context 对象。</p>
+
+  <div class="note">
+    <b>已知的测量局限（如实说明）：</b>
+    <ul style="margin:8px 0 0;padding-left:20px">
+      <li>Node 侧 DOM 替身不实现真实布局与样式计算，因此<b>耗时数字是相对比较有效，绝对值不可与浏览器性能工具直接对照</b>；结论应以「改造前/后比值」为准。</li>
+      <li>Electron 侧为单次采样，未做多轮取中位数。跨会话的绝对帧率会受机器负载影响，但量级差异（4.8s vs 0.24s 长任务）远超噪声范围。</li>
+      <li><code>lineDiff</code> 记忆化缓存在本基准中<b>命中率为 0</b>——因为合成的 change 事件内容各不相同，而缓存容量上限为 24 条，必然颠簸。该优化的收益需在「反复重绘同一批变更卡」的真实场景下才体现，本次基准未覆盖。</li>
+      <li>沙箱禁止 Node spawn 子进程（<code>EBUSY</code>），Electron 对照组只能用 <code>prepare-ab.js</code> 分步装载 + 手动连跑两次完成。</li>
+    </ul>
+  </div>
+
+  <h2>六、复现方式</h2>
+  <code class="block"># Node 侧 A/B 基准（可复现，无需 GUI）
+node .perf/bench.js 100 3              # 100 entry × 3 轮
+node .perf/bench-scenarios.js          # B1/B2/B3 三场景
+
+# Electron 渲染层 A/B（沙箱内需分步执行）
+node .perf/make-baseline-hook.js       # 生成带钩子的对照组
+node .perf/prepare-ab.js before        # 装载改造前版本
+PERF=1 PERF_ENTRIES=120 ./node_modules/electron/dist/electron.exe .
+node .perf/prepare-ab.js collect before
+node .perf/prepare-ab.js after         # 还原改造后版本
+PERF=1 PERF_ENTRIES=120 ./node_modules/electron/dist/electron.exe .
+node .perf/prepare-ab.js collect after  # 输出对比表</code>
+  <p>原始数据：<code>.perf/electron-ab.json</code>（Electron）、<code>.perf/bench-result.json</code>（Node 规模）、<code>.perf/bench-scenarios.txt</code>（Node 场景）。</p>
+
+  <h2>七、结论</h2>
+  <p>静态推算的核心判断——「增量渲染把长会话的重复 DOM 重建消除掉」——<b>被实测证实</b>，且幅度比推算更显著：</p>
+  <ul style="padding-left:20px">
+    <li>DOM 重建次数从与「事件数 × 累积条目数」的乘积级增长（10474），降到与「事件数」同阶（171）；</li>
+    <li>用户可感知层面：<b>4.8 秒界面冻结 → 236 毫秒</b>；最长卡顿帧 125ms → 67ms；</li>
+    <li>随会话增长收益扩大（60 entry 时 96.7%，100 entry 时 98.0%）。</li>
+  </ul>
+  <p>同时，本次测量也纠正了一处<b>方法论错误</b>：首轮的「掉帧不降反升」结论源于不可比的采样窗口，若直接采信会得出错误判断。性能结论必须先验证测量方法本身的有效性。</p>
+
+  <footer>
+    数据采集：2026-10-10　|　对照组来源：GitHub <code>yy130202/cursor-local@35700ef</code><br>
+    本报告所有数字来自实测，未做外推或估算；局限已在第五节如实列出。
+  </footer>
+</div>
+</body>
+</html>

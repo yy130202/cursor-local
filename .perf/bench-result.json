@@ -1,0 +1,116 @@
+{
+  "entryCount": 100,
+  "rounds": 3,
+  "detail": {
+    "before": {
+      "tag": "before",
+      "wall": 951.2971,
+      "perf": {
+        "tCalls": 143,
+        "tMs": 931.2403999999989,
+        "lCalls": 143,
+        "lMs": 16.815300000000178,
+        "hCalls": 143,
+        "hMs": 4.806300000000533,
+        "md": 3095,
+        "dAll": 966,
+        "dHit": 0,
+        "dMiss": 966,
+        "eTotal": 7199,
+        "eBuilt": 7199,
+        "resets": 286,
+        "lRows": 142,
+        "hRows": 0
+      },
+      "dom": {
+        "transcriptChildren": 101,
+        "listItems": 1
+      },
+      "dbg": {
+        "agentCount": 1,
+        "selectedId": "perf-task",
+        "listItems": 1,
+        "transcriptEntries": 101,
+        "toolCards": 42,
+        "changeCards": 14,
+        "historyCount": 0,
+        "emptyVisible": false,
+        "headTask": "性能基准任务：批量重构并补齐单测",
+        "headStatus": "运行中"
+      }
+    },
+    "after": {
+      "tag": "after",
+      "wall": 45.72340000000008,
+      "perf": {
+        "tCalls": 143,
+        "tMs": 41.58600000000047,
+        "lCalls": 143,
+        "lMs": 2.1651999999987765,
+        "hCalls": 0,
+        "hMs": 0,
+        "md": 43,
+        "dAll": 14,
+        "dHit": 0,
+        "dMiss": 14,
+        "eTotal": 7199,
+        "eBuilt": 142,
+        "resets": 2,
+        "lRows": 0,
+        "hRows": 0
+      },
+      "dom": {
+        "transcriptChildren": 101,
+        "listItems": 1
+      },
+      "dbg": {
+        "agentCount": 1,
+        "selectedId": "perf-task",
+        "listItems": 1,
+        "transcriptEntries": 101,
+        "toolCards": 42,
+        "changeCards": 14,
+        "historyCount": 0,
+        "emptyVisible": false,
+        "headTask": "性能基准任务：批量重构并补齐单测",
+        "headStatus": "运行中"
+      }
+    }
+  },
+  "median": {
+    "before": {
+      "tCalls": 143,
+      "tMs": 486.31539999999995,
+      "lCalls": 143,
+      "lMs": 6.436300000000074,
+      "hCalls": 143,
+      "hMs": 1.3975999999988744,
+      "md": 3095,
+      "dAll": 966,
+      "dHit": 0,
+      "eTotal": 7199,
+      "eBuilt": 7199,
+      "resets": 286,
+      "lRows": 142,
+      "hRows": 0,
+      "wall": 494.88729999999987
+    },
+    "after": {
+      "tCalls": 143,
+      "tMs": 29.813399999998865,
+      "lCalls": 143,
+      "lMs": 1.4336000000000695,
+      "hCalls": 0,
+      "hMs": 0,
+      "md": 43,
+      "dAll": 14,
+      "dHit": 0,
+      "eTotal": 7199,
+      "eBuilt": 142,
+      "resets": 2,
+      "lRows": 0,
+      "hRows": 0,
+      "wall": 32.70550000000003
+    }
+  }
+}

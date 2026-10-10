@@ -109,7 +109,9 @@ function stopDial(success) {
 }
 
 /* ---- Agent 事件流 ---- */
-window.api.onAgentEvent((ev) => {
+function handleAgentEvent(ev) {
+  const P = window.__perfCounters;
+  if (P) P.evCount = (P.evCount || 0) + 1;
   let a = agentsState.agents.get(ev.id);
   if (!a) {
     a = { id: ev.id, task: '', cwd: '', status: 'running', entries: [] };
@@ -235,7 +237,10 @@ window.api.onAgentEvent((ev) => {
   }
   renderAgentList();
   if (ev.id === agentsState.selectedId) renderTranscript();
-});
+}
+window.api.onAgentEvent(handleAgentEvent);
+// 性能实测钩子复用同一条事件处理路径（PERF=1）
+window.__perfEmit = handleAgentEvent;
 
 /* ---- 渲染 ---- */
 function statusLabel(s) {
@@ -419,6 +424,7 @@ function sigOf(en) {
 
 /* 构造单个 entry 的 DOM 节点；needStreamNode 标记流式消息节点供增量追加复用 */
 function buildEntryNode(en, isLast) {
+  if (window.__perfCounters) window.__perfCounters.eBuilt++;
   const inCls = isLast ? ' entry-in' : ''; // 仅最新消息播放入场动效，避免整树重播
   const d = document.createElement('div');
   if (en.kind === 'user') {
@@ -497,6 +503,14 @@ function buildEntryNode(en, isLast) {
 }
 
 function renderTranscript() {
+  const __P = window.__perfCounters;
+  const __t0 = __P ? performance.now() : 0;
+  if (__P) { __P.tCalls++; }
+  try { return renderTranscriptInner(); }
+  finally { if (__P) { __P.tMs += performance.now() - __t0; } }
+}
+
+function renderTranscriptInner() {
   const a = agentsState.agents.get(agentsState.selectedId);
   // 切换会话（或首次）→ 整体重建一次；同一会话内走增量路径
   if (transcriptEl.__agentId !== agentsState.selectedId) {
@@ -531,6 +545,7 @@ function renderTranscript() {
   }
 
   const entries = a.entries;
+  if (window.__perfCounters) window.__perfCounters.eTotal += entries.length;
   const nodes = a.__nodes || (a.__nodes = []);
   // 状态事件会截断 entries 头部（>200 保留尾部），节点数组同步丢弃对应前缀
   if (nodes.length > entries.length) {
@@ -601,6 +616,115 @@ function renderTranscript() {
 
   if (appended > 0) transcriptEl.scrollTop = transcriptEl.scrollHeight;
 }
+
+/* ---- 性能实测驱动（PERF=1 钩子调用） ----
+ * 注入合成事件流，测量真实渲染层的帧间隔与长任务占用。
+ * 计数器为可选采集：仅在 __perfCounters 存在时累加，不影响正常路径开销。 */
+window.__perfCounters = window.__perfCounters || null;
+
+window.__perfDrive = async function (id, entryCount) {
+  const P = (window.__perfCounters = {
+    tCalls: 0, tMs: 0, lCalls: 0, lMs: 0, hCalls: 0, eBuilt: 0, eTotal: 0
+  });
+  // 捕获主线程长任务（>50ms 阻塞），Chromium 支持 PerformanceObserver
+  const longTasks = [];
+  let po = null;
+  try {
+    po = new PerformanceObserver((list) => {
+      for (const e of list.getEntries()) longTasks.push(Math.round(e.duration));
+    });
+    po.observe({ entryTypes: ['longtask'] });
+  } catch (e) { /* 不支持则跳过 */ }
+
+  const a = { id, task: '性能实测：批量重构 + 补齐单测', cwd: 'H:\\work\\proj', status: 'running', entries: [] };
+  agentsState.agents.set(id, a);
+  agentsState.selectedId = id;
+  selectAgent(id);
+
+  const names = ['list_dir', 'read_file', 'search_files', 'run_command', 'write_file'];
+  const roles = ['user', 'agent-msg', 'tool', 'tool', 'agent-msg', 'change', 'tool'];
+  const frames = [];
+  let last = performance.now();
+  let running = true;
+  const tick = () => {
+    const now = performance.now();
+    frames.push(now - last);
+    last = now;
+    if (running) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+
+  // 用真实的事件处理路径驱动：直接构造事件并调用与 IPC 相同的处理逻辑
+  const drive = (ev) => { window.__perfEmit(Object.assign({ id }, ev)); };
+  const t0 = performance.now();
+  drive({ kind: 'meta', task: a.task, cwd: a.cwd, ts: Date.now() });
+  for (let i = 1; i < entryCount; i++) {
+    const role = roles[i % roles.length];
+    if (role === 'user' || role === 'agent-msg') {
+      drive({ kind: 'text', text: '第 ' + i + ' 步：' + '已定位模块并完成校验。'.repeat(3) });
+    } else if (role === 'change') {
+      drive({
+        kind: 'change', path: 'src/f' + i + '.js', relPath: 'src/f' + i + '.js',
+        before: null, after: Array.from({ length: 12 }, (_, j) => '  const v' + j + ' = ' + (i * j) + ';').join('\n') + '\n',
+        existed: false
+      });
+    } else {
+      const name = names[i % names.length];
+      drive({ kind: 'tool_call', name, args: { path: 'src/f' + i + '.js', command: 'node --test' } });
+      drive({ kind: 'tool_result', name, result: '退出码: 0\n' + Array.from({ length: 8 }, (_, j) => '  ok ' + j).join('\n') });
+    }
+  }
+  drive({ kind: 'status', status: 'done' });
+  const driveMs = performance.now() - t0;
+
+  // 等待若干帧稳定后再停采样
+  await new Promise((r) => setTimeout(r, 700));
+  // 空闲基线帧率：固定 120 帧窗口，与事件驱动耗时无关，两版本可直接对比
+  const idleFrames = [];
+  await new Promise((resolve) => {
+    let n = 0, prev = performance.now();
+    const step = () => {
+      const now = performance.now();
+      idleFrames.push(now - prev);
+      prev = now;
+      if (++n < 120) requestAnimationFrame(step);
+      else resolve();
+    };
+    requestAnimationFrame(step);
+  });
+  running = false;
+  if (po) { try { po.disconnect(); } catch (e) { /* ignore */ } }
+
+  const sorted = frames.slice(1).sort((x, y) => x - y);
+  const idleSorted = idleFrames.slice(1).sort((x, y) => x - y);
+  const pct = (arr, p) => (arr.length ? arr[Math.min(arr.length - 1, Math.floor(arr.length * p))] : 0);
+  const avg = (arr) => (arr.length ? +(arr.reduce((s, v) => s + v, 0) / arr.length).toFixed(2) : 0);
+  const dbg = window.__debugAgents();
+  return {
+    ok: true,
+    entries: entryCount,
+    frames: frames.length,
+    frameAvgMs: avg(sorted),
+    frameP50: +pct(sorted, 0.5).toFixed(2),
+    frameP95: +pct(sorted, 0.95).toFixed(2),
+    frameMaxMs: +(sorted.length ? sorted[sorted.length - 1] : 0).toFixed(2),
+    jankFrames: sorted.filter((v) => v > 32).length,
+    idleFrames: idleSorted.length,
+    idleFrameAvgMs: avg(idleSorted),
+    idleFrameP95Ms: +pct(idleSorted, 0.95).toFixed(2),
+    idleFps: avg(idleSorted) ? +(1000 / avg(idleSorted)).toFixed(1) : 0,
+    longTasks,
+    longTaskTotalMs: longTasks.reduce((s, v) => s + v, 0),
+    driveMs: +driveMs.toFixed(2),
+    eBuiltTotal: P.eBuilt || 0,
+    counters: JSON.parse(JSON.stringify(P)),
+    dom: {
+      transcriptChildren: dbg.transcriptEntries,
+      toolCards: dbg.toolCards,
+      changeCards: dbg.changeCards
+    }
+  };
+};
 
 /* ---- 历史会话（时间分组：今天 / 昨天 / 本周 / 更早） ---- */
 function timeGroupOf(ts) {

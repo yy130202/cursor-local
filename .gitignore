@@ -17,3 +17,8 @@ test-log.txt
 
 # 对抗测试脚本
 .adv-test/
+
+# 工作区缓存与本地快照备份
+.workbuddy/
+.backups/
+

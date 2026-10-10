@@ -1,0 +1,1096 @@
+{
+  "total": 121,
+  "passed": 121,
+  "failed": 0,
+  "cases": [
+    {
+      "id": "SMK-001",
+      "category": "登录鉴权",
+      "name": "内存用户存储初始化可用性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 575.12,
+      "detail": "store initialized"
+    },
+    {
+      "id": "SMK-002",
+      "category": "登录鉴权",
+      "name": "注册用户合法性与密码哈希",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 644.96,
+      "detail": "registered"
+    },
+    {
+      "id": "SMK-003",
+      "category": "登录鉴权",
+      "name": "重名注册防御拦截校验",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 642.16,
+      "detail": "dup detectable"
+    },
+    {
+      "id": "SMK-004",
+      "category": "登录鉴权",
+      "name": "正确密码登录校验",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 737.6,
+      "detail": "login verified"
+    },
+    {
+      "id": "SMK-005",
+      "category": "登录鉴权",
+      "name": "错误密码安全拒绝校验",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 798.48,
+      "detail": "auth rejected"
+    },
+    {
+      "id": "SMK-006",
+      "category": "登录鉴权",
+      "name": "空密码防御拦截",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 723.16,
+      "detail": "empty password blocked"
+    },
+    {
+      "id": "SMK-007",
+      "category": "登录鉴权",
+      "name": "Token 会话状态持久化读取",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.05,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-008",
+      "category": "登录鉴权",
+      "name": "用户配置 Profile 更新原子性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 567.58,
+      "detail": "profile updated"
+    },
+    {
+      "id": "SMK-009",
+      "category": "登录鉴权",
+      "name": "注销登录状态安全清理",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.05,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-010",
+      "category": "登录鉴权",
+      "name": "CloudUserStore 远程不可用时降级阻断",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.14,
+      "detail": "explicit failure verified"
+    },
+    {
+      "id": "SMK-011",
+      "category": "核心读写",
+      "name": "UTF-8 文本安全写入与读回一致性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 356.33,
+      "detail": "rw match"
+    },
+    {
+      "id": "SMK-012",
+      "category": "核心读写",
+      "name": "大文件分块读取与截断保护",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 327.31,
+      "detail": "buffer size matched"
+    },
+    {
+      "id": "SMK-013",
+      "category": "核心读写",
+      "name": "原子目录级联创建与校验",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 500.09,
+      "detail": "mkdir recursive ok"
+    },
+    {
+      "id": "SMK-014",
+      "category": "核心读写",
+      "name": "文件安全移动与重命名原子性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 293.67,
+      "detail": "rename ok"
+    },
+    {
+      "id": "SMK-015",
+      "category": "核心读写",
+      "name": "文件安全删除防残留",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 284.69,
+      "detail": "deleted clean"
+    },
+    {
+      "id": "SMK-016",
+      "category": "核心读写",
+      "name": "JSON 文件序列化与反序列化保真度",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.13,
+      "detail": "json verified"
+    },
+    {
+      "id": "SMK-017",
+      "category": "核心读写",
+      "name": "二进制 Buffer SHA-256 哈希计算一致性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.43,
+      "detail": "de4c3de0e79bc8ed"
+    },
+    {
+      "id": "SMK-018",
+      "category": "核心读写",
+      "name": "文件属性 mtime/ctime 解析准确性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.28,
+      "detail": "size=1240"
+    },
+    {
+      "id": "SMK-019",
+      "category": "核心读写",
+      "name": "只读模式与文件保护拦截",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.02,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-020",
+      "category": "核心读写",
+      "name": "跨平台路径规范化 (win32/posix slashes)",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.03,
+      "detail": "path normalized"
+    },
+    {
+      "id": "SMK-021",
+      "category": "配置管理",
+      "name": "默认配置加载与降级可用性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.17,
+      "detail": "theme=[object Object]"
+    },
+    {
+      "id": "SMK-022",
+      "category": "配置管理",
+      "name": "字体大小区间边界保护 (10-32px)",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.07,
+      "detail": "font=14"
+    },
+    {
+      "id": "SMK-023",
+      "category": "配置管理",
+      "name": "AI 模型服务商配置完整性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.06,
+      "detail": "model=deepseek-flash"
+    },
+    {
+      "id": "SMK-024",
+      "category": "配置管理",
+      "name": "AI BaseURL 格式与安全校验",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.05,
+      "detail": "url format ok"
+    },
+    {
+      "id": "SMK-025",
+      "category": "配置管理",
+      "name": "系统语言本地化配置字段校验",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.05,
+      "detail": "locale ok"
+    },
+    {
+      "id": "SMK-026",
+      "category": "配置管理",
+      "name": "快捷键 Keymap 配置有效性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.05,
+      "detail": "keymap ok"
+    },
+    {
+      "id": "SMK-027",
+      "category": "配置管理",
+      "name": "配置变更合并与部分更新",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.08,
+      "detail": "merged"
+    },
+    {
+      "id": "SMK-028",
+      "category": "配置管理",
+      "name": "配置文件损坏自动修复与兜底",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-029",
+      "category": "配置管理",
+      "name": "隐私总闸配置项独立性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-030",
+      "category": "配置管理",
+      "name": "自动保存 AutoSave 机制开关校验",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.05,
+      "detail": "autosave ok"
+    },
+    {
+      "id": "SMK-031",
+      "category": "依赖环境",
+      "name": "Node.js 运行时主版本兼容性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.03,
+      "detail": "node v22.22.2"
+    },
+    {
+      "id": "SMK-032",
+      "category": "依赖环境",
+      "name": "package.json 规范性与结构解析",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.33,
+      "detail": "name ok"
+    },
+    {
+      "id": "SMK-033",
+      "category": "依赖环境",
+      "name": "package-lock.json lockfileVersion 规范",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.66,
+      "detail": "lockfileVersion=3"
+    },
+    {
+      "id": "SMK-034",
+      "category": "依赖环境",
+      "name": "crypto 模块 SHA-256 原生加速就绪",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.06,
+      "detail": "crypto ok"
+    },
+    {
+      "id": "SMK-035",
+      "category": "依赖环境",
+      "name": "child_process 本地执行引擎可用性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.05,
+      "detail": "child_process api ready"
+    },
+    {
+      "id": "SMK-036",
+      "category": "依赖环境",
+      "name": "Electron 依赖包版本锁定声明",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.29,
+      "detail": "^33.2.0"
+    },
+    {
+      "id": "SMK-037",
+      "category": "依赖环境",
+      "name": "npm test 依赖启动脚本完整性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.27,
+      "detail": "test script ok"
+    },
+    {
+      "id": "SMK-038",
+      "category": "依赖环境",
+      "name": "系统临时目录写入与销毁可用性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.37,
+      "detail": "C:\\Users\\admin\\AppData\\Local\\Temp"
+    },
+    {
+      "id": "SMK-039",
+      "category": "依赖环境",
+      "name": "CPU 架构与操作系统架构匹配",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.03,
+      "detail": "win32-x64"
+    },
+    {
+      "id": "SMK-040",
+      "category": "依赖环境",
+      "name": "内存使用量未突破安全告警水位 (800MB)",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.08,
+      "detail": "5.7 MB"
+    },
+    {
+      "id": "SMK-041",
+      "category": "权限安全",
+      "name": "Agent 敏感工具执行手动审批流拦截",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 2.24,
+      "detail": "write_file declared"
+    },
+    {
+      "id": "SMK-042",
+      "category": "权限安全",
+      "name": "路径遍历穿越攻击防御 (../.. 安全拦截)",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.04,
+      "detail": "traversal detectable"
+    },
+    {
+      "id": "SMK-043",
+      "category": "权限安全",
+      "name": "禁止危险命令执行规则库",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-044",
+      "category": "权限安全",
+      "name": "只读沙箱隔离标志位拦截",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-045",
+      "category": "权限安全",
+      "name": "无授权操作返回码 403 / 阻断校验",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-046",
+      "category": "权限安全",
+      "name": "跨站与远程脚本注入防御策略 (CSP/ContextIsolation)",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.34,
+      "detail": "contextIsolation active"
+    },
+    {
+      "id": "SMK-047",
+      "category": "权限安全",
+      "name": "密码明文防落盘安全策略",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.02,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-048",
+      "category": "权限安全",
+      "name": "法律声明与免责条款独立加载通道",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.39,
+      "detail": "legal.html exists"
+    },
+    {
+      "id": "SMK-049",
+      "category": "缓存记忆",
+      "name": "工作区记忆模块初始化",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.18,
+      "detail": "memory initialized"
+    },
+    {
+      "id": "SMK-050",
+      "category": "缓存记忆",
+      "name": "记忆条目追加与读取持久化",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.33,
+      "detail": "memory readable"
+    },
+    {
+      "id": "SMK-051",
+      "category": "缓存记忆",
+      "name": "记忆条目定向删除与原子性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.2,
+      "detail": "memory manageable"
+    },
+    {
+      "id": "SMK-052",
+      "category": "缓存记忆",
+      "name": "规则库 Rules 存取与范围隔离",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.25,
+      "detail": "rules verified"
+    },
+    {
+      "id": "SMK-053",
+      "category": "缓存记忆",
+      "name": "gitStatus 1200ms TTL 缓存命中与防抖",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.02,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-054",
+      "category": "缓存记忆",
+      "name": "gitStatus 写操作立即失效 (Cache Invalidation)",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-055",
+      "category": "缓存记忆",
+      "name": "lineDiff LCS 记忆化缓存 FIFO 淘汰 (上限24)",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-056",
+      "category": "缓存记忆",
+      "name": "filetree readDirCached 单次渲染内去重缓存",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-057",
+      "category": "队列并发",
+      "name": "分块并发 grep (CONC_GREP=8) 顺序稳定性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-058",
+      "category": "队列并发",
+      "name": "grep maxResults 500 边界防越界保护",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-059",
+      "category": "队列并发",
+      "name": "并行 Agent 状态独立隔离",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-060",
+      "category": "队列并发",
+      "name": "异步 Promise.all 异常熔断保护",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-061",
+      "category": "队列并发",
+      "name": "终端多实例并发通道隔离",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-062",
+      "category": "队列并发",
+      "name": "高频 DOM 增量写入帧节流 (scheduleFrame)",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-063",
+      "category": "队列并发",
+      "name": "会话事件流顺序保序队列",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-064",
+      "category": "队列并发",
+      "name": "长耗时任务中止 (AbortController / stopAgent)",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-065",
+      "category": "日志监控",
+      "name": "全局日志模块实例初始化",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 1.73,
+      "detail": "log module ok"
+    },
+    {
+      "id": "SMK-066",
+      "category": "日志监控",
+      "name": "日志追加、容量上限与截断",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.12,
+      "detail": "logged"
+    },
+    {
+      "id": "SMK-067",
+      "category": "日志监控",
+      "name": "日志错误级别分类 (error/warn/info)",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.06,
+      "detail": "level ok"
+    },
+    {
+      "id": "SMK-068",
+      "category": "日志监控",
+      "name": "日志清理 clearLogs 功能",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.05,
+      "detail": "cleared"
+    },
+    {
+      "id": "SMK-069",
+      "category": "日志监控",
+      "name": "异常捕获未处理拒绝 (unhandledRejection) 监听",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-070",
+      "category": "日志监控",
+      "name": "未捕获异常 (uncaughtException) 容错保护",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-071",
+      "category": "日志监控",
+      "name": "主进程 console.error 统一收集与告警",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-072",
+      "category": "日志监控",
+      "name": "PerformanceObserver longtask 监控支持",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-073",
+      "category": "日志监控",
+      "name": "运行时长表盘 startDial / stopDial 状态监控",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-074",
+      "category": "日志监控",
+      "name": "性能实测埋点计数器 __perfCounters 统计完整性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-075",
+      "category": "回调通信",
+      "name": "IPC 通信 contextBridge 预加载暴露检查",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.29,
+      "detail": "api exposed"
+    },
+    {
+      "id": "SMK-076",
+      "category": "回调通信",
+      "name": "agent:event 实时事件分发通道",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.27,
+      "detail": "agent:event ok"
+    },
+    {
+      "id": "SMK-077",
+      "category": "回调通信",
+      "name": "fs:changed 文件变更广播通知",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.27,
+      "detail": "fs:changed ok"
+    },
+    {
+      "id": "SMK-078",
+      "category": "回调通信",
+      "name": "terminal:data 终端流式数据回调",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.26,
+      "detail": "terminal:data ok"
+    },
+    {
+      "id": "SMK-079",
+      "category": "回调通信",
+      "name": "log:event 日志推送监听接口",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.26,
+      "detail": "log:event ok"
+    },
+    {
+      "id": "SMK-080",
+      "category": "回调通信",
+      "name": "agent:approval 审批结果双向回传",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.27,
+      "detail": "approval ok"
+    },
+    {
+      "id": "SMK-081",
+      "category": "回调通信",
+      "name": "窗口控制 window:minimize/close 事件映射",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.02,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-082",
+      "category": "回调通信",
+      "name": "全屏切换 window:toggleFullscreen 响应映射",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-083",
+      "category": "定时任务",
+      "name": "思考提示轮播定时器 (__thinkTimer) 状态管理",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-084",
+      "category": "定时任务",
+      "name": "表盘运行时长轮询计时 (dialTimer) 准确性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-085",
+      "category": "定时任务",
+      "name": "会话自动保存防抖延迟定时器",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-086",
+      "category": "定时任务",
+      "name": "文件变更防抖刷新机制 (debounce)",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-087",
+      "category": "定时任务",
+      "name": "终端心跳保活检测机制",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-088",
+      "category": "定时任务",
+      "name": "网络重试与超时退避定时器",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-089",
+      "category": "定时任务",
+      "name": "历史会话延迟异步加载 (loadHistory)",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-090",
+      "category": "网络通信",
+      "name": "AI 服务端连接通信契约结构",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-091",
+      "category": "网络通信",
+      "name": "网络中断友好报错与离线降级体验",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-092",
+      "category": "网络通信",
+      "name": "GitHub 远程同步通信凭据链路保护",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-093",
+      "category": "网络通信",
+      "name": "HTTP 代理与企业自签证书兼容通道",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-094",
+      "category": "网络通信",
+      "name": "自定义特权协议 monaco:// 同源策略配置",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.28,
+      "detail": "monaco scheme ok"
+    },
+    {
+      "id": "SMK-095",
+      "category": "网络通信",
+      "name": "openExternal 外部安全浏览器调用隔离",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.02,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-096",
+      "category": "回滚会话",
+      "name": "历史会话持久化存储与列表拉取",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 1.73,
+      "detail": "session module ok"
+    },
+    {
+      "id": "SMK-097",
+      "category": "回滚会话",
+      "name": "会话单文件导出与恢复格式校验",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-098",
+      "category": "回滚会话",
+      "name": "文件变更撤销回滚 (revertChange) 完整性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-099",
+      "category": "回滚会话",
+      "name": "多级历史记录时间分组 (今天/昨天/本周/更早)",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-100",
+      "category": "回滚会话",
+      "name": "清空历史会话危险确认拦截",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-101",
+      "category": "回滚会话",
+      "name": "单会话安全物理删除 (session:delete)",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-102",
+      "category": "回滚会话",
+      "name": "代码差异卡片 buildChangeCard 展现完整性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-103",
+      "category": "回滚会话",
+      "name": "可追溯备份入口 .backups 目录就绪性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.35,
+      "detail": ".backups ready"
+    },
+    {
+      "id": "SMK-104",
+      "category": "回滚会话",
+      "name": "dryRunRollback 无损回滚沙箱验证能力",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 2.05,
+      "detail": "dryRunRollback ready"
+    },
+    {
+      "id": "SMK-105",
+      "category": "回滚会话",
+      "name": "灾难恢复路径与 checksum.sha256 指南存在性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.03,
+      "detail": "createTraceableBackup ready"
+    },
+    {
+      "id": "SMK-106",
+      "category": "UI渲染",
+      "name": "单机 Monaco 编辑器初始化依赖资源就绪",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.35,
+      "detail": "monaco package ok"
+    },
+    {
+      "id": "SMK-107",
+      "category": "UI渲染",
+      "name": "轻量 Markdown 格式化 miniMarkdown 标题/代码/粗体解析",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.02,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-108",
+      "category": "UI渲染",
+      "name": "代码块一键复制按钮安全绑定与提示",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-109",
+      "category": "UI渲染",
+      "name": "增量渲染签名 sigOf 唯一性与变更感知",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-110",
+      "category": "UI渲染",
+      "name": "会话切换整体重建 vs 同会话增量挂载区分",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-111",
+      "category": "UI渲染",
+      "name": "思考指示器摘除与按需挂载稳定性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-112",
+      "category": "UI渲染",
+      "name": "Agent 列表项 agentItemSig 状态变更精准复用",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-113",
+      "category": "UI渲染",
+      "name": "文件树 GitMark 着色与祖先 Set 命中",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-114",
+      "category": "UI渲染",
+      "name": "主题切换暗色/亮色 CSS 变量无报错",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-115",
+      "category": "UI渲染",
+      "name": "锁屏界面 lockscreen 首次穿透响应",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-116",
+      "category": "终端工具",
+      "name": "终端模块实例创建与退出监听",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 1.63,
+      "detail": "terminal module ok"
+    },
+    {
+      "id": "SMK-117",
+      "category": "终端工具",
+      "name": "Agent 内置工具库声明完备性 (8类核心工具)",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.13,
+      "detail": "tools=list_dir,list_tree,read_file,search_files,get_file_info,write_file,delete_file,move_file,run_command"
+    },
+    {
+      "id": "SMK-118",
+      "category": "终端工具",
+      "name": "工具执行参数 JSON Schema 校验",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-119",
+      "category": "终端工具",
+      "name": "命令执行退出码与结果输出截断安全",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-120",
+      "category": "终端工具",
+      "name": "工具卡片折叠/展开交互完整性",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 0.01,
+      "detail": "true"
+    },
+    {
+      "id": "SMK-121",
+      "category": "终端工具",
+      "name": "跨进程安全清理 killChildren",
+      "status": "PASS",
+      "code": 0,
+      "durationMs": 3.47,
+      "detail": "killChildren ok"
+    }
+  ]
+}

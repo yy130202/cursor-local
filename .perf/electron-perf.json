@@ -1,0 +1,35 @@
+{
+  "ok": true,
+  "entries": 120,
+  "frames": 158,
+  "frameAvgMs": 17.14,
+  "frameP50": 16.7,
+  "frameP95": 17.7,
+  "frameMaxMs": 66.9,
+  "jankFrames": 3,
+  "idleFrames": 119,
+  "idleFrameAvgMs": 16.67,
+  "idleFrameP95Ms": 17.1,
+  "idleFps": 60,
+  "longTasks": [
+    236
+  ],
+  "longTaskTotalMs": 236,
+  "driveMs": 234.7,
+  "eBuiltTotal": 171,
+  "counters": {
+    "tCalls": 173,
+    "tMs": 221.69999999273568,
+    "lCalls": 0,
+    "lMs": 0,
+    "hCalls": 0,
+    "eBuilt": 171,
+    "eTotal": 10474,
+    "evCount": 172
+  },
+  "dom": {
+    "transcriptChildren": 120,
+    "toolCards": 51,
+    "changeCards": 17
+  }
+}

@@ -8,6 +8,7 @@
  *   TEST_AGENT=1    启动即执行 Agent 回归
  *   TEST_LEGAL=1    启动即验证法律条款页可打开
  *   DIAG=1          启动即输出 UI 诊断信息
+ *   PERF=1          启动即执行 Agent 渲染性能实测（帧间隔 / 长任务）
  *
  * 【依赖注入】winRef 取当前主窗口；rootDir 为项目根目录（替代 rootDir）。
  */
@@ -436,7 +437,41 @@ process.on('uncaughtException', (e) => console.error('[uncaughtException]', e));
     setTimeout(() => app.quit(), 1000);
   }
 
-  return { takeScreenshots, runAgentTest, runLegalTest, runDiag, runConsentTest };
+  /* 性能实测（PERF=1）：在真实 Chromium 渲染进程中测量 Agent 会话流的
+   * 帧间隔与长任务占用，验证 Node 侧 A/B 基准的结论在真实渲染层同样成立。
+   * 做法：注入大量 entry 事件 → 同步驱动 → 用 rAF 采样帧间隔，
+   *      同时用 PerformanceObserver 捕获 longtask（>50ms 阻塞）。
+   * 结果写入 .perf/electron-perf.json 并打印摘要。 */
+  async function runPerfTest() {
+    const outFile = path.join(rootDir, '.perf', 'electron-perf.json');
+    try {
+      await sleep(2600);
+      // 切到 Agents 视图
+      await winRef().webContents.executeJavaScript(
+        `(() => { const b = document.getElementById('mode-agents'); if (b) b.click(); })()`
+      );
+      await sleep(700);
+      const r = await winRef().webContents.executeJavaScript(`(async () => {
+        const entries = Number(${Number(process.env.PERF_ENTRIES) || 120});
+        const id = 'perf-electron-task';
+        if (typeof window.__perfDrive !== 'function') return JSON.stringify({ ok: false, err: 'window.__perfDrive 未注入' });
+        return JSON.stringify(await window.__perfDrive(id, entries));
+      })()`);
+      console.log('[perf-test]', r);
+      let parsed = null;
+      try { parsed = JSON.parse(r); } catch (_) { /* 保持 null */ }
+      if (parsed) {
+        fs.mkdirSync(path.dirname(outFile), { recursive: true });
+        fs.writeFileSync(outFile, JSON.stringify(parsed, null, 2));
+        console.log('[perf-test] 结果已写入 ' + path.relative(rootDir, outFile));
+      }
+    } catch (err) {
+      console.log('[perf-test] ERROR', err && err.message);
+    }
+    setTimeout(() => app.quit(), 800);
+  }
+
+  return { takeScreenshots, runAgentTest, runLegalTest, runDiag, runConsentTest, runPerfTest };
 }
 
 module.exports = { createTesting };

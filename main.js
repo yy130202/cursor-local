@@ -148,7 +148,8 @@ function createWindow() {
     if (level === 'error') console.log('[console:error]', msg);
   });
   win.webContents.on('did-finish-load', () => {
-    if (process.env.TEST_AGENT) testing.runAgentTest();
+    if (process.env.PERF) testing.runPerfTest();
+    else if (process.env.TEST_AGENT) testing.runAgentTest();
     else if (process.env.DIAG) testing.runDiag();
     else if (process.env.TEST_LEGAL) testing.runLegalTest();
     else if (process.env.TEST_CONSENT) testing.runConsentTest();

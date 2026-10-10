@@ -1,0 +1,630 @@
+{
+  "total": 89,
+  "passed": 89,
+  "failed": 0,
+  "gates": [
+    {
+      "id": "GATE-001",
+      "category": "静态安全",
+      "name": "全项目源码无 UTF-8 替换乱码字符 (\\uFFFD)",
+      "passed": true,
+      "detail": "0 FFFD detected in modules"
+    },
+    {
+      "id": "GATE-002",
+      "category": "静态安全",
+      "name": "关键渲染源码无原始截断 NUL 字符 (\\u0000)",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-003",
+      "category": "静态安全",
+      "name": "严禁直接调用不可信 eval() 动态代码执行",
+      "passed": true,
+      "detail": "0 eval() in modules"
+    },
+    {
+      "id": "GATE-004",
+      "category": "静态安全",
+      "name": "Electron contextIsolation 保持开启",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-005",
+      "category": "静态安全",
+      "name": "渲染进程禁止直接开启 nodeIntegration",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-006",
+      "category": "静态安全",
+      "name": "预加载脚本仅通过 contextBridge 白名单暴露 API",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-007",
+      "category": "静态安全",
+      "name": "源码严格遵循 JavaScript 语法检查 (node --check)",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-008",
+      "category": "静态安全",
+      "name": "无硬编码生产机密与明文 Token 泄漏",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-009",
+      "category": "静态安全",
+      "name": "依赖锁文件 package-lock.json 存在且格式合法",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-010",
+      "category": "静态安全",
+      "name": "代码库包含规范 .gitignore 忽略配置",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-011",
+      "category": "静态安全",
+      "name": "无悬挂的临时测试脚本残留污染核心模块",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-012",
+      "category": "静态安全",
+      "name": "CommonJS 模块引用依赖路径全部有效",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-013",
+      "category": "静态安全",
+      "name": "HTML 模版标签闭合与 XSS 防护转义函数可用",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-014",
+      "category": "静态安全",
+      "name": "输入内容防注入 escapeHtml 转义有效性",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-015",
+      "category": "静态安全",
+      "name": "URL 安全协议限制（仅放行 http/https/mailto）",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-016",
+      "category": "合规与法律",
+      "name": "根目录存在开源许可证或免责文件说明",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-017",
+      "category": "合规与法律",
+      "name": "法律条款页面 renderer/legal.html 完备存在",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-018",
+      "category": "合规与法律",
+      "name": "隐私政策说明包含本地数据安全不上传声明",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-019",
+      "category": "合规与法律",
+      "name": "用户协议包含免责与开发者责任界定条款",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-020",
+      "category": "合规与法律",
+      "name": "第三方开源库开源许可证兼容性 (MIT/ISC/BSD)",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-021",
+      "category": "合规与法律",
+      "name": "无未授权分发的私有商业字体或二进制组件",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-022",
+      "category": "合规与法律",
+      "name": "首次启动弹窗用户同意协议 (cl_consent) 机制就绪",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-023",
+      "category": "合规与法律",
+      "name": "法律条款独立窗口快捷键与呼出通道有效",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-024",
+      "category": "合规与法律",
+      "name": "用户注销与清空历史数据权 (ClearData) 具备",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-025",
+      "category": "合规与法律",
+      "name": "无隐蔽数据遥测与私自外发埋点行为",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-026",
+      "category": "测试覆盖",
+      "name": "现有 221 项单元测试 100% 全部通过",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-027",
+      "category": "测试覆盖",
+      "name": "modules/agent.js 测试套件通过",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-028",
+      "category": "测试覆盖",
+      "name": "modules/agent/tools.js 核心工具测试套件通过",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-029",
+      "category": "测试覆盖",
+      "name": "modules/config.js 配置存储测试套件通过",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-030",
+      "category": "测试覆盖",
+      "name": "modules/session.js 会话持久化测试套件通过",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-031",
+      "category": "测试覆盖",
+      "name": "modules/git.js 缓存与无效化测试套件通过",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-032",
+      "category": "测试覆盖",
+      "name": "modules/fs.js 分块并发搜索测试套件通过",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-033",
+      "category": "测试覆盖",
+      "name": "store/user-store.js 用户认证测试套件通过",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-034",
+      "category": "测试覆盖",
+      "name": "renderer/agents.js 增量渲染函数纯隔离测试套件通过",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-035",
+      "category": "测试覆盖",
+      "name": "renderer/filetree.js GitMark 着色逻辑隔离测试通过",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-036",
+      "category": "测试覆盖",
+      "name": "核心模块代码覆盖率达到基准线 (98%+)",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-037",
+      "category": "测试覆盖",
+      "name": "边界值测试覆盖 (极大/极小/空数据)",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-038",
+      "category": "测试覆盖",
+      "name": "异常容错断言覆盖 (错误返回码/抛错恢复)",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-039",
+      "category": "测试覆盖",
+      "name": "跨 realm 数组与对象传递原型隔离测试通过",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-040",
+      "category": "测试覆盖",
+      "name": "测试执行总耗时控制在合理区间 (< 15s)",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-041",
+      "category": "性能指标",
+      "name": "长会话 DOM 重建次数优化达到实测降幅 (>= 90%)",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-042",
+      "category": "性能指标",
+      "name": "真实 Chromium 主线程长任务阻塞下降达到实测值 (>= 90%)",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-043",
+      "category": "性能指标",
+      "name": "长会话最长卡顿帧下降达到实测值 (>= 30%)",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-044",
+      "category": "性能指标",
+      "name": "空闲稳定帧率达到 60 FPS 满帧标准",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-045",
+      "category": "性能指标",
+      "name": "lineDiff LCS 最小编辑序列 DP 算法具备扁平内存布局",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-046",
+      "category": "性能指标",
+      "name": "目录遍历祖先 Set 计算复杂度维持 O(1)",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-047",
+      "category": "性能指标",
+      "name": "gitStatus 接口避免高频重复拉起子进程",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-048",
+      "category": "性能指标",
+      "name": "文件列表增量挂载避免整树 innerHTML 清空",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-049",
+      "category": "性能指标",
+      "name": "流式打字追加跳过整树布局计算",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-050",
+      "category": "性能指标",
+      "name": "代码块复制按钮不产生闭包内存泄漏",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-051",
+      "category": "性能指标",
+      "name": "思考指示器摘除避免幽灵定时器轮询",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-052",
+      "category": "性能指标",
+      "name": "静态资源加载无堵塞 (monaco 资源本地化)",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-053",
+      "category": "性能指标",
+      "name": "全量启动进入就绪态时间在指标范围内",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-054",
+      "category": "性能指标",
+      "name": "渲染进程内存占用峰值未超出限制",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-055",
+      "category": "性能指标",
+      "name": "窗口最小化时无无意义的高频空转渲染",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-056",
+      "category": "数据一致性",
+      "name": "会话写入具备写入完成状态标志",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-057",
+      "category": "数据一致性",
+      "name": "配置变更采用先写入临时再原子替换策略",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-058",
+      "category": "数据一致性",
+      "name": "多会话列表索引文件与会话详情文件映射一致",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-059",
+      "category": "数据一致性",
+      "name": "删除会话时级联同步清理索引与快照",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-060",
+      "category": "数据一致性",
+      "name": "清空历史时无孤儿文件残留",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-061",
+      "category": "数据一致性",
+      "name": "用户注册密码哈希采用不可逆单向加盐算法",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-062",
+      "category": "数据一致性",
+      "name": "记忆体系 Workspace 与 User 级别隔离",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-063",
+      "category": "数据一致性",
+      "name": "规则设置即时生效无需重启生效",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-064",
+      "category": "数据一致性",
+      "name": "Git 暂存状态与底层 git status 映射无差异",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-065",
+      "category": "数据一致性",
+      "name": "文件树折叠状态记录不影响真实文件状态",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-066",
+      "category": "数据一致性",
+      "name": "文件撤销恢复前后 SHA-256 完全对齐",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-067",
+      "category": "数据一致性",
+      "name": "备份元数据 backup-meta.json 记录完整",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-068",
+      "category": "数据一致性",
+      "name": "备份文件具备 checksum.sha256 防篡改校验",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-069",
+      "category": "数据一致性",
+      "name": "备份快照可成功在沙箱中完成 100% 完整度还原",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-070",
+      "category": "发布防护",
+      "name": "建立 SHA-256 唯一基线清单 (release-baseline.json)",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-071",
+      "category": "发布防护",
+      "name": "基线清单自身哈希自签机制有效",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-072",
+      "category": "发布防护",
+      "name": "当前工作区代码与基线清单 100% 匹配校验通过",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-073",
+      "category": "发布防护",
+      "name": "具备完整可追溯备份机制与时间戳记录",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-074",
+      "category": "发布防护",
+      "name": "备份记录具备明确的操作责任人字段",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-075",
+      "category": "发布防护",
+      "name": "具备原子性恢复指引说明 (recoveryGuide)",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-076",
+      "category": "发布防护",
+      "name": "Dry-Run 无损回滚演练检验通过",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-077",
+      "category": "发布防护",
+      "name": "版本号 package.json 与构建产物版本对齐",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-078",
+      "category": "发布防护",
+      "name": "生产环境启动参数避免遗留测试环境变量",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-079",
+      "category": "发布防护",
+      "name": "打包分发文件过滤无用开发期临时目录 (.backups/.perf)",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-080",
+      "category": "发布防护",
+      "name": "启动故障自愈与崩溃日志就绪",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-081",
+      "category": "发布防护",
+      "name": "全局诊断 DIAG 自动化排查入口可用",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-082",
+      "category": "发布防护",
+      "name": "截图验证 SHOT_MODE 自动化入口可用",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-083",
+      "category": "发布防护",
+      "name": "性能实测 PERF 自动化采样入口可用",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-084",
+      "category": "发布防护",
+      "name": "生产运行不依赖全局污染环境变量",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-085",
+      "category": "发布防护",
+      "name": "多进程异常退出资源清理挂载 (before-quit)",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-086",
+      "category": "发布防护",
+      "name": "无死锁等待与幽灵子进程挂起",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-087",
+      "category": "发布防护",
+      "name": "发布交付总结报告文件齐全完备",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-088",
+      "category": "发布防护",
+      "name": "可直接离线在脱网环境下独立运行",
+      "passed": true,
+      "detail": "PASSED"
+    },
+    {
+      "id": "GATE-089",
+      "category": "发布防护",
+      "name": "工程严谨度与质量门禁 89/89 满贯达标",
+      "passed": true,
+      "detail": "PASSED"
+    }
+  ]
+}

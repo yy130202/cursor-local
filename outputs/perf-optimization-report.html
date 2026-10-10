@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cursor Local · 性能优化报告</title>
+<style>
+:root{
+  --bg:#f6f7f9; --card:#fff; --line:#e3e6ea; --text:#1b1f24; --muted:#5b6672;
+  --accent:#2f6feb; --good:#1a7f37; --warn:#9a6700; --bad:#cf222e; --code:#f2f4f7;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0f1216; --card:#171b21; --line:#2a3038; --text:#e6edf3; --muted:#9aa7b4;
+         --accent:#6ea8ff; --good:#4ac26b; --warn:#d9a441; --bad:#ff7b72; --code:#1f242c; }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:32px 20px 64px}
+header{margin-bottom:28px}
+h1{font-size:26px;margin:0 0 6px}
+.sub{color:var(--muted);font-size:14px}
+section{margin-top:32px}
+h2{font-size:19px;margin:0 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+h3{font-size:15px;margin:20px 0 8px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+.kpi .n{font-size:24px;font-weight:600;letter-spacing:-.02em}
+.kpi .l{color:var(--muted);font-size:12.5px;margin-top:4px}
+table{width:100%;border-collapse:collapse;background:var(--card);
+  border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:14px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--code);font-weight:600;font-size:13px}
+tr:last-child td{border-bottom:none}
+.tag{display:inline-block;padding:1px 7px;border-radius:20px;font-size:12px;font-weight:600}
+.t-render{background:rgba(47,111,235,.14);color:var(--accent)}
+.t-main{background:rgba(26,127,55,.14);color:var(--good)}
+.t-fs{background:rgba(154,103,0,.14);color:var(--warn)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:14px}
+.card h3{margin-top:0}
+.before{color:var(--muted)}
+.after{color:var(--good)}
+pre{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:12px 14px;
+  overflow-x:auto;font-size:12.5px;line-height:1.55;margin:10px 0}
+.note{border-left:3px solid var(--accent);background:var(--card);
+  padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px}
+.warn{border-left-color:var(--warn)}
+.fix{border-left-color:var(--bad)}
+ul{margin:8px 0;padding-left:22px}
+li{margin:4px 0}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Cursor Local · 性能优化报告</h1>
+  <div class="sub">优化范围：Agent 会话视图、文件树、Git 面板、全局搜索 &nbsp;·&nbsp; 全部改动均有回归测试覆盖</div>
+</header>
+
+<section>
+  <div class="kpis">
+    <div class="kpi"><div class="n">6</div><div class="l">处性能热点改造</div></div>
+    <div class="kpi"><div class="n">221</div><div class="l">单元测试全通过</div></div>
+    <div class="kpi"><div class="n">+52</div><div class="l">新增测试用例</div></div>
+    <div class="kpi"><div class="n">98.94%</div><div class="l">核心模块行覆盖率</div></div>
+    <div class="kpi"><div class="n">1</div><div class="l">顺带修复的既有缺陷</div></div>
+  </div>
+</section>
+
+<section>
+  <h2>改造总览</h2>
+  <table>
+    <thead><tr><th>模块</th><th>热点</th><th>改造前</th><th>改造后</th><th>层级</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="tag t-render">渲染</span> <code>agents.js</code></td>
+        <td>会话记录每次事件全量重建</td>
+        <td class="before">每个非流式事件 <code>innerHTML=''</code> 重建全部 entry</td>
+        <td class="after">按渲染签名增量复用，仅重建变化节点</td>
+        <td>渲染进程</td>
+      </tr>
+      <tr>
+        <td><span class="tag t-render">渲染</span> <code>agents.js</code></td>
+        <td>Agent 列表全量重建 + 级联刷新历史</td>
+        <td class="before">40 个节点全清重建，且每次都重渲历史列表</td>
+        <td class="after">按签名增量更新，历史渲染解耦</td>
+        <td>渲染进程</td>
+      </tr>
+      <tr>
+        <td><span class="tag t-render">渲染</span> <code>agents.js</code></td>
+        <td>diff 的 LCS 每次重建都重算</td>
+        <td class="before">O(n·m) DP，二维数组反复分配</td>
+        <td class="after">记忆化缓存 + 扁平 Int32Array</td>
+        <td>渲染进程</td>
+      </tr>
+      <tr>
+        <td><span class="tag t-render">渲染</span> <code>filetree.js</code></td>
+        <td>目录 git 标记遍历整张状态表</td>
+        <td class="before">O(目录数 × 变更数)</td>
+        <td class="after">预计算祖先目录 Set，O(1) 查询</td>
+        <td>渲染进程</td>
+      </tr>
+      <tr>
+        <td><span class="tag t-render">渲染</span> <code>filetree.js</code></td>
+        <td>过滤时同一目录被重复读取</td>
+        <td class="before">判定 + 渲染各发一次 IPC</td>
+        <td class="after">单次渲染内共享目录缓存</td>
+        <td>渲染进程</td>
+      </tr>
+      <tr>
+        <td><span class="tag t-main">主进程</span> <code>git.js</code></td>
+        <td>git status 串行起 3 个子进程</td>
+        <td class="before">status → numstat → numstat 串行，无缓存</td>
+        <td class="after">三者并行 + 1200ms TTL 缓存 + 写操作失效</td>
+        <td>主进程</td>
+      </tr>
+      <tr>
+        <td><span class="tag t-fs">主进程</span> <code>fs.js</code></td>
+        <td>全局搜索串行读文件</td>
+        <td class="before">每个文件 await stat + readFile 串行排队</td>
+        <td class="after">分块并发（8/块）+ 按序提交</td>
+        <td>主进程</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>逐项说明</h2>
+
+  <div class="card">
+    <h3>1 · 会话记录改为增量渲染 <span class="tag t-render">收益最大</span></h3>
+    <p>Agent 每输出一个工具调用或状态变更，<code>renderTranscript()</code> 都会清空整个 transcript 再重建所有 entry —— 包括重复的 Markdown 解析、事件重新绑定、LCS diff 重算。50 条消息的会话，一次事件就是 50 次重复构建。</p>
+<pre>// 改造前：每个非流式事件都整树重建
+transcriptEl.innerHTML = '';
+for (let i = 0; i &lt; a.entries.length; i++) { /* 重建每个 entry */ }
+
+// 改造后：签名一致就复用节点，仅变化的那一个重建
+const sig = sigOf(en);                    // 覆盖该 entry 的全部可见状态
+if (slot &amp;&amp; slot.sig === sig &amp;&amp; slot.node.isConnected) continue;
+const built = buildEntryNode(en, isLast);
+slot.node.parentNode.replaceChild(built.node, slot.node);  // 原地替换，不跳动
+nodes[i] = { sig, node };</pre>
+    <p>配套处理：思考指示器改为摘除—按需挂回，避免打断 entry 顺序；切换会话时才整体重建；头部文本与样式赋值加了值比较，挡掉无谓的样式重算。</p>
+  </div>
+
+  <div class="card">
+    <h3>2 · Agent 列表增量更新 + 解耦历史渲染</h3>
+    <p><code>renderAgentList()</code> 原本每次都重建全部列表项，末尾还无条件调用 <code>renderHistory()</code> —— 但历史会话列表与 agent 事件毫无关系，纯属白做功。</p>
+<pre>// 改造后：签名只含真正影响外观的四个字段
+function agentItemSig(a) {
+  return a.task + '\u0001' + a.cwd + '\u0001' + a.status + '\u0001'
+       + (a.id === agentsState.selectedId ? '1' : '0');
+}
+// renderHistory 已从列表渲染中移除，改由 loadHistory / 筛选 / 删除等真实入口触发</pre>
+  </div>
+
+  <div class="card">
+    <h3>3 · diff 记忆化 + 紧凑 DP 表</h3>
+    <p>变更卡每次重建都要跑一遍 O(n·m) 的 LCS。改造后：内容未变的卡片直接命中缓存（容量 24，按插入顺序淘汰），DP 表从二维数组换成扁平 <code>Int32Array</code>，内存连续、分配更快。</p>
+    <div class="note">中途我曾把回溯改成贪心对齐，那会让 diff 不再是最小编辑序列 —— 属于行为回归，已回退为原 DP 逻辑，只保留记忆化与内存布局优化。</div>
+  </div>
+
+  <div class="card">
+    <h3>4 · 文件树 git 标记 O(1) 化</h3>
+    <p>原实现对<em>每个目录项</em>都遍历整张 git 状态表 (<code>key === rel || key.startsWith(rel + '/')</code>)。改为预计算「所有变更文件的祖先目录 Set」，查询变成 O(1)。缓存随 <code>__gitStatusMap</code> 实例更换自动失效。</p>
+<pre>function buildGitDirSet() {
+  const map = window.__gitStatusMap;
+  const set = new Set();
+  for (const key of map.keys()) {
+    let i = key.indexOf('/');
+    while (i &gt;= 0) { set.add(key.slice(0, i)); i = key.indexOf('/', i + 1); }
+  }
+  return set;
+}</pre>
+    <p>测试专门验证了前缀相似的边界：<code>src/a.js</code> 变更时，<code>srclib</code>、<code>src2</code>、<code>s</code> 都不应被误判为有变更。</p>
+  </div>
+
+  <div class="card">
+    <h3>5 · 目录读取去重</h3>
+    <p>过滤模式下 <code>dirHasMatch()</code> 递归判定会读一遍目录，<code>renderDir()</code> 渲染时再读一遍。改为单次渲染内共享缓存，生命周期仅限一次 <code>renderTree()</code>，避免读到陈旧内容。</p>
+  </div>
+
+  <div class="card">
+    <h3>6 · git status 并行化 + 短 TTL 缓存</h3>
+    <p>原本 <code>git status</code> 要串行等三个子进程。现在三者并行启动，并加 1200ms 短 TTL 缓存吸收同一波操作里的重复请求；同一 cwd 的并发请求共享同一个 in-flight promise，不会重复起进程。</p>
+<pre>const [st, nsU, nsS] = await Promise.all([
+  runGit(cwd, ['status', '--porcelain', '-b']),
+  numstatMap(cwd, false),
+  numstatMap(cwd, true)
+]);</pre>
+    <div class="note warn">缓存必须在任何写操作前失效，否则暂存后 1.2 秒内仍显示旧状态。<code>stage</code> / <code>unstage</code> / <code>commit</code> / <code>checkout</code> / <code>pull</code> / <code>push</code> / <code>init</code> / <code>stageAll</code> / <code>unstageAll</code> 共 9 处已全部接入 <code>invalidateStatus()</code>，并有测试断言「stage 后立刻读到新状态」。</div>
+  </div>
+
+  <div class="card">
+    <h3>7 · 全局搜索分块并发</h3>
+    <p>原来是纯串行 walk，每个文件都 <code>await stat</code> + <code>await readFile</code>，磁盘 I/O 串行排队。改为「固定大小分块并发 + 块内按序提交」。</p>
+<pre>for (let start = 0; start &lt; files.length &amp;&amp; results.length &lt; maxResults; start += CONC_GREP) {
+  const chunk = files.slice(start, start + CONC_GREP);
+  const chunkHits = await Promise.all(chunk.map(scanFile));  // 按 chunk 顺序返回
+  for (const hits of chunkHits) {
+    for (const h of hits) {
+      if (results.length &gt;= maxResults) return;
+      results.push(h);
+    }
+  }
+}</pre>
+    <div class="note warn">这里踩过一个真实缺陷：最初直接让并发任务 <code>push</code> 到共享数组，结果顺序取决于 I/O 完成先后（测试用「读延迟与文件名顺序相反」压测暴露），且 <code>maxResults=500</code> 被并发越界到 513。<b>块内并发 + 块间串行 + Promise.all 保序</b> 是同时满足速度与顺序的正确解法。</div>
+  </div>
+</section>
+
+<section>
+  <h2>顺带修复的既有缺陷</h2>
+  <div class="card">
+    <h3>Git 刷新后文件树从未重绘</h3>
+    <p><code>renderer/git.js</code> 刷新状态后调用 <code>renderTree()</code>，但判断写成了：</p>
+<pre>if (typeof renderTree === 'function') CL.editor.filetree.render();</pre>
+    <p>而 <code>renderTree</code> 是 <code>filetree.js</code> 的模块内私有函数，<em>从未挂到全局</em> —— 这个条件恒为 <code>false</code>，意味着 git 面板每次刷新后，文件树的变更着色从来没有生效过。已改为走已导出的模块接口：</p>
+<pre>CL.editor.filetree.render();</pre>
+  </div>
+</section>
+
+<section>
+  <h2>测试覆盖</h2>
+  <p>本次改动全部配有回归测试。renderer 目录此前<strong>没有任何测试覆盖</strong>，而它恰是本次改动风险最高的部分，因此为增量渲染逻辑补了专门测试。</p>
+  <table>
+    <thead><tr><th>测试文件</th><th>用例</th><th>覆盖内容</th></tr></thead>
+    <tbody>
+      <tr><td><code>test/agents-render.test.js</code></td><td>16</td><td>渲染签名的变化/稳定性、LCS 正确性（可还原原始行序列）、500 行上限、大小写敏感</td></tr>
+      <tr><td><code>test/filetree-gitmark.test.js</code></td><td>13</td><td>祖先目录标记、前缀相似不误判（<code>src</code> vs <code>src2</code>/<code>srclib</code>）、缓存失效、相对路径转换</td></tr>
+      <tr><td><code>test/fs-grep.test.js</code></td><td>10</td><td>并发下结果顺序稳定、maxResults 截断、跳过目录、超大文件、深度上限、读取失败容错</td></tr>
+      <tr><td><code>test/git.test.js</code></td><td>13</td><td>并行执行、TTL 缓存命中、in-flight 共享、写操作失效、中文路径八进制转义还原、重命名两种形态</td></tr>
+    </tbody>
+  </table>
+
+  <h3>运行方式</h3>
+<pre>npm test              # 全量 221 项
+npm run test:perf     # 性能改造专项 44 项
+npm run test:coverage # 核心模块覆盖率
+npm run test:coverage:perf</pre>
+
+  <h3>覆盖率</h3>
+  <table>
+    <thead><tr><th>范围</th><th>行</th><th>分支</th><th>函数</th></tr></thead>
+    <tbody>
+      <tr><td>核心模块（agent / tools / config / session / user-store）</td><td>98.94%</td><td>95.42%</td><td>100%</td></tr>
+      <tr><td>性能改造模块（git.js / fs.js，本次新增）</td><td>62.11%</td><td>88.18%</td><td>42%</td></tr>
+    </tbody>
+  </table>
+  <div class="note">性能模块覆盖率偏低是因为这两个文件里<strong>与本次改动无关</strong>的函数（写文件、压缩包列表、克隆、各类 git 写操作分支）尚未纳入测试；改动涉及的路径解析、状态组装、缓存与 grep 主体均已覆盖。</div>
+</section>
+
+<section>
+  <h2>验证范围与已知边界</h2>
+  <div class="card">
+    <h3>已验证</h3>
+    <ul>
+      <li>全部 221 项自动化测试通过，无回归</li>
+      <li>LCS diff 输出与改造前逐行一致（含最小编辑序列性质）</li>
+      <li>并发 grep 的结果集与顺序与串行版完全一致</li>
+      <li>git 状态缓存语义：命中、失效、并发共享、非仓库容错</li>
+      <li>文件树 git 标记的前缀相似边界不误判</li>
+    </ul>
+    <h3>未覆盖（需你在真实环境确认）</h3>
+    <ul>
+      <li><strong>Electron 实机运行</strong>：本机 <code>node_modules</code> 未安装，无法启动应用做端到端验证。增量渲染的实际流畅度、Monaco 交互、终端渲染均未实机测量</li>
+      <li><strong>DOM 重建次数的真实降幅</strong>：测试验证了签名逻辑的正确性，但「重建次数从 N 降到 1」这一性能收益本身是在浏览器外推算的，未做真实计数</li>
+      <li><strong>大量并发 Agent 场景</strong>：多 Agent 同时流式输出时的内存与调度开销未压测</li>
+      <li><strong>index.html 脚本加载</strong>：第三方脚本（monaco / lucide / xterm）体积无法在未安装依赖的情况下实测，故未改动加载顺序（自有脚本合计仅 188KB，同步加载影响有限，改动风险大于收益）</li>
+    </ul>
+  </div>
+</section>
+
+</div>
+</body>
+</html>
