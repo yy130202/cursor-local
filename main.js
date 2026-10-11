@@ -64,10 +64,22 @@ memoryMod.register(ipcMain);
 registerAi(ipcMain, { loadConfig });
 registerAuth(ipcMain, { getUserStore });
 
-/* 法律条款页（用户协议 / 隐私政策 / 免责声明）—— 独立窗口打开 */
-ipcMain.handle('legal:open', () => {
+/* 法律条款页（用户协议 / 隐私政策 / 免责声明）—— 独立窗口打开
+ * 支持传入锚点章节（如 'privacy' / 'constitution'），窗口已存在时
+ * 会重新聚焦并把该章节滚动到视口顶部——这是「设置面板可再次打开
+ * 并直接定位到指定章节」的关键：窗口复用时必须补发跳转指令。
+ */
+ipcMain.handle('legal:open', (_e, anchor) => {
+  const want = typeof anchor === 'string' ? anchor.replace(/[^a-z0-9_-]/gi, '') : '';
   const already = BrowserWindow.getAllWindows().find((w) => w.__isLegal && !w.isDestroyed());
-  if (already) { already.show(); already.focus(); already.moveTop(); return true; }
+  if (already) {
+    already.show(); already.focus(); already.moveTop();
+    // 协议窗口未开 preload（nodeIntegration:false），故用 hash 传跳转指令
+    if (want) already.webContents.executeJavaScript(
+      `location.hash = '#${want}';`
+    ).catch(() => {});
+    return true;
+  }
   const w = new BrowserWindow({
     width: 1000, height: 920, minWidth: 560, minHeight: 480,
     title: '法律条款 · Cursor Local',
@@ -78,11 +90,13 @@ ipcMain.handle('legal:open', () => {
     webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: false }
   });
   w.__isLegal = true;
+  // 首次加载：把锚点拼进 URL，页面 ready 时即可直接定位到该章节
+  const query = want ? `?a=${encodeURIComponent(want)}` : '';
   w.once('ready-to-show', () => { w.show(); w.focus(); w.moveTop(); });
   // 兜底：若 ready-to-show 未触发，1.5s 后强制显示
   setTimeout(() => { if (!w.isDestroyed() && !w.isVisible()) { w.show(); w.focus(); } }, 1500);
   w.on('closed', () => { w.__isLegal = false; });
-  w.loadFile(path.join(__dirname, 'renderer', 'legal.html'));
+  w.loadFile(path.join(__dirname, 'renderer', 'legal.html'), query ? { search: query } : undefined);
   return true;
 });
 /* 供「不同意条款」等场景优雅退出 */

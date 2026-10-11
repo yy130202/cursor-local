@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-10-11T06:49:30.712Z",
-  "commit": "895177f5c6044ecd77dee3d92a3bf9b0ce34419d",
+  "generatedAt": "2026-10-11T07:49:00.480Z",
+  "commit": "6e8287c7cd29922b157a3822d8de5185e5a03a80",
   "tag": "",
   "configDigest": {
     "version": "0.1.0",
@@ -20,15 +20,15 @@
   },
   "metrics": {
     "artifactCount": 44,
-    "totalBytes": 570355
+    "totalBytes": 610177
   },
   "missing": [],
-  "setDigest": "d69e026b11486535e28ccdb3f59a74e9e114047fe6efad2ba016609553396016",
+  "setDigest": "be78ca70daf06b31b8b6777d5f33096add20ee8712e1468062daf54a1488d944",
   "artifacts": [
     {
       "path": "main.js",
-      "sha256": "b4941804b18e9dae621c0771f94d3cab9a7794c92694ae25b62ae66e6ac0bb73",
-      "bytes": 7641
+      "sha256": "bf37f34b2a7b4681662845821553eaa1a7d3b1bbe7b21f1b5b278c312bce1709",
+      "bytes": 8414
     },
     {
       "path": "main/testing.js",
@@ -102,8 +102,8 @@
     },
     {
       "path": "preload.js",
-      "sha256": "e893b6be00adceb11318fb0e77d395b5afc6475c9dafedc545210e326ecdc1df",
-      "bytes": 5786
+      "sha256": "ac8cc1228de0150336f580fbd2d9ec8a00a5ff914a24a3885a4016e1b0ea02b1",
+      "bytes": 6134
     },
     {
       "path": "renderer/agents.js",
@@ -157,8 +157,8 @@
     },
     {
       "path": "renderer/index.html",
-      "sha256": "a31335e34b922475ec602aeca3725d402ddb9884e9fa80b786bfe1ea55008c13",
-      "bytes": 33140
+      "sha256": "ff72912b82df21d46860c4852a366fef6b77a98662594d4e3ee60c94cf33864f",
+      "bytes": 33554
     },
     {
       "path": "renderer/inline.js",
@@ -177,8 +177,8 @@
     },
     {
       "path": "renderer/legal.html",
-      "sha256": "eaf55d3ab911df2b710094b25ad05140bffc93e8ee7b16a4aaa47326536dcc7d",
-      "bytes": 54539
+      "sha256": "0a2b65fba3d6d8251133e11528038950fb5661e07e9f912f54838ef0f98f272b",
+      "bytes": 92275
     },
     {
       "path": "renderer/lockscreen.js",
@@ -217,8 +217,8 @@
     },
     {
       "path": "renderer/renderer.js",
-      "sha256": "2ef165839856c30e8f39611806536a2a04d77e80d7abc68297cd5e956bcd80cf",
-      "bytes": 22665
+      "sha256": "811d1e023add9cde4f13076759882c455a1be41d3dea23044c121754d64bb5b5",
+      "bytes": 23216
     },
     {
       "path": "renderer/style.css",

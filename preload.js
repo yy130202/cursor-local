@@ -14,7 +14,13 @@ contextBridge.exposeInMainWorld('api', {
   readDir: (p) => ipcRenderer.invoke('fs:readDir', p),
   listArchive: (f) => ipcRenderer.invoke('fs:listArchive', f),
   openExternal: (f) => ipcRenderer.invoke('fs:openExternal', f),
-  openLegal: () => ipcRenderer.invoke('legal:open'),
+  openLegal: (anchor) => ipcRenderer.invoke('legal:open', anchor),
+  /* 协议窗口已存在时，主进程会补发跳转指令 —— 这里只做转发，不暴露 ipcRenderer */
+  onLegalNavigate: (cb) => {
+    const h = (_e, anchor) => { if (typeof cb === 'function') cb(anchor); };
+    ipcRenderer.on('legal:navigate', h);
+    return () => ipcRenderer.removeListener('legal:navigate', h);
+  },
   quit: () => ipcRenderer.invoke('app:quit'),
   readFile: (p) => ipcRenderer.invoke('fs:readFile', p),
   writeFile: (p, c) => ipcRenderer.invoke('fs:writeFile', p, c),

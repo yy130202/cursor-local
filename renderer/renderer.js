@@ -503,8 +503,19 @@ function applyBgAlpha(v) {
   });
 })();
 
-/* 关于页：打开法律条款（用户协议 / 隐私政策 / 免责声明） */
+/* 关于页：打开法律条款（用户协议 / 隐私政策 / 免责声明 / 法规索引）
+ * 协议窗口关闭后可随时再次打开；带 data-legal-open 的按钮会直接定位到
+ * 对应章节（主进程拼 URL 参数或改写 hash，legal.html 侧负责滚动）。 */
 (function bindOpenLegal() {
-  const btn = document.getElementById('open-legal-btn');
-  if (btn) btn.onclick = () => { if (window.api && window.api.openLegal) window.api.openLegal(); };
+  const btns = [].slice.call(document.querySelectorAll('[data-legal-open]'));
+  btns.forEach((btn) => {
+    btn.onclick = () => {
+      if (window.api && window.api.openLegal) window.api.openLegal(btn.dataset.legalOpen || '');
+    };
+  });
+  // 兼容旧入口（若仍有 #open-legal-btn 残留）
+  const legacy = document.getElementById('open-legal-btn');
+  if (legacy && !legacy.dataset.legalOpen) {
+    legacy.onclick = () => { if (window.api && window.api.openLegal) window.api.openLegal(''); };
+  }
 })();

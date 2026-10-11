@@ -1030,8 +1030,18 @@ async function runStaticComplianceGates() {
     const line = lineNumbersOf(mainSrc, /ipcMain\.handle\('legal:open'/);
     must(line.length === 1, `legal:open 应恰好注册一次，实际 ${line.length} 次`);
     const preSrc = readSrc('preload.js');
-    must(/openLegal:\s*\(\)\s*=>\s*ipcRenderer\.invoke\('legal:open'\)/.test(preSrc),
-      'preload.openLegal 未正确转发到 legal:open 通道');
+    // 允许 openLegal 带可选参数（章节锚点），形如 () 或 (anchor)
+    must(/openLegal:\s*\(\s*[A-Za-z_$][\w$]*\s*\)?\s*=>\s*ipcRenderer\.invoke\(\s*'legal:open'/.test(preSrc),
+      'preload.openLegal 未正确转发到 legal:open 通道（允许零参或单参）');
+    // 传了锚点就必须把参数透传给 invoke，否则设置面板的章节定位会静默失效
+    const openLegalBody = /openLegal:\s*\([^)]*\)\s*=>\s*ipcRenderer\.invoke\(\s*'legal:open'\s*([^)]*)\)/.exec(preSrc);
+    if (openLegalBody) {
+      const takesArg = /openLegal:\s*\(\s*[A-Za-z_$][\w$]*\s*\)/.test(preSrc);
+      if (takesArg) {
+        must(/\w/.test(openLegalBody[1] || ''),
+          'preload.openLegal 声明了参数但未透传给 invoke(\'legal:open\', …)，章节定位会失效');
+      }
+    }
     const loadsLegal = /loadFile\([^)]*legal\.html/.test(mainSrc);
     must(loadsLegal, 'legal:open handler 未加载 renderer/legal.html');
     return metric(EvidenceKind.RUNTIME_IPC,

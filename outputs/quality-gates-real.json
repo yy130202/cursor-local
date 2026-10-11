@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-11T06:49:30.643Z",
-  "durationMs": 53508,
+  "generatedAt": "2026-10-11T07:49:00.393Z",
+  "durationMs": 67621,
   "total": 90,
   "passed": 88,
   "failed": 2,
@@ -16,12 +16,12 @@
         "kind": "static-scan",
         "value": {
           "files": 71,
-          "chars": 955455,
+          "chars": 978343,
           "dirty": 0,
           "exempted": 2
         },
-        "detail": "递归扫描 71 个源码文件（js/json/html/css/md），累计 955,455 字符，真实编码损坏 0 处；另有 2 处为讲解坏字符处理的有意示例（已豁免）: CLAUDE.md:58 文档示例, scripts/gates/static-compliance.js:404 文档示例",
-        "hash": "5b2bc5c13690",
+        "detail": "递归扫描 71 个源码文件（js/json/html/css/md），累计 978,343 字符，真实编码损坏 0 处；另有 2 处为讲解坏字符处理的有意示例（已豁免）: CLAUDE.md:58 文档示例, scripts/gates/static-compliance.js:404 文档示例",
+        "hash": "d76ca9b7cc69",
         "metric": null,
         "unit": "char"
       },
@@ -36,12 +36,12 @@
         "kind": "static-scan",
         "value": {
           "files": 25,
-          "bytes": 292600,
+          "bytes": 331301,
           "escapeSeqs": 9,
           "realNul": 0
         },
-        "detail": "扫描 renderer/ 下 25 个 js/html 文件共 292,600 字节：真实 0x00 字节 0 个，合法 \\u0000 转义序列 9 处（miniMarkdown 代码块占位符），",
-        "hash": "3624ed2a9de6",
+        "detail": "扫描 renderer/ 下 25 个 js/html 文件共 331,301 字节：真实 0x00 字节 0 个，合法 \\u0000 转义序列 9 处（miniMarkdown 代码块占位符），",
+        "hash": "b1fd47a20a99",
         "metric": null,
         "unit": "byte"
       },
@@ -76,12 +76,12 @@
         "value": {
           "count": 2,
           "lines": [
-            78,
-            135
+            90,
+            149
           ]
         },
-        "detail": "main.js 第 78、135 行声明 contextIsolation: true（共 2 处 BrowserWindow 配置），无任何 contextIsolation:false 反向配置",
-        "hash": "b9c3d9573e3a",
+        "detail": "main.js 第 90、149 行声明 contextIsolation: true（共 2 处 BrowserWindow 配置），无任何 contextIsolation:false 反向配置",
+        "hash": "032813224185",
         "metric": null,
         "unit": "occurrence"
       },
@@ -95,11 +95,11 @@
       "evidence": {
         "kind": "invariant",
         "value": {
-          "off": 2,
+          "off": 3,
           "on": 0
         },
-        "detail": "main.js 第 78、134 行声明 nodeIntegration: false（主窗口与法律条款窗口各一处），全文件无 nodeIntegration:true",
-        "hash": "18cdc2077224",
+        "detail": "main.js 第 77、90、148 行声明 nodeIntegration: false（主窗口与法律条款窗口各一处），全文件无 nodeIntegration:true",
+        "hash": "2c9b9c3e0799",
         "metric": null,
         "unit": "occurrence"
       },
@@ -114,12 +114,12 @@
         "kind": "invariant",
         "value": {
           "exposes": 2,
-          "apiKeys": 72,
+          "apiKeys": 73,
           "requires": 2,
           "invoke": 66
         },
-        "detail": "preload.js 第 5、12 行调用 contextBridge.exposeInMainWorld，共暴露 72 个顶层 API 键与 66 个 invoke 通道；require 仅含 electron/path，无整体暴露 ipcRenderer",
-        "hash": "a93878c874d3",
+        "detail": "preload.js 第 5、12 行调用 contextBridge.exposeInMainWorld，共暴露 73 个顶层 API 键与 66 个 invoke 通道；require 仅含 electron/path，无整体暴露 ipcRenderer",
+        "hash": "0344b2348627",
         "metric": null,
         "unit": "key"
       },
@@ -311,11 +311,11 @@
       "evidence": {
         "kind": "artifact",
         "value": {
-          "bytes": 54539,
+          "bytes": 92275,
           "lines": 1
         },
-        "detail": "renderer/legal.html 存在，54,539 字节 / 1 行，含 <html> 根元素与闭合标签，非空",
-        "hash": "48d1d52d507e",
+        "detail": "renderer/legal.html 存在，92,275 字节 / 1 行，含 <html> 根元素与闭合标签，非空",
+        "hash": "6dffe04352e6",
         "metric": null,
         "unit": "byte"
       },
@@ -329,12 +329,12 @@
       "evidence": {
         "kind": "static-scan",
         "value": {
-          "headings": 64,
+          "headings": 83,
           "privacySections": 4,
-          "localKeys": 3
+          "localKeys": 4
         },
-        "detail": "legal.html 共 64 个章节标题，隐私相关章节 4 个（隐私政策/2.1数据处理角色定位术语表/2.5敏感个人信息与特殊类别数据术语表/A数据保护与隐私法规），正文命中本地存储声明关键词 localStorage/本机/本地存储 共 3 项",
-        "hash": "37e7ed13eff9",
+        "detail": "legal.html 共 83 个章节标题，隐私相关章节 4 个（隐私政策/2.1数据处理角色定位术语表/2.5敏感个人信息与特殊类别数据术语表/A-4国际与区域数据保护法规），正文命中本地存储声明关键词 localStorage/本机/本地存储/不上传 共 4 项",
+        "hash": "f73ad5bcb271",
         "metric": null,
         "unit": "section"
       },
@@ -348,11 +348,11 @@
       "evidence": {
         "kind": "static-scan",
         "value": {
-          "sections": 7,
+          "sections": 11,
           "terms": 6
         },
-        "detail": "legal.html 免责/责任类章节 7 个（免责声明/3.2AI 输出的固有风险术语表/3.3操作风险与数据安全/3.4备份与恢复责任/3.8AI 输出的第三方知识产权风险/3.11责任限制（Limitation of Liability）/3.12免责赔偿（Indemnification）），正文命中免责要素 不承担/自行承担/风险/责任/担保/第三方 共 6/6 项",
-        "hash": "66da86fb87c4",
+        "detail": "legal.html 免责/责任类章节 11 个（1.16第三方服务与你的责任/1.18不可抗力与免责/1.21你对最终用户的责任法源/1.23终端安全责任安全提示/免责声明/3.2AI 输出的固有风险术语表/3.3操作风险与数据安全/3.4备份与恢复责任/3.8AI 输出的第三方知识产权风险/3.11责任限制（Limitation of Liability）/3.12免责赔偿（Indemnification）），正文命中免责要素 不承担/自行承担/风险/责任/担保/第三方 共 6/6 项",
+        "hash": "c5c2c387a61c",
         "metric": null,
         "unit": "term"
       },
@@ -431,11 +431,11 @@
         "kind": "runtime-ipc",
         "value": {
           "channels": 66,
-          "apiKeys": 72,
-          "handlerLine": 68
+          "apiKeys": 73,
+          "handlerLine": 72
         },
-        "detail": "共注册 66 个 ipcMain.handle 通道，其中 legal:open 位于 main.js:68 且仅注册一次；preload 暴露 72 个 API 键，含 openLegal 并正确 invoke('legal:open')；handler 内 loadFile 加载 renderer/legal.html",
-        "hash": "aa16f9fa0668",
+        "detail": "共注册 66 个 ipcMain.handle 通道，其中 legal:open 位于 main.js:72 且仅注册一次；preload 暴露 73 个 API 键，含 openLegal 并正确 invoke('legal:open')；handler 内 loadFile 加载 renderer/legal.html",
+        "hash": "3d3e9581727b",
         "metric": null,
         "unit": "channel"
       },
@@ -450,11 +450,11 @@
         "kind": "runtime-ipc",
         "value": {
           "channels": 2,
-          "apiKeys": 72,
+          "apiKeys": 73,
           "writesIndex": true
         },
-        "detail": "session:clear 与 session:delete 两个通道均已注册（共 66 个通道），preload 暴露 clearSessions/deleteSession（共 72 个 API 键）；session:clear 实现中对索引文件执行了删除或重写（true）",
-        "hash": "9ef0da185c3d",
+        "detail": "session:clear 与 session:delete 两个通道均已注册（共 66 个通道），preload 暴露 clearSessions/deleteSession（共 73 个 API 键）；session:clear 实现中对索引文件执行了删除或重写（true）",
+        "hash": "c4460b933516",
         "metric": null,
         "unit": "channel"
       },
@@ -469,11 +469,11 @@
         "kind": "static-scan",
         "value": {
           "callPoints": 4,
-          "hosts": 23,
+          "hosts": 29,
           "telemetry": 0
         },
-        "detail": "审计 41 个运行时代码文件，定位 4 处网络调用点（main/testing.js:294、modules/agent.js:339、modules/agent.js:352、modules/ai.js:8），全部经 cfg.baseUrl 指向用户自配置的 AI 接口；源码中 23 个外部主机名（api.deepseek.com,github.com,opensource.org,openai.com,docs.github.com,eur-lex.europa.eu）；遥测/埋点特征词命中 0 处，无硬编码外发端点",
-        "hash": "888a4097c5d6",
+        "detail": "审计 41 个运行时代码文件，定位 4 处网络调用点（main/testing.js:294、modules/agent.js:339、modules/agent.js:352、modules/ai.js:8），全部经 cfg.baseUrl 指向用户自配置的 AI 接口；源码中 29 个外部主机名（api.deepseek.com,github.com,www.npc.gov.cn,opensource.org,openai.com,docs.github.com）；遥测/埋点特征词命中 0 处，无硬编码外发端点",
+        "hash": "d9ce62343aff",
         "metric": null,
         "unit": "site"
       },
@@ -490,10 +490,10 @@
           "pass": 237,
           "fail": 0,
           "total": 237,
-          "durationMs": 10357
+          "durationMs": 12109
         },
-        "detail": "node:test isolation:'none' 真实执行 237 个用例：通过 237，失败 0，耗时 10357ms。分文件：agent-tools.test.js:85 agent.test.js:40 agents-render.test.js:28 config.test.js:14 filetree-gitmark.test.js:13 fs-grep.test.js:10 git.test.js:13 release-guard.test.js:4 session.test.js:14 user-store.test.js:16",
-        "hash": "84c6836ef933",
+        "detail": "node:test isolation:'none' 真实执行 237 个用例：通过 237，失败 0，耗时 12109ms。分文件：agent-tools.test.js:85 agent.test.js:40 agents-render.test.js:28 config.test.js:14 filetree-gitmark.test.js:13 fs-grep.test.js:10 git.test.js:13 release-guard.test.js:4 session.test.js:14 user-store.test.js:16",
+        "hash": "df08893c51d0",
         "metric": null,
         "unit": "test"
       },
@@ -761,12 +761,12 @@
       "evidence": {
         "kind": "metric",
         "value": {
-          "durationMs": 10357,
+          "durationMs": 12109,
           "total": 237,
-          "perSecond": 22.9
+          "perSecond": 19.6
         },
-        "detail": "真实执行 237 个用例耗时 10357ms（22.9 用例/秒），在 15000ms 预算内；测量方式为 node:test isolation:'none' 进程内执行，含模块加载与断言开销",
-        "hash": "2bfd6bb0e26f",
+        "detail": "真实执行 237 个用例耗时 12109ms（19.6 用例/秒），在 15000ms 预算内；测量方式为 node:test isolation:'none' 进程内执行，含模块加载与断言开销",
+        "hash": "8ee80aafac21",
         "metric": null,
         "unit": "ms"
       },
@@ -1017,11 +1017,11 @@
       "evidence": {
         "kind": "metric",
         "value": {
-          "ms": 2.24,
-          "bytes": 151589
+          "ms": 2.13,
+          "bytes": 151960
         },
-        "detail": "hrtime 真实计时：读取 renderer/index.html(29998B) + style.css(121591B) 同步耗时 2.24ms（门槛 <50ms，本地磁盘无网络往返）",
-        "hash": "43c9e88b5c1c",
+        "detail": "hrtime 真实计时：读取 renderer/index.html(30369B) + style.css(121591B) 同步耗时 2.13ms（门槛 <50ms，本地磁盘无网络往返）",
+        "hash": "412b782ac1ca",
         "metric": null,
         "unit": "ms"
       },
@@ -1035,11 +1035,11 @@
       "evidence": {
         "kind": "metric",
         "value": {
-          "heapUsedMb": 23.08,
-          "rssMb": 87.02
+          "heapUsedMb": 13.64,
+          "rssMb": 70.96
         },
-        "detail": "门禁进程真实内存快照：heapUsed 23.08MB、rss 87.02MB，远低于 800MB 告警水位",
-        "hash": "0f33045c5d87",
+        "detail": "门禁进程真实内存快照：heapUsed 13.64MB、rss 70.96MB，远低于 800MB 告警水位",
+        "hash": "a0a40ac92b7e",
         "metric": null,
         "unit": "MB"
       },
@@ -1249,10 +1249,10 @@
       "evidence": {
         "kind": "artifact",
         "value": {
-          "sha": "242c2c69b4fcf5b5"
+          "sha": "f83ae0ffa63e86ec"
         },
-        "detail": "checksum.sha256 记录 242c2c69b4fcf5b5…；重算一致；将 operator 篡改为 attacker 后哈希立即失配，防篡改有效",
-        "hash": "006f93474d04",
+        "detail": "checksum.sha256 记录 f83ae0ffa63e86ec…；重算一致；将 operator 篡改为 attacker 后哈希立即失配，防篡改有效",
+        "hash": "e8bbde76a79d",
         "metric": null,
         "unit": "byte"
       },
@@ -1286,10 +1286,10 @@
         "value": {
           "total": 44,
           "matched": 44,
-          "digest": "8ac288cfd54abbbf"
+          "digest": "260562a60f8e4ed5"
         },
-        "detail": "重算 JSON.stringify(files) 的 SHA-256 与 manifestDigest 一致（8ac288cfd54abbbf…）；并逐个重算磁盘文件哈希：44 个全部匹配",
-        "hash": "209bf015fff0",
+        "detail": "重算 JSON.stringify(files) 的 SHA-256 与 manifestDigest 一致（260562a60f8e4ed5…）；并逐个重算磁盘文件哈希：44 个全部匹配",
+        "hash": "280c2d0c117b",
         "metric": null,
         "unit": "file"
       },
@@ -1303,11 +1303,11 @@
       "evidence": {
         "kind": "artifact",
         "value": {
-          "commit": "895177f5c604",
+          "commit": "6e8287c7cd29",
           "known": true
         },
-        "detail": "基线 commit 为合法 40 位 Git SHA（895177f5c604…），经格式校验且非历史编造占位值",
-        "hash": "3cb6a9931f73",
+        "detail": "基线 commit 为合法 40 位 Git SHA（6e8287c7cd29…），经格式校验且非历史编造占位值",
+        "hash": "8b510e0ce852",
         "metric": null,
         "unit": "char"
       },
@@ -1321,10 +1321,10 @@
       "evidence": {
         "kind": "file-hash",
         "value": {
-          "digest": "8ac288cfd54abbbf77803dfafcca2538974aefe3ab4ca7798805ce2b99e4ce64"
+          "digest": "260562a60f8e4ed589eca9e6d95de76bfb1c9e36139aaa2e5e1f9b1d9fd66e57"
         },
-        "detail": "重算 JSON.stringify(files) 的 SHA-256 与清单记录一致（8ac288cfd54abbbf77803dfafcca2538974aefe3ab4ca7798805ce2b99e4ce64）",
-        "hash": "466d4e7409ea",
+        "detail": "重算 JSON.stringify(files) 的 SHA-256 与清单记录一致（260562a60f8e4ed589eca9e6d95de76bfb1c9e36139aaa2e5e1f9b1d9fd66e57）",
+        "hash": "431ec2374b7a",
         "metric": null,
         "unit": "byte"
       },
@@ -1358,10 +1358,10 @@
         "value": {
           "artifacts": 44,
           "matched": 44,
-          "setDigest": "d69e026b11486535e28ccdb3f59a74e9e114047fe6efad2ba016609553396016"
+          "setDigest": "be78ca70daf06b31b8b6777d5f33096add20ee8712e1468062daf54a1488d944"
         },
-        "detail": "产物清单登记 44 个交付文件，逐个重算 digest 全部匹配；清单集摘要 d69e026b11486535…",
-        "hash": "61dd6a4644de",
+        "detail": "产物清单登记 44 个交付文件，逐个重算 digest 全部匹配；清单集摘要 be78ca70daf06b31…",
+        "hash": "bb94bd2f6019",
         "metric": null,
         "unit": "file"
       },
@@ -1412,11 +1412,11 @@
         "kind": "artifact",
         "value": {
           "files": 44,
-          "createdAt": "2026-10-11T06:49:26.521Z",
+          "createdAt": "2026-10-11T07:48:53.768Z",
           "operator": "release-gate"
         },
-        "detail": "备份快照 44 个文件均带 64 位 sha256，元数据含时间戳 2026-10-11T06:49:26.521Z、责任人 release-gate、恢复指引与 checksum.sha256 校验值",
-        "hash": "145dfa4581a5",
+        "detail": "备份快照 44 个文件均带 64 位 sha256，元数据含时间戳 2026-10-11T07:48:53.768Z、责任人 release-gate、恢复指引与 checksum.sha256 校验值",
+        "hash": "abec9e3a9dd6",
         "metric": null,
         "unit": "file"
       },
@@ -1594,7 +1594,7 @@
         "value": {
           "files": 4
         },
-        "detail": "发布报告齐全且内容非空、JSON 可正常解析: release-baseline.json(8880B) artifact-manifest.json(7455B) quality-gates-real.json(43556B) release-verification-matrix.html(44485B)",
+        "detail": "发布报告齐全且内容非空、JSON 可正常解析: release-baseline.json(8880B) artifact-manifest.json(7455B) quality-gates-real.json(43712B) release-verification-matrix.html(44640B)",
         "hash": "1c8519240712",
         "metric": null,
         "unit": "file"

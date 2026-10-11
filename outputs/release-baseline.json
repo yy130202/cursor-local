@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
-  "generatedAt": "2026-10-11T06:35:33.013Z",
+  "generatedAt": "2026-10-11T07:44:34.539Z",
   "project": "cursor-local",
   "version": "0.1.0",
-  "commit": "895177f5c6044ecd77dee3d92a3bf9b0ce34419d",
+  "commit": "6e8287c7cd29922b157a3822d8de5185e5a03a80",
   "tag": "",
   "configDigest": {
     "version": "0.1.0",
@@ -28,13 +28,13 @@
   },
   "metrics": {
     "fileCount": 44,
-    "totalBytes": 570355
+    "totalBytes": 610177
   },
   "files": {
     "main.js": {
-      "sha256": "b4941804b18e9dae621c0771f94d3cab9a7794c92694ae25b62ae66e6ac0bb73",
-      "bytes": 7641,
-      "mtime": "2026-10-10T15:04:03.983Z"
+      "sha256": "bf37f34b2a7b4681662845821553eaa1a7d3b1bbe7b21f1b5b278c312bce1709",
+      "bytes": 8414,
+      "mtime": "2026-10-11T07:16:18.151Z"
     },
     "main/testing.js": {
       "sha256": "3c2c9318cfc06e49a6ebdcba16433a9bb662f27bdf3b635358ea897032884ff3",
@@ -107,9 +107,9 @@
       "mtime": "2026-10-11T02:29:21.390Z"
     },
     "preload.js": {
-      "sha256": "e893b6be00adceb11318fb0e77d395b5afc6475c9dafedc545210e326ecdc1df",
-      "bytes": 5786,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "sha256": "ac8cc1228de0150336f580fbd2d9ec8a00a5ff914a24a3885a4016e1b0ea02b1",
+      "bytes": 6134,
+      "mtime": "2026-10-11T07:27:21.117Z"
     },
     "renderer/agents.js": {
       "sha256": "d87702a543b2c085b28110939c41af2c748b86c748033db346723e7ef8265327",
@@ -162,9 +162,9 @@
       "mtime": "2026-10-07T04:16:10.734Z"
     },
     "renderer/index.html": {
-      "sha256": "a31335e34b922475ec602aeca3725d402ddb9884e9fa80b786bfe1ea55008c13",
-      "bytes": 33140,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "sha256": "ff72912b82df21d46860c4852a366fef6b77a98662594d4e3ee60c94cf33864f",
+      "bytes": 33554,
+      "mtime": "2026-10-11T07:17:06.758Z"
     },
     "renderer/inline.js": {
       "sha256": "67d3146b43f6aec6ed360535822b06239352f6bd65c08a1d038305b2659597c9",
@@ -182,9 +182,9 @@
       "mtime": "2026-10-06T04:21:11.000Z"
     },
     "renderer/legal.html": {
-      "sha256": "eaf55d3ab911df2b710094b25ad05140bffc93e8ee7b16a4aaa47326536dcc7d",
-      "bytes": 54539,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "sha256": "0a2b65fba3d6d8251133e11528038950fb5661e07e9f912f54838ef0f98f272b",
+      "bytes": 92275,
+      "mtime": "2026-10-11T07:43:09.205Z"
     },
     "renderer/lockscreen.js": {
       "sha256": "35e005c2756740ffc84f0a3a34df3b9b4732403b9be2689705b8d8f69758709e",
@@ -222,9 +222,9 @@
       "mtime": "2026-10-06T04:21:11.000Z"
     },
     "renderer/renderer.js": {
-      "sha256": "2ef165839856c30e8f39611806536a2a04d77e80d7abc68297cd5e956bcd80cf",
-      "bytes": 22665,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "sha256": "811d1e023add9cde4f13076759882c455a1be41d3dea23044c121754d64bb5b5",
+      "bytes": 23216,
+      "mtime": "2026-10-11T07:17:16.501Z"
     },
     "renderer/style.css": {
       "sha256": "8a240601a152bb961e3e6f28f95331563900f6ed0ca875781c0be50ce223c0ec",
@@ -252,5 +252,5 @@
       "mtime": "2026-10-06T04:21:11.000Z"
     }
   },
-  "manifestDigest": "8ac288cfd54abbbf77803dfafcca2538974aefe3ab4ca7798805ce2b99e4ce64"
+  "manifestDigest": "260562a60f8e4ed589eca9e6d95de76bfb1c9e36139aaa2e5e1f9b1d9fd66e57"
 }
