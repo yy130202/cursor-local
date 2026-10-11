@@ -848,9 +848,34 @@ async function runStaticComplianceGates() {
     const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
     const pkgLicense = pkg.license || null;
     const docs = ['README.md', 'CLAUDE.md', '交付总结.md'].filter((f) => fs.existsSync(path.join(ROOT, f)));
-    const KW = /(MIT|Apache-2\.0|BSD-[23]|GPL|ISC|MPL|许可证|开源协议|授权协议)/;
-    const declaredIn = docs.filter((f) => KW.test(fs.readFileSync(path.join(ROOT, f), 'utf8')));
-    const detail = `根目录许可证文件 ${licenseFiles.length} 个${licenseFiles.length ? '(' + licenseFiles.join(',') + ')' : ''}；package.json license 字段=${pkgLicense || '未声明'}；${docs.length} 份说明文档中命中许可证关键词的有 ${declaredIn.length} 份${declaredIn.length ? '(' + declaredIn.join(',') + ')' : ''}`;
+    /*
+     * 文档中的许可声明必须识别为「声明句」，而不是「提到过这个词」。
+     *
+     * 反例（本项目真实踩过两次）：
+     *   1) README 写「无许可证声明：LICENSE 文件、package.json license 字段…三者全缺」
+     *      —— 含「许可证」三字，裸关键词匹配会判成「已声明许可」。
+     *   2) README 有个「## 许可证」小节标题，下面写的却是「三者全缺」
+     *      —— 仅凭标题存在就判 PASS，等于被一个空标题骗过。
+     *
+     * 因此只认「声明句式」本身：小节标题不算，必须有一句
+     * 「本项目/本软件/本仓库 … 采用/使用/基于/遵循 … <SPDX 标识符>」，
+     * 且该行不含否定语境（缺失/未声明/待定…）。
+     */
+    const SPACEX = /(MIT\s*License|Apache[\s-]?2\.0|BSD[\s-]?[23]\b|GPL[\s-]?[23]?\b|\bISC\b|\bMPL[\s-]?2\.0)/i;
+    const DECLARE = new RegExp(
+      '(本项目|本软件|本仓库|此项目)[^\\n。]{0,24}(采用|使用|基于|遵循|发布于|授权|以)[^\\n。]{0,24}' + SPACEX.source,
+      'im'
+    );
+    const NEGATION = /(缺失|未声明|未标注|没有|尚无|待定|待补|待确认|无许可证|不适用)/;
+    const declaredIn = docs.filter((f) => {
+      const text = fs.readFileSync(path.join(ROOT, f), 'utf8');
+      const hit = DECLARE.exec(text);
+      // 命中声明句式、且所在行不含否定语境，才算有效声明
+      if (!hit) return false;
+      const line = text.slice(0, hit.index).split(/\r?\n/).pop() + hit[0];
+      return !NEGATION.test(line);
+    });
+    const detail = `根目录许可证文件 ${licenseFiles.length} 个${licenseFiles.length ? '(' + licenseFiles.join(',') + ')' : ''}；package.json license 字段=${pkgLicense || '未声明'}；${docs.length} 份说明文档中含有效许可声明的有 ${declaredIn.length} 份${declaredIn.length ? '(' + declaredIn.join(',') + ')' : ''}`;
     must(licenseFiles.length > 0 || pkgLicense || declaredIn.length > 0,
       `${detail}；三者全缺，项目未以任何形式声明开源许可，分发即构成法律风险`);
     return metric(EvidenceKind.ARTIFACT,

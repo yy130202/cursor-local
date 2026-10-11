@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-10-11T00:34:37.735Z",
-  "commit": "7d3fa6afb888f491018b02444bfa821287a814de",
+  "generatedAt": "2026-10-11T02:49:43.134Z",
+  "commit": "unknown:git 不可用(EBUSY)",
   "tag": "",
   "configDigest": {
     "version": "0.1.0",
@@ -20,10 +20,10 @@
   },
   "metrics": {
     "artifactCount": 44,
-    "totalBytes": 565931
+    "totalBytes": 565988
   },
   "missing": [],
-  "setDigest": "1713f463c0bfd8e6b94566de4d21c39e36a7b268e321f81d9be7cf9d3f072e39",
+  "setDigest": "ca759dde81301d17a95cb3a2b4151faf469c7b6d420e5feab38543aa234d4581",
   "artifacts": [
     {
       "path": "main.js",
@@ -97,8 +97,8 @@
     },
     {
       "path": "package.json",
-      "sha256": "857a71c29ccb751cf118d1766cb0ad24d735d7e8a9bc38261717af0b994de6d8",
-      "bytes": 1751
+      "sha256": "0d4741afdd47a8a4f2c824e77a8b588afd5751f6f90aeda3e55d776fc32aab3c",
+      "bytes": 1808
     },
     {
       "path": "preload.js",

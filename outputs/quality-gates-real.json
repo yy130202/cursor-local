@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-11T00:23:18.674Z",
-  "durationMs": 29716,
+  "generatedAt": "2026-10-11T02:47:00.382Z",
+  "durationMs": 37234,
   "total": 89,
   "passed": 86,
   "failed": 2,
@@ -15,13 +15,13 @@
       "evidence": {
         "kind": "static-scan",
         "value": {
-          "files": 69,
-          "chars": 866082,
+          "files": 70,
+          "chars": 934961,
           "dirty": 0,
           "exempted": 2
         },
-        "detail": "递归扫描 69 个源码文件（js/json/html/css/md），累计 866,082 字符，真实编码损坏 0 处；另有 2 处为讲解坏字符处理的有意示例（已豁免）: CLAUDE.md:58 文档示例, scripts/gates/static-compliance.js:404 文档示例",
-        "hash": "a990db4fc879",
+        "detail": "递归扫描 70 个源码文件（js/json/html/css/md），累计 934,961 字符，真实编码损坏 0 处；另有 2 处为讲解坏字符处理的有意示例（已豁免）: CLAUDE.md:58 文档示例, scripts/gates/static-compliance.js:404 文档示例",
+        "hash": "fcd61deca668",
         "metric": null,
         "unit": "char"
       },
@@ -134,11 +134,11 @@
         "kind": "static-scan",
         "value": {
           "engine": "vm.Script",
-          "files": 61,
+          "files": 62,
           "errors": 0
         },
-        "detail": "环境无子进程能力（spawn 不可用），降级为 vm.Script 编译校验：61 个 js 文件全部通过语法解析，0 个错误",
-        "hash": "a214a9c4ec8e",
+        "detail": "环境无子进程能力（spawn 不可用），降级为 vm.Script 编译校验：62 个 js 文件全部通过语法解析，0 个错误",
+        "hash": "cd5ebb24b087",
         "metric": null,
         "unit": "file"
       },
@@ -152,13 +152,13 @@
       "evidence": {
         "kind": "static-scan",
         "value": {
-          "files": 70,
+          "files": 71,
           "patterns": 6,
           "hits": 0,
           "exempted": 0
         },
-        "detail": "扫描 70 个源码文件、6 类密钥特征（OpenAI 密钥/GitHub PAT/AWS AccessKey/Google API Key/Slack Token/私钥文件头）：真实命中 0 处（测试目录亦无样例密钥）",
-        "hash": "b8ec31d572b5",
+        "detail": "扫描 71 个源码文件、6 类密钥特征（OpenAI 密钥/GitHub PAT/AWS AccessKey/Google API Key/Slack Token/私钥文件头）：真实命中 0 处（测试目录亦无样例密钥）",
+        "hash": "60b0e7d90c26",
         "metric": null,
         "unit": "file"
       },
@@ -191,11 +191,11 @@
       "evidence": {
         "kind": "artifact",
         "value": {
-          "rules": 12,
+          "rules": 14,
           "required": 3
         },
-        "detail": ".gitignore 含 12 条有效规则，已覆盖必需项 node_modules✓ dist✓ screenshots✓",
-        "hash": "9b8df2054909",
+        "detail": ".gitignore 含 14 条有效规则，已覆盖必需项 node_modules✓ dist✓ screenshots✓",
+        "hash": "42c2a75d9198",
         "metric": null,
         "unit": "rule"
       },
@@ -228,12 +228,12 @@
       "evidence": {
         "kind": "static-scan",
         "value": {
-          "files": 61,
-          "requires": 67,
+          "files": 62,
+          "requires": 125,
           "broken": 0
         },
-        "detail": "解析 61 个 js 文件中的 67 条相对 require（./ 与 ../），按 .js/.json/.html/index.js 后缀逐一验证目标存在，失效 0 条",
-        "hash": "5f5aaaf6fb62",
+        "detail": "解析 62 个 js 文件中的 125 条相对 require（./ 与 ../），按 .js/.json/.html/index.js 后缀逐一验证目标存在，失效 0 条",
+        "hash": "f45175d1ec8a",
         "metric": null,
         "unit": "require"
       },
@@ -251,7 +251,7 @@
           "attrSites": 10,
           "unsafe": 0
         },
-        "detail": "扫描 62 个 js/html 文件共 86 处 innerHTML 赋值，其中 10 处存在属性值内插值，均经 escapeHtml/encodeURIComponent 处理或取值来自源码内字面量常量，未转义属性插值 0 处",
+        "detail": "扫描 63 个 js/html 文件共 86 处 innerHTML 赋值，其中 10 处存在属性值内插值，均经 escapeHtml/encodeURIComponent 处理或取值来自源码内字面量常量，未转义属性插值 0 处",
         "hash": "db0461768a80",
         "metric": null,
         "unit": "site"
@@ -301,7 +301,7 @@
       "name": "根目录存在开源许可证文件或明确的许可证声明",
       "status": "FAIL",
       "evidence": null,
-      "reason": "根目录许可证文件 0 个；package.json license 字段=未声明；3 份说明文档中命中许可证关键词的有 0 份；三者全缺，项目未以任何形式声明开源许可，分发即构成法律风险"
+      "reason": "根目录许可证文件 0 个；package.json license 字段=未声明；3 份说明文档中含有效许可声明的有 0 份；三者全缺，项目未以任何形式声明开源许可，分发即构成法律风险"
     },
     {
       "id": "GATE-017",
@@ -395,7 +395,7 @@
           "binaries": 0,
           "images": 0
         },
-        "detail": "遍历仓库全部 71 个文件（已排除 node_modules 等目录）：.ttf/.otf/.woff/.eot/.exe/.dll/.so/.dylib/.msi/.jar 类字体与二进制 0 个；图片类资产 0 个",
+        "detail": "遍历仓库全部 72 个文件（已排除 node_modules 等目录）：.ttf/.otf/.woff/.eot/.exe/.dll/.so/.dylib/.msi/.jar 类字体与二进制 0 个；图片类资产 0 个",
         "hash": "93b8c13bbab7",
         "metric": null,
         "unit": "file"
@@ -490,10 +490,10 @@
           "pass": 225,
           "fail": 0,
           "total": 225,
-          "durationMs": 9474
+          "durationMs": 11822
         },
-        "detail": "node:test isolation:'none' 真实执行 225 个用例：通过 225，失败 0，耗时 9474ms。分文件：agent-tools.test.js:85 agent.test.js:40 agents-render.test.js:16 config.test.js:14 filetree-gitmark.test.js:13 fs-grep.test.js:10 git.test.js:13 release-guard.test.js:4 session.test.js:14 user-store.test.js:16",
-        "hash": "f41170a16b28",
+        "detail": "node:test isolation:'none' 真实执行 225 个用例：通过 225，失败 0，耗时 11822ms。分文件：agent-tools.test.js:85 agent.test.js:40 agents-render.test.js:16 config.test.js:14 filetree-gitmark.test.js:13 fs-grep.test.js:10 git.test.js:13 release-guard.test.js:4 session.test.js:14 user-store.test.js:16",
+        "hash": "d8e80de0a1d1",
         "metric": null,
         "unit": "test"
       },
@@ -761,12 +761,12 @@
       "evidence": {
         "kind": "metric",
         "value": {
-          "durationMs": 9474,
+          "durationMs": 11822,
           "total": 225,
-          "perSecond": 23.7
+          "perSecond": 19
         },
-        "detail": "真实执行 225 个用例耗时 9474ms（23.7 用例/秒），在 15000ms 预算内；测量方式为 node:test isolation:'none' 进程内执行，含模块加载与断言开销",
-        "hash": "93a1124f6898",
+        "detail": "真实执行 225 个用例耗时 11822ms（19 用例/秒），在 15000ms 预算内；测量方式为 node:test isolation:'none' 进程内执行，含模块加载与断言开销",
+        "hash": "dc9f325653a9",
         "metric": null,
         "unit": "ms"
       },
@@ -1017,11 +1017,11 @@
       "evidence": {
         "kind": "metric",
         "value": {
-          "ms": 1.72,
+          "ms": 4.46,
           "bytes": 150788
         },
-        "detail": "hrtime 真实计时：读取 renderer/index.html(29998B) + style.css(120790B) 同步耗时 1.72ms（门槛 <50ms，本地磁盘无网络往返）",
-        "hash": "45f864fc5c8c",
+        "detail": "hrtime 真实计时：读取 renderer/index.html(29998B) + style.css(120790B) 同步耗时 4.46ms（门槛 <50ms，本地磁盘无网络往返）",
+        "hash": "da238f5e9544",
         "metric": null,
         "unit": "ms"
       },
@@ -1035,11 +1035,11 @@
       "evidence": {
         "kind": "metric",
         "value": {
-          "heapUsedMb": 17.25,
-          "rssMb": 102.18
+          "heapUsedMb": 19.28,
+          "rssMb": 101.8
         },
-        "detail": "门禁进程真实内存快照：heapUsed 17.25MB、rss 102.18MB，远低于 800MB 告警水位",
-        "hash": "506899cecbb2",
+        "detail": "门禁进程真实内存快照：heapUsed 19.28MB、rss 101.80MB，远低于 800MB 告警水位",
+        "hash": "a39fcac37c01",
         "metric": null,
         "unit": "MB"
       },
@@ -1239,10 +1239,10 @@
       "evidence": {
         "kind": "artifact",
         "value": {
-          "sha": "d903158ad7bbd9b4"
+          "sha": "56ff07621de789cc"
         },
-        "detail": "checksum.sha256 记录 d903158ad7bbd9b4…；重算一致；将 operator 篡改为 attacker 后哈希立即失配，防篡改有效",
-        "hash": "2890d62e0818",
+        "detail": "checksum.sha256 记录 56ff07621de789cc…；重算一致；将 operator 篡改为 attacker 后哈希立即失配，防篡改有效",
+        "hash": "fba36381dc90",
         "metric": null,
         "unit": "byte"
       },
@@ -1276,10 +1276,10 @@
         "value": {
           "total": 44,
           "matched": 44,
-          "digest": "edc070f264a27866"
+          "digest": "d30d31594085fb63"
         },
-        "detail": "重算 JSON.stringify(files) 的 SHA-256 与 manifestDigest 一致（edc070f264a27866…）；并逐个重算磁盘文件哈希：44 个全部匹配",
-        "hash": "297ce67d5ece",
+        "detail": "重算 JSON.stringify(files) 的 SHA-256 与 manifestDigest 一致（d30d31594085fb63…）；并逐个重算磁盘文件哈希：44 个全部匹配",
+        "hash": "c51bada9cde4",
         "metric": null,
         "unit": "file"
       },
@@ -1311,10 +1311,10 @@
       "evidence": {
         "kind": "file-hash",
         "value": {
-          "digest": "edc070f264a278661d5941ca23e540aa10b309a5b05265d47ed1bda228c1240e"
+          "digest": "d30d31594085fb632204fae580c2c23b2c7ce3b9a2f875805d6ab19b0d72d2c3"
         },
-        "detail": "重算 JSON.stringify(files) 的 SHA-256 与清单记录一致（edc070f264a278661d5941ca23e540aa10b309a5b05265d47ed1bda228c1240e）",
-        "hash": "0e2cc51a5f60",
+        "detail": "重算 JSON.stringify(files) 的 SHA-256 与清单记录一致（d30d31594085fb632204fae580c2c23b2c7ce3b9a2f875805d6ab19b0d72d2c3）",
+        "hash": "788abe4e7c93",
         "metric": null,
         "unit": "byte"
       },
@@ -1348,10 +1348,10 @@
         "value": {
           "artifacts": 44,
           "matched": 44,
-          "setDigest": "1713f463c0bfd8e6b94566de4d21c39e36a7b268e321f81d9be7cf9d3f072e39"
+          "setDigest": "ca759dde81301d17a95cb3a2b4151faf469c7b6d420e5feab38543aa234d4581"
         },
-        "detail": "产物清单登记 44 个交付文件，逐个重算 digest 全部匹配；清单集摘要 1713f463c0bfd8e6…",
-        "hash": "3dc69298ee3e",
+        "detail": "产物清单登记 44 个交付文件，逐个重算 digest 全部匹配；清单集摘要 ca759dde81301d17…",
+        "hash": "37e6e8cf95cf",
         "metric": null,
         "unit": "file"
       },
@@ -1402,11 +1402,11 @@
         "kind": "artifact",
         "value": {
           "files": 44,
-          "createdAt": "2026-10-11T00:23:13.539Z",
+          "createdAt": "2026-10-11T02:46:54.088Z",
           "operator": "release-gate"
         },
-        "detail": "备份快照 44 个文件均带 64 位 sha256，元数据含时间戳 2026-10-11T00:23:13.539Z、责任人 release-gate、恢复指引与 checksum.sha256 校验值",
-        "hash": "0b0ad7329492",
+        "detail": "备份快照 44 个文件均带 64 位 sha256，元数据含时间戳 2026-10-11T02:46:54.088Z、责任人 release-gate、恢复指引与 checksum.sha256 校验值",
+        "hash": "dc816b06d857",
         "metric": null,
         "unit": "file"
       },
@@ -1474,10 +1474,10 @@
       "evidence": {
         "kind": "artifact",
         "value": {
-          "rules": 12
+          "rules": 14
         },
         "detail": ".gitignore 排除 node_modules/dist/screenshots/.backups/.workbuddy 等开发产物，且未误排除 main.js/modules/renderer 等核心源码",
-        "hash": "2bbaa7c807c0",
+        "hash": "2a6f2f0b105b",
         "metric": null,
         "unit": "rule"
       },
@@ -1584,7 +1584,7 @@
         "value": {
           "files": 4
         },
-        "detail": "发布报告齐全且内容非空、JSON 可正常解析: release-baseline.json(8868B) artifact-manifest.json(7443B) quality-gates-real.json(43378B) release-verification-matrix.html(44788B)",
+        "detail": "发布报告齐全且内容非空、JSON 可正常解析: release-baseline.json(8868B) artifact-manifest.json(7443B) quality-gates-real.json(43376B) release-verification-matrix.html(44783B)",
         "hash": "1c8519240712",
         "metric": null,
         "unit": "file"
