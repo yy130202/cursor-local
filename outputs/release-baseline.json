@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
-  "generatedAt": "2026-10-11T02:49:35.036Z",
+  "generatedAt": "2026-10-11T06:35:33.013Z",
   "project": "cursor-local",
   "version": "0.1.0",
-  "commit": "unknown:git 不可用(EBUSY)",
+  "commit": "895177f5c6044ecd77dee3d92a3bf9b0ce34419d",
   "tag": "",
   "configDigest": {
     "version": "0.1.0",
@@ -28,7 +28,7 @@
   },
   "metrics": {
     "fileCount": 44,
-    "totalBytes": 565988
+    "totalBytes": 570355
   },
   "files": {
     "main.js": {
@@ -112,9 +112,9 @@
       "mtime": "2026-10-06T04:21:11.000Z"
     },
     "renderer/agents.js": {
-      "sha256": "dd77c596e914124b088e297f6542dbc31e08d8422df30f3d2c6167fecf365497",
-      "bytes": 41411,
-      "mtime": "2026-10-10T23:55:55.450Z"
+      "sha256": "d87702a543b2c085b28110939c41af2c748b86c748033db346723e7ef8265327",
+      "bytes": 44935,
+      "mtime": "2026-10-11T06:16:05.395Z"
     },
     "renderer/auth.js": {
       "sha256": "56fe26d1129bcb19de77a337ac6be69dea18432559d6d4f6556e2a8b946c4f7c",
@@ -227,9 +227,9 @@
       "mtime": "2026-10-06T04:21:11.000Z"
     },
     "renderer/style.css": {
-      "sha256": "9809d58bb20fad610509463293fb222720f838ae242fe8ed537d24672d10eb33",
-      "bytes": 123763,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "sha256": "8a240601a152bb961e3e6f28f95331563900f6ed0ca875781c0be50ce223c0ec",
+      "bytes": 124606,
+      "mtime": "2026-10-11T06:15:12.741Z"
     },
     "renderer/terminal.js": {
       "sha256": "7bea8d7abec94c386f5f00339460212072e30d427f2b9d8a68067133fac8a72e",
@@ -252,5 +252,5 @@
       "mtime": "2026-10-06T04:21:11.000Z"
     }
   },
-  "manifestDigest": "d30d31594085fb632204fae580c2c23b2c7ce3b9a2f875805d6ab19b0d72d2c3"
+  "manifestDigest": "8ac288cfd54abbbf77803dfafcca2538974aefe3ab4ca7798805ce2b99e4ce64"
 }

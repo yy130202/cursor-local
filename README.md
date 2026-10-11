@@ -38,11 +38,9 @@ npm start
 
 首次启动会自动弹出「设置」面板（右上角 ⚙ 也可随时打开），填入：
 
-| 项 | 值 |
-|---|---|
-| Base URL | `https://api.deepseek.com/v1` |
-| API Key | `sk-你的真实Key` |
-| 模型 ID | `deepseek-flash` |
+- **Base URL**：`https://api.deepseek.com/v1`
+- **API Key**：`sk-你的真实Key`
+- **模型 ID**：`deepseek-flash`
 
 配置保存在本地 `%APPDATA%/cursor-local/config.json`，不会上传。API Key 经 Electron `safeStorage` 加密后落盘，不以明文存储。
 
@@ -86,7 +84,7 @@ cursor-local-main/
 │       ├── release-ops.js      #   门禁 070-089 发布防护
 │       ├── build-matrix.js     #   验收矩阵生成
 │       └── index.js            #   门禁编排入口
-├── test/                # 225 项单元测试
+├── test/                # 237 项单元测试
 ├── outputs/             # 验证产物（基线清单、门禁结果、验收矩阵）
 └── start.bat
 ```
@@ -111,7 +109,7 @@ cursor-local-main/
 ### 常用命令
 
 ```bash
-npm test                    # 225 项单元测试
+npm test                    # 237 项单元测试
 npm run verify:smoke        # 119 项全维烟测
 npm run verify:gates        # 89 项质量门禁（含三态汇总与失败明细）
 npm run verify:matrix       # 由门禁真实结果渲染验收矩阵
@@ -126,11 +124,9 @@ npm run release:rollback    # 沙箱无损回滚演练
 
 ### 当前状态
 
-| 项目 | 结果 |
-|---|---|
-| 单元测试 | 225 / 225 通过 |
-| 全维烟测 | 118 通过 / 0 失败 / 1 环境受限（119 项） |
-| 质量门禁 | 86 通过 / 2 失败 / 1 环境受限（89 项，通过率 97.73%） |
+- **单元测试**：237 / 237 通过
+- **全维烟测**：118 通过 / 0 失败 / 1 环境受限（119 项）
+- **质量门禁**：86 通过 / 2 失败 / 1 环境受限（89 项，通过率 97.73%）
 
 **两条已知失败项**（均为真实问题，非工具误报）：
 
@@ -148,12 +144,10 @@ npm run release:rollback    # 沙箱无损回滚演练
 Agent 工作台采用增量 DOM 渲染（按渲染签名 `sigOf` 复用节点）与行级 LCS diff（扁平 `Int32Array` DP 表）。
 真实 Electron Chromium 渲染进程 A/B 实测（120 条 entry）：
 
-| 指标 | 优化前 | 优化后 | 降幅 |
-|---|---|---|---|
-| DOM 重建次数 | 10,474 | 171 | **-98.4%** |
-| 主线程长任务 | 4,810 ms | 236 ms | **-95.1%** |
-| 最长卡顿帧 | 125.3 ms | 66.9 ms | **-46.6%** |
-| 空闲帧率 | 59 FPS | 60 FPS | 满帧 |
+- **DOM 重建次数**：10,474 → 171（**-98.4%**）
+- **主线程长任务**：4,810 ms → 236 ms（**-95.1%**）
+- **最长卡顿帧**：125.3 ms → 66.9 ms（**-46.6%**）
+- **空闲帧率**：59 FPS → 60 FPS（满帧）
 
 复现命令：`PERF=1 npm start`（结果写入 `.perf/electron-perf.json`）。
 

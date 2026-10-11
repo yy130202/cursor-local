@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-10-11T02:49:43.134Z",
-  "commit": "unknown:git 不可用(EBUSY)",
+  "generatedAt": "2026-10-11T06:49:30.712Z",
+  "commit": "895177f5c6044ecd77dee3d92a3bf9b0ce34419d",
   "tag": "",
   "configDigest": {
     "version": "0.1.0",
@@ -20,10 +20,10 @@
   },
   "metrics": {
     "artifactCount": 44,
-    "totalBytes": 565988
+    "totalBytes": 570355
   },
   "missing": [],
-  "setDigest": "ca759dde81301d17a95cb3a2b4151faf469c7b6d420e5feab38543aa234d4581",
+  "setDigest": "d69e026b11486535e28ccdb3f59a74e9e114047fe6efad2ba016609553396016",
   "artifacts": [
     {
       "path": "main.js",
@@ -107,8 +107,8 @@
     },
     {
       "path": "renderer/agents.js",
-      "sha256": "dd77c596e914124b088e297f6542dbc31e08d8422df30f3d2c6167fecf365497",
-      "bytes": 41411
+      "sha256": "d87702a543b2c085b28110939c41af2c748b86c748033db346723e7ef8265327",
+      "bytes": 44935
     },
     {
       "path": "renderer/auth.js",
@@ -222,8 +222,8 @@
     },
     {
       "path": "renderer/style.css",
-      "sha256": "9809d58bb20fad610509463293fb222720f838ae242fe8ed537d24672d10eb33",
-      "bytes": 123763
+      "sha256": "8a240601a152bb961e3e6f28f95331563900f6ed0ca875781c0be50ce223c0ec",
+      "bytes": 124606
     },
     {
       "path": "renderer/terminal.js",

@@ -45,7 +45,7 @@ main.js
 
 ## 渲染层约定（易踩坑）
 
-- `renderer/index.html` 用**普通 `<script src>` 按顺序加载**所有模块（`keymap → editor → agents → theme → ... → renderer.js`）。**没有 ES module、没有打包器**，各文件靠顶层 `const` / `function` 与 `window.xxx` 共享全局。新增渲染模块要加到 `index.html` 的脚本列表且注意顺序。
+- `renderer/index.html` 用**普通 script 标签（src 属性）按顺序加载**所有模块（`keymap → editor → agents → theme → ... → renderer.js`）。**没有 ES module、没有打包器**，各文件靠顶层 `const` / `function` 与 `window.xxx` 共享全局。新增渲染模块要加到 `index.html` 的脚本列表且注意顺序。
 - 渲染层不能 `require`，只能走 `window.api`（`preload.js` 用 `contextBridge` 暴露，是**唯一 IPC 入口**）。加 IPC 通道时 preload 和主进程 `ipcMain.handle` 必须同时改。
 - 跨文件调用的全局约定：`EditorState`（当前文件夹/标签/编辑器实例）、`window.escapeHtml`、`window.lucideIcon`、`window.updateIsland`、`window.setMode`、`window.openPalette` / `openGlobalSearch` / `openTerminal` / `openGitPanel` 等。用 `typeof fn === 'function'` 做防御式调用。
 - 命令/快捷键统一定义在 `renderer/keymap.js` 的 `COMMANDS` 数组（含默认键位 + action），用户自定义键位存 config.keybindings。
@@ -72,12 +72,10 @@ main.js
 
 ## 数据与持久化位置
 
-| 数据 | 路径（可用环境变量覆盖） |
-|---|---|
-| 配置（含加密 API Key） | `%APPDATA%/cursor-local/config.json`（`CONFIG_PATH` 覆盖） |
-| 会话 transcript | `userData/sessions/*.json`（`SESSIONS_PATH` 覆盖，测试用 `.test-sessions/`） |
-| 用户账号 | `userData/users.json` + `userData/session.json` |
-| 记忆 / 规则 | `~/.cursor-local/memory.json`、`rules.md`；项目级在 `<cwd>/.cursor-local/` |
+- **配置（含加密 API Key）**：`%APPDATA%/cursor-local/config.json`，可用环境变量 `CONFIG_PATH` 覆盖
+- **会话 transcript**：`userData/sessions/*.json`，可用环境变量 `SESSIONS_PATH` 覆盖（测试用 `.test-sessions/`）
+- **用户账号**：`userData/users.json` 与 `userData/session.json`
+- **记忆 / 规则**：`~/.cursor-local/memory.json`、`rules.md`；项目级在 `{cwd}/.cursor-local/`
 
 `config.js` 的 `loadConfig` 合并 `defaults`；新增配置项要同时改 `defaults`（否则老配置读不到默认值）。API Key 只在 `saveConfig` 时加密为 `apiKeyEncrypted`，明文旧配置读取时自动迁移。
 

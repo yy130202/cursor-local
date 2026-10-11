@@ -879,20 +879,13 @@ loadHistory();
   };
 })();
 
-/* ---- 轻量 Markdown 渲染（AI 回复的代码块/加粗/标题/列表） ---- */
-function miniMarkdown(text) {
-  let s = CL.util.escapeHtml(String(text == null ? '' : text));
-  // 提取代码块（占位符保护，避免内部换行/标签被破坏）
-  const blocks = [];
-  s = s.replace(/```(\w*)\n?([\s\S]*?)```/g, (m, lang, code) => {
-    blocks.push({ lang: (lang || 'code').trim(), code });
-    return '\u0000B' + (blocks.length - 1) + '\u0000';
-  });
-  // 行内代码 `...`
+/* ---- 行内 Markdown（表格单元格与正文共用同一套规则） ----
+ * 单独抽出：表格单元格若沿用正文那一遍整串正则，会因为占位符保护而
+ * 退化成纯文本。抽出后对每个单元格单独套用，**加粗** / `代码` / [链接](url)
+ * 在格内同样生效。链接协议白名单与正文保持一致。 */
+function mdInline(s) {
   s = s.replace(/`([^`\n]+)`/g, '<code class="md-inline">$1</code>');
-  // 加粗 **...**
   s = s.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
-  // 链接 [text](url) —— 仅放行安全 URL 协议，防 javascript:/data:/vbscript: 注入
   s = s.replace(/\[([^\]\n]+)\]\(([^)\n]+)\)/g, (m, text, url) => {
     const raw = String(url).trim();
     const probe = raw.replace(/[\u0000- ]/g, ''); // 浏览器会忽略 URL 中的控制字符/空白
@@ -901,6 +894,80 @@ function miniMarkdown(text) {
     const safe = !scheme || /^(https?|mailto)$/i.test(scheme) ? raw : '#';
     return '<a href="' + safe + '" class="md-link" target="_blank" rel="noopener noreferrer">' + text + '</a>';
   });
+  return s;
+}
+
+/* ---- GFM 表格解析 ---- */
+
+/** 拆一行表格为单元格数组：识别 \| 转义竖线，自动去掉省略的首尾竖线 */
+function mdSplitRow(line) {
+  const parts = String(line).trim().split(/(?<!\\)\|/).map((c) => c.trim());
+  if (parts.length && parts[0] === '') parts.shift();
+  if (parts.length && parts[parts.length - 1] === '') parts.pop();
+  return parts.map((c) => c.replace(/\\\|/g, '|'));
+}
+
+/** 是否为表格分隔行：| --- | :---: | ---: |（每格都必须是省略号） */
+function mdIsSeparatorRow(line) {
+  const cells = mdSplitRow(line);
+  return cells.length > 0 && cells.every((c) => /^:?-{1,}:?$/.test(c.replace(/\s+/g, '')));
+}
+
+/** 分隔行单元格 → 对齐方式（空字符串表示默认） */
+function mdAlignOf(cell) {
+  const c = String(cell).trim();
+  if (c.startsWith(':') && c.endsWith(':')) return 'center';
+  if (c.endsWith(':')) return 'right';
+  if (c.startsWith(':')) return 'left';
+  return '';
+}
+
+/* ---- 轻量 Markdown 渲染（AI 回复的代码块/加粗/标题/列表/表格） ---- */
+function miniMarkdown(text) {
+  let s = CL.util.escapeHtml(String(text == null ? '' : text));
+  // 提取代码块（占位符保护，避免内部换行/标签被破坏）
+  const blocks = [];
+  s = s.replace(/```(\w*)\n?([\s\S]*?)```/g, (m, lang, code) => {
+    blocks.push({ lang: (lang || 'code').trim(), code });
+    return '\u0000B' + (blocks.length - 1) + '\u0000';
+  });
+
+  /* 提取表格（占位符保护）
+   * 必须在行内格式化之前完成，原因有二：
+   *   1) 单元格里的 ** / ` / [x](y) 若留在正文，会被后面的整串正则改写；
+   *   2) | 分隔符与列表 / 水平线规则相互干扰，先抽走可避免误判。
+   * 渲染时再对每个单元格单独套 mdInline，格内格式不丢。 */
+  const tables = [];
+  {
+    const lines = s.split('\n');
+    const out = [];
+    for (let i = 0; i < lines.length;) {
+      const header = lines[i];
+      const sep = lines[i + 1];
+      // 表头必须自带竖线：否则 `文字` + `---` 会被误判成单列表格，与水平线冲突
+      const isTable = header.indexOf('|') >= 0
+        && sep !== undefined
+        && mdIsSeparatorRow(sep)
+        && mdSplitRow(header).length === mdSplitRow(sep).length;
+      if (!isTable) { out.push(lines[i]); i++; continue; }
+      const head = mdSplitRow(header);
+      const aligns = mdSplitRow(sep).map(mdAlignOf);
+      const body = [];
+      let j = i + 2;
+      // 数据行：非空、含竖线；遇到空行或无竖线的普通文本即止
+      while (j < lines.length && lines[j].trim() && lines[j].indexOf('|') >= 0 && !/^\s{0,3}#{1,6}\s/.test(lines[j])) {
+        body.push(mdSplitRow(lines[j]));
+        j++;
+      }
+      out.push('\u0000T' + tables.length + '\u0000');
+      tables.push({ head, aligns, body });
+      i = j;
+    }
+    s = out.join('\n');
+  }
+
+  // 行内代码 `...` / 加粗 **...** / 链接 [text](url)
+  s = mdInline(s);
   // 引用 > ...（escape 后为 &gt;）
   s = s.replace(/^&gt; (.+)$/gm, '<blockquote class="md-quote">$1</blockquote>');
   // 水平线 ---
@@ -910,6 +977,21 @@ function miniMarkdown(text) {
   // 有序列表 1. / 无序列表 - *
   s = s.replace(/^(\d+)[.、] (.+)$/gm, '<div class="md-li"><span class="md-li-n">$1.</span>$2</div>');
   s = s.replace(/^[-*] (.+)$/gm, '<div class="md-li">• $1</div>');
+  // 恢复表格：列数按表头对齐（少补空、多截断），避免单行把布局撑破
+  s = s.replace(/\u0000T(\d+)\u0000/g, (m, i) => {
+    const t = tables[+i];
+    const n = t.head.length;
+    const cell = (tag, c, k) => '<' + tag + (t.aligns[k] ? ' style="text-align:' + t.aligns[k] + '"' : '') + '>' + mdInline(c) + '</' + tag + '>';
+    const row = (tag, cols) => {
+      const buf = [];
+      for (let k = 0; k < n; k++) buf.push(cell(tag, cols[k] || '', k));
+      return '<tr>' + buf.join('') + '</tr>';
+    };
+    return '<div class="md-table-wrap"><table class="md-table">'
+      + '<thead>' + row('th', t.head) + '</thead>'
+      + (t.body.length ? '<tbody>' + t.body.map((r) => row('td', r)).join('') + '</tbody>' : '')
+      + '</table></div>';
+  });
   // 恢复代码块
   s = s.replace(/\u0000B(\d+)\u0000/g, (m, i) => {
     const b = blocks[+i];

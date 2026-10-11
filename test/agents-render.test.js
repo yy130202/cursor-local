@@ -188,3 +188,126 @@ test('computeLineDiff: 大小写敏感', () => {
   assert.equal(r.lines.some((l) => l.t === 'add'), true);
   assert.equal(r.lines.some((l) => l.t === 'del'), true);
 });
+
+/* ------------------------------------------------------------------ *
+ * miniMarkdown —— GFM 表格支持
+ *
+ * 背景：渲染器原本只处理代码块/加粗/标题/列表，`|---|---|` 这类分隔行
+ * 没有任何规则命中，只能原样当纯文本输出，Markdown 表格在预览里完全不成立。
+ * 修复后需保证：正常渲染、格内行内格式生效、且不破坏既有的水平线/
+ * 列表/代码块，更不能因格内内容引入 XSS。
+ * ------------------------------------------------------------------ */
+
+/* 与 loadPureFunctions 同法：抽出纯函数注入最小上下文。
+   这里需要 CL.util.escapeHtml 与 window.lucideIcon，故一并提供替身。 */
+function loadMarkdown() {
+  const fnNames = ['mdInline', 'mdSplitRow', 'mdIsSeparatorRow', 'mdAlignOf', 'miniMarkdown'];
+  const src = fnNames.map((name) => extractFunction(source, name)).join('\n\n');
+  const HTML_ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  const ctx = {
+    console,
+    CL: { util: { escapeHtml: (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => HTML_ESCAPES[c]) } },
+    window: { lucideIcon: () => '<i></i>' }
+  };
+  vm.createContext(ctx);
+  vm.runInContext(src + '\n;globalThis.__md = { miniMarkdown, mdSplitRow, mdIsSeparatorRow, mdAlignOf };', ctx);
+  return ctx.__md;
+}
+
+const md = loadMarkdown();
+
+test('表格: 标准 GFM 表渲染为 thead + tbody', () => {
+  const html = md.miniMarkdown([
+    '| 姓名 | 年龄 |',
+    '| --- | --- |',
+    '| 小明 | 30 |',
+    '| 小红 | 25 |'
+  ].join('\n'));
+  assert.match(html, /<table class="md-table">/);
+  assert.match(html, /<thead><tr><th>姓名<\/th><th>年龄<\/th><\/tr><\/thead>/);
+  assert.equal((html.match(/<tbody>[\s\S]*?<\/tbody>/) || [])[0].match(/<tr>/g).length, 2);
+  assert.doesNotMatch(html, /\|---/, '分隔行原文不应残留');
+});
+
+test('表格: 对齐标记映射为 text-align', () => {
+  const html = md.miniMarkdown(['| L | C | R |', '| :--- | :---: | ---: |', '| a | b | c |'].join('\n'));
+  assert.match(html, /<th style="text-align:left">L<\/th>/);
+  assert.match(html, /<th style="text-align:center">C<\/th>/);
+  assert.match(html, /<th style="text-align:right">R<\/th>/);
+  assert.equal(md.mdAlignOf(':---:'), 'center');
+  assert.equal(md.mdAlignOf('---:'), 'right');
+  assert.equal(md.mdAlignOf(':---'), 'left');
+  assert.equal(md.mdAlignOf('---'), '');
+});
+
+test('表格: 单元格内行内格式生效（加粗/代码/链接）', () => {
+  const html = md.miniMarkdown([
+    '| A | B | C |',
+    '| --- | --- | --- |',
+    '| **粗** | `code` | [文档](https://example.com) |'
+  ].join('\n'));
+  assert.match(html, /<strong>粗<\/strong>/);
+  assert.match(html, /<code class="md-inline">code<\/code>/);
+  assert.match(html, /href="https:\/\/example\.com"/);
+});
+
+test('表格: 单元格内链接同样受协议白名单约束', () => {
+  const html = md.miniMarkdown(['| A |', '| --- |', '| [x](javascript:alert(1)) |'].join('\n'));
+  assert.match(html, /href="#"/, 'javascript: 必须降级为 #');
+  assert.doesNotMatch(html, /href="javascript:/);
+});
+
+test('表格: 列数不足补空、超出截断', () => {
+  const short = md.miniMarkdown(['| A | B |', '| --- | --- |', '| 1 |'].join('\n'));
+  assert.equal((short.match(/<td/g) || []).length, 2, '缺列应补空单元格');
+  const long = md.miniMarkdown(['| A |', '| --- |', '| 1 | 2 | 3 |'].join('\n'));
+  assert.equal((long.match(/<td/g) || []).length, 1, '多列应按表头截断');
+});
+
+test('表格: 转义竖线不拆列', () => {
+  // 数组来自 vm realm，原型与宿主不同，须 structuredClone 转回宿主 realm
+  // 才能通过 deepStrictEqual（同本文件顶部 loadPureFunctions 的处理）
+  assert.deepEqual(structuredClone(md.mdSplitRow('| a \\| b | c |')), ['a | b', 'c']);
+});
+
+test('表格: 仅有表头无数据行时不输出 tbody', () => {
+  const html = md.miniMarkdown(['| A | B |', '| --- | --- |'].join('\n'));
+  assert.match(html, /<table/);
+  assert.doesNotMatch(html, /<tbody>/);
+});
+
+test('表格: 空行终止表格块，其后正文照常渲染', () => {
+  const html = md.miniMarkdown(['| A |', '| --- |', '| 1 |', '', '后续段落'].join('\n'));
+  assert.match(html, /<table/);
+  assert.match(html, /后续段落/);
+});
+
+test('表格: 多个表格各自独立渲染', () => {
+  const html = md.miniMarkdown(['| A |', '| --- |', '| 1 |', '', '| B |', '| --- |', '| 2 |'].join('\n'));
+  assert.equal((html.match(/<table class="md-table">/g) || []).length, 2);
+});
+
+test('表格: 不误判水平线与无竖线的分隔行', () => {
+  const hr = md.miniMarkdown('正文\n\n---\n\n后文');
+  assert.match(hr, /<hr class="md-hr">/);
+  assert.doesNotMatch(hr, /<table/, '--- 仍是水平线，不是表格');
+
+  const setext = md.miniMarkdown('标题\n---');
+  assert.doesNotMatch(setext, /<table/, '表头无竖线时不应判为表格');
+
+  const noSep = md.miniMarkdown('a | b\n不是分隔行');
+  assert.doesNotMatch(noSep, /<table/, '第二行非分隔行时不判为表格');
+});
+
+test('表格: 与代码块共存互不破坏', () => {
+  const html = md.miniMarkdown(['```js', 'const a = [1, 2];', '```', '', '| A | B |', '| --- | --- |', '| 1 | 2 |'].join('\n'));
+  assert.match(html, /md-code/, '代码块应保留');
+  assert.match(html, /<table class="md-table">/, '表格应照常渲染');
+  assert.match(html, /const a =/, '代码块内容未被表格解析破坏');
+});
+
+test('表格: 单元格内 HTML 被转义（XSS）', () => {
+  const html = md.miniMarkdown(['| A |', '| --- |', '| <img src=x onerror=alert(1)> |'].join('\n'));
+  assert.doesNotMatch(html, /<img/);
+  assert.match(html, /&lt;img/);
+});

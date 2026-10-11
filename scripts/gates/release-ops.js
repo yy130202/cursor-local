@@ -457,6 +457,65 @@ async function runReleaseGates() {
       + `配置摘要 ${r.configDigest.slice(0, 16)}…，确认线上即预期产物`, 'file');
   }));
 
+  /* ---- GATE-090：Markdown 文档可安全渲染（表格结构 + 裸尖括号） ---- */
+  items.push(makeItem('GATE-090', '发布防护', 'Markdown 表格结构合法且无被 HTML 渲染器吞掉的裸尖括号', () => {
+    // 只扫受版本控制的顶层文档，避免把 .backups / node_modules 里的副本算进来
+    const DOCS = ['README.md', 'CLAUDE.md', '交付总结.md'];
+    const docs = DOCS.filter((f) => fs.existsSync(path.join(ROOT, f)));
+    must(docs.length >= 2, `可检出的顶层文档仅 ${docs.length} 份（${docs.join(', ')}），预期至少 README.md 与 CLAUDE.md`);
+
+    const bareAngle = [];   // 剥离行内代码后仍存在的裸尖括号 → 渲染时被当 HTML 标签吞掉
+    const tableIssues = []; // 表格结构问题
+    let tableCount = 0;
+
+    for (const rel of docs) {
+      const lines = fs.readFileSync(path.join(ROOT, rel), 'utf8').split('\n');
+      lines.forEach((L, i) => {
+        // 引用块以 > 开头，本身就是 Markdown 语法，跳过
+        if (/^\s*>/.test(L)) return;
+        // 剥离行内代码后残留的 <tag 形式
+        const noCode = L.replace(/`[^`]*`/g, 'C');
+        const hits = noCode.match(/<[A-Za-z/!?][^<>]{0,30}/g);
+        if (hits) bareAngle.push(`${rel}:${i + 1} ${hits.join(' ')}`);
+      });
+
+      // 表格结构：连续以 | 开头的行构成一个表块，第 2 行必须是合法分隔行，全块列数一致
+      let i = 0;
+      while (i < lines.length) {
+        if (!/^\|.*\|\s*$/.test(lines[i].trim())) { i++; continue; }
+        const start = i;
+        const block = [];
+        while (i < lines.length && /^\|.*\|\s*$/.test(lines[i].trim())) { block.push(lines[i].trim()); i++; }
+        if (block.length < 2) continue;
+        tableCount++;
+        const sep = block[1];
+        if (!/^\|[\s:|-]+\|$/.test(sep)) {
+          tableIssues.push(`${rel}:${start + 2} 分隔行非法 -> ${sep.slice(0, 40)}`);
+          continue;
+        }
+        if (!/^\|[\s]*:?-+:?[\s]*(?:\|[\s]*:?-+:?[\s]*)*\|$/.test(sep)) {
+          tableIssues.push(`${rel}:${start + 2} 分隔行格式错 -> ${sep.slice(0, 40)}`);
+          continue;
+        }
+        const cols = block[0].split('|').length;
+        block.forEach((row, k) => {
+          const c = row.split('|').length;
+          if (c !== cols) tableIssues.push(`${rel}:${start + k + 1} 列数 ${c} ≠ 表头 ${cols}`);
+        });
+      }
+    }
+
+    must(bareAngle.length === 0,
+      `文档含会被 HTML 渲染器吞掉的裸尖括号（渲染后整段消失）：${bareAngle.join(' ; ')}`);
+    must(tableIssues.length === 0, `文档表格结构非法：${tableIssues.join(' ; ')}`);
+
+    return metric(EvidenceKind.INVARIANT,
+      { docs: docs.length, tables: tableCount, bareAngle: 0, tableIssues: 0 },
+      `逐行解析 ${docs.length} 份文档（${docs.join('、')}）共 ${tableCount} 个 Markdown 表格：`
+      + `分隔行全部合法、各表列数与表头一致；剥离行内代码后无残留裸尖括号，`
+      + `文档在任何 HTML 渲染器下均不会丢字`, 'file');
+  }));
+
   return { items };
 }
 
