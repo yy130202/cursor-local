@@ -63,7 +63,9 @@ function fileViewKind(p) {
   for (const k of Object.keys(VIEW_EXTS)) if (VIEW_EXTS[k].test(p || '')) return k;
   return null;
 }
-function fileUrlOf(p) { return 'file:///' + String(p).replace(/\\/g, '/'); }
+// 路径来自磁盘，文件名可能含 " 等属性闭合字符；未转义时可闭合 src 属性
+// 并注入 onerror 之类的处理器，故属性插值必须过 escapeHtml（转义不影响 file:// URL 语义）。
+function fileUrlOf(p) { return CL.util.escapeHtml('file:///' + String(p).replace(/\\/g, '/')); }
 function updateFileViewerState(on) {
   const split = document.getElementById('editor-split');
   if (!split) return;

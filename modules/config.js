@@ -23,6 +23,8 @@ function decryptApiKey(raw) {
 
 function loadConfig() {
   const defaults = {
+    // 配置结构版本：字段增删或语义变更时必须递增，供发布校验比对「线上配置版本」
+    schemaVersion: '1.0.0',
     baseUrl: 'https://api.deepseek.com/v1',
     apiKey: '',
     model: 'deepseek-flash',

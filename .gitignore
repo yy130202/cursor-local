@@ -22,3 +22,5 @@ test-log.txt
 .workbuddy/
 .backups/
 
+outputs/unit-test-delivery.zip
+outputs/unit-tests-delivery.zip

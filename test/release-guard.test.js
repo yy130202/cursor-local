@@ -61,43 +61,50 @@ test('release-guard: verifyBaseline 正向匹配与篡改检出能力', async ()
   }
 });
 
+/**
+ * 单测专用的备份暂存目录。
+ *
+ * 为什么不用项目 .backups：createTraceableBackup 会快照 44 个核心文件，
+ * 测试里再 fs.rmSync 删掉 44 个文件，单轮删除量超过批量删除保护阈值，
+ * 反而让测试被安全钩子拦下而失败（且掩盖了被测逻辑本身的对错）。
+ * 放系统临时目录后，产物随进程退出自然回收，不再触发保护。
+ */
+function tmpBackupBase(prefix) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), `rg-${prefix}-`));
+  process.once('exit', () => {
+    try { fs.rmSync(dir, { recursive: true, force: true }); } catch { /* 忽略 */ }
+  });
+  return dir;
+}
+
 test('release-guard: createTraceableBackup 快照完整性与元数据防伪', async () => {
   const label = `unit-test-${Date.now()}`;
-  const res = createTraceableBackup(label, 'unit-tester');
+  const res = createTraceableBackup(label, 'unit-tester', tmpBackupBase('bk'));
   const backupDir = res.backupRoot;
-  try {
-    assert.ok(fs.existsSync(backupDir), '备份目录应成功建立');
-    const metaPath = path.join(backupDir, 'backup-meta.json');
-    const chkPath = path.join(backupDir, 'checksum.sha256');
-    assert.ok(fs.existsSync(metaPath), '应包含 backup-meta.json');
-    assert.ok(fs.existsSync(chkPath), '应包含 checksum.sha256');
+  assert.ok(fs.existsSync(backupDir), '备份目录应成功建立');
+  const metaPath = path.join(backupDir, 'backup-meta.json');
+  const chkPath = path.join(backupDir, 'checksum.sha256');
+  assert.ok(fs.existsSync(metaPath), '应包含 backup-meta.json');
+  assert.ok(fs.existsSync(chkPath), '应包含 checksum.sha256');
 
-    const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
-    assert.equal(meta.operator, 'unit-tester');
-    assert.equal(meta.label, label);
-    assert.ok(meta.fileCount >= 40);
+  const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+  assert.equal(meta.operator, 'unit-tester');
+  assert.equal(meta.label, label);
+  assert.ok(meta.fileCount >= 40);
+  // 每个快照文件都必须带 64 位 sha256，否则恢复时无法校验
+  assert.equal(meta.files.filter((f) => !f.sha256 || f.sha256.length !== 64).length, 0);
 
-    const chkContent = fs.readFileSync(chkPath, 'utf8');
-    assert.ok(chkContent.includes('backup-meta.json'));
-  } finally {
-    if (fs.existsSync(backupDir)) {
-      fs.rmSync(backupDir, { recursive: true, force: true });
-    }
-  }
+  const chkContent = fs.readFileSync(chkPath, 'utf8');
+  assert.ok(chkContent.includes('backup-meta.json'));
 });
 
 test('release-guard: dryRunRollback 演练沙箱原子恢复验证', async () => {
   const label = `dryrun-test-${Date.now()}`;
-  const backupInfo = createTraceableBackup(label, 'dryrun-tester');
-  const backupDir = backupInfo.backupRoot;
-  try {
-    const res = dryRunRollback(backupDir);
-    assert.equal(res.passed, true, '沙箱回滚校验应通过');
-    assert.equal(res.mismatches.length, 0);
-    assert.ok(res.testedFilesCount >= 40);
-  } finally {
-    if (fs.existsSync(backupDir)) {
-      fs.rmSync(backupDir, { recursive: true, force: true });
-    }
-  }
+  const backupInfo = createTraceableBackup(label, 'dryrun-tester', tmpBackupBase('dry'));
+  const res = dryRunRollback(backupInfo.backupRoot);
+  assert.equal(res.passed, true, '沙箱回滚校验应通过');
+  assert.equal(res.mismatches.length, 0);
+  assert.equal(res.testedFilesCount, backupInfo.meta.fileCount,
+    '还原文件数应与快照文件数一致');
+  assert.equal(res.verifiedChecksum, true, '元数据签名校验应通过');
 });

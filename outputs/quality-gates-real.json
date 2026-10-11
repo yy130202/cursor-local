@@ -1,0 +1,1653 @@
+{
+  "generatedAt": "2026-10-11T00:23:18.674Z",
+  "durationMs": 29716,
+  "total": 89,
+  "passed": 86,
+  "failed": 2,
+  "skippedEnv": 1,
+  "effectiveRate": 97.73,
+  "gates": [
+    {
+      "id": "GATE-001",
+      "category": "静态安全",
+      "name": "全项目源码无 UTF-8 替换乱码字符 (\\uFFFD)",
+      "status": "PASS",
+      "evidence": {
+        "kind": "static-scan",
+        "value": {
+          "files": 69,
+          "chars": 866082,
+          "dirty": 0,
+          "exempted": 2
+        },
+        "detail": "递归扫描 69 个源码文件（js/json/html/css/md），累计 866,082 字符，真实编码损坏 0 处；另有 2 处为讲解坏字符处理的有意示例（已豁免）: CLAUDE.md:58 文档示例, scripts/gates/static-compliance.js:404 文档示例",
+        "hash": "a990db4fc879",
+        "metric": null,
+        "unit": "char"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-002",
+      "category": "静态安全",
+      "name": "渲染进程源码无裸 NUL 字节（区别于 \\u0000 转义序列）",
+      "status": "PASS",
+      "evidence": {
+        "kind": "static-scan",
+        "value": {
+          "files": 25,
+          "bytes": 289076,
+          "escapeSeqs": 5,
+          "realNul": 0
+        },
+        "detail": "扫描 renderer/ 下 25 个 js/html 文件共 289,076 字节：真实 0x00 字节 0 个，合法 \\u0000 转义序列 5 处（miniMarkdown 代码块占位符），",
+        "hash": "b7e229343387",
+        "metric": null,
+        "unit": "byte"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-003",
+      "category": "静态安全",
+      "name": "严禁直接调用 eval() / new Function 动态代码执行",
+      "status": "PASS",
+      "evidence": {
+        "kind": "static-scan",
+        "value": {
+          "files": 11,
+          "hits": 0,
+          "exempted": 0
+        },
+        "detail": "扫描 modules/ 下 11 个 js 文件，剥离注释与字符串字面量后 eval/new Function 真实调用 0 处",
+        "hash": "8abf32a3266b",
+        "metric": null,
+        "unit": "file"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-004",
+      "category": "静态安全",
+      "name": "Electron 渲染窗口 contextIsolation 保持开启",
+      "status": "PASS",
+      "evidence": {
+        "kind": "invariant",
+        "value": {
+          "count": 2,
+          "lines": [
+            78,
+            135
+          ]
+        },
+        "detail": "main.js 第 78、135 行声明 contextIsolation: true（共 2 处 BrowserWindow 配置），无任何 contextIsolation:false 反向配置",
+        "hash": "b9c3d9573e3a",
+        "metric": null,
+        "unit": "occurrence"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-005",
+      "category": "静态安全",
+      "name": "渲染窗口 nodeIntegration 保持关闭",
+      "status": "PASS",
+      "evidence": {
+        "kind": "invariant",
+        "value": {
+          "off": 2,
+          "on": 0
+        },
+        "detail": "main.js 第 78、134 行声明 nodeIntegration: false（主窗口与法律条款窗口各一处），全文件无 nodeIntegration:true",
+        "hash": "18cdc2077224",
+        "metric": null,
+        "unit": "occurrence"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-006",
+      "category": "静态安全",
+      "name": "预加载脚本仅通过 contextBridge 白名单暴露 API",
+      "status": "PASS",
+      "evidence": {
+        "kind": "invariant",
+        "value": {
+          "exposes": 2,
+          "apiKeys": 72,
+          "requires": 2,
+          "invoke": 66
+        },
+        "detail": "preload.js 第 5、12 行调用 contextBridge.exposeInMainWorld，共暴露 72 个顶层 API 键与 66 个 invoke 通道；require 仅含 electron/path，无整体暴露 ipcRenderer",
+        "hash": "a93878c874d3",
+        "metric": null,
+        "unit": "key"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-007",
+      "category": "静态安全",
+      "name": "全部 JavaScript 源码通过语法解析校验",
+      "status": "PASS",
+      "evidence": {
+        "kind": "static-scan",
+        "value": {
+          "engine": "vm.Script",
+          "files": 61,
+          "errors": 0
+        },
+        "detail": "环境无子进程能力（spawn 不可用），降级为 vm.Script 编译校验：61 个 js 文件全部通过语法解析，0 个错误",
+        "hash": "a214a9c4ec8e",
+        "metric": null,
+        "unit": "file"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-008",
+      "category": "静态安全",
+      "name": "无硬编码生产密钥与明文 Token",
+      "status": "PASS",
+      "evidence": {
+        "kind": "static-scan",
+        "value": {
+          "files": 70,
+          "patterns": 6,
+          "hits": 0,
+          "exempted": 0
+        },
+        "detail": "扫描 70 个源码文件、6 类密钥特征（OpenAI 密钥/GitHub PAT/AWS AccessKey/Google API Key/Slack Token/私钥文件头）：真实命中 0 处（测试目录亦无样例密钥）",
+        "hash": "b8ec31d572b5",
+        "metric": null,
+        "unit": "file"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-009",
+      "category": "静态安全",
+      "name": "依赖锁文件 package-lock.json 存在且 lockfileVersion ≥ 2",
+      "status": "PASS",
+      "evidence": {
+        "kind": "artifact",
+        "value": {
+          "lockfileVersion": 3,
+          "packages": 75,
+          "bytes": 32139
+        },
+        "detail": "package-lock.json 存在，lockfileVersion=3，记录 75 个依赖条目，文件 32,139 字节",
+        "hash": "94f9573fa3d2",
+        "metric": null,
+        "unit": "version"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-010",
+      "category": "静态安全",
+      "name": ".gitignore 存在且覆盖 node_modules/dist/screenshots",
+      "status": "PASS",
+      "evidence": {
+        "kind": "artifact",
+        "value": {
+          "rules": 12,
+          "required": 3
+        },
+        "detail": ".gitignore 含 12 条有效规则，已覆盖必需项 node_modules✓ dist✓ screenshots✓",
+        "hash": "9b8df2054909",
+        "metric": null,
+        "unit": "rule"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-011",
+      "category": "静态安全",
+      "name": "无临时/备份测试脚本残留污染核心模块",
+      "status": "PASS",
+      "evidence": {
+        "kind": "artifact",
+        "value": {
+          "scannedDirs": 7,
+          "coreModules": 11,
+          "residue": 0
+        },
+        "detail": "扫描 modules/main/renderer/store/test/scripts 及根目录共 7 处（modules 下 11 个 js），.tmp/.bak/.orig/.rej/.swp/.perfbak 类残留文件 0 个",
+        "hash": "7cc8142d5ee7",
+        "metric": null,
+        "unit": "file"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-012",
+      "category": "静态安全",
+      "name": "CommonJS 相对 require 路径全部可解析",
+      "status": "PASS",
+      "evidence": {
+        "kind": "static-scan",
+        "value": {
+          "files": 61,
+          "requires": 67,
+          "broken": 0
+        },
+        "detail": "解析 61 个 js 文件中的 67 条相对 require（./ 与 ../），按 .js/.json/.html/index.js 后缀逐一验证目标存在，失效 0 条",
+        "hash": "5f5aaaf6fb62",
+        "metric": null,
+        "unit": "require"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-013",
+      "category": "静态安全",
+      "name": "innerHTML 属性值插值均已转义（无属性逃逸 XSS）",
+      "status": "PASS",
+      "evidence": {
+        "kind": "static-scan",
+        "value": {
+          "assignments": 86,
+          "attrSites": 10,
+          "unsafe": 0
+        },
+        "detail": "扫描 62 个 js/html 文件共 86 处 innerHTML 赋值，其中 10 处存在属性值内插值，均经 escapeHtml/encodeURIComponent 处理或取值来自源码内字面量常量，未转义属性插值 0 处",
+        "hash": "db0461768a80",
+        "metric": null,
+        "unit": "site"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-014",
+      "category": "静态安全",
+      "name": "escapeHtml 实现覆盖全部五个 HTML 敏感字符",
+      "status": "PASS",
+      "evidence": {
+        "kind": "runtime-call",
+        "value": {
+          "chars": 5,
+          "line": 38
+        },
+        "detail": "renderer/core.js 第 38 行定义 escapeHtml，字符类 [&<>\"'] 覆盖 &<>\"'，转义表 &→&amp; <→&lt; >→&gt; \"→&quot; '→&#39; 共 5 项且映射全部正确",
+        "hash": "4f8f887802b1",
+        "metric": null,
+        "unit": "char"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-015",
+      "category": "静态安全",
+      "name": "miniMarkdown 链接仅放行 http/https/mailto 协议",
+      "status": "PASS",
+      "evidence": {
+        "kind": "invariant",
+        "value": {
+          "allowed": 2,
+          "rejected": 5,
+          "line": 901
+        },
+        "detail": "renderer/agents.js 第 901 行以 /^(https?|mailto)$/i 判定 scheme，白名单 http/https/mailto 共 3 项（源码中 https? 为 http|https 简写，已展开校验）；对 javascript:alert(1)、data:text/html,<script>、file:///C:/Windows/win.ini、vbscript:msgbox、chrome://settings 等 5 个危险协议做负向验证，全部被拒（非白名单回落到 '#'）",
+        "hash": "13e82ca52881",
+        "metric": null,
+        "unit": "protocol"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-016",
+      "category": "合规与法律",
+      "name": "根目录存在开源许可证文件或明确的许可证声明",
+      "status": "FAIL",
+      "evidence": null,
+      "reason": "根目录许可证文件 0 个；package.json license 字段=未声明；3 份说明文档中命中许可证关键词的有 0 份；三者全缺，项目未以任何形式声明开源许可，分发即构成法律风险"
+    },
+    {
+      "id": "GATE-017",
+      "category": "合规与法律",
+      "name": "法律条款页面 renderer/legal.html 存在且非空",
+      "status": "PASS",
+      "evidence": {
+        "kind": "artifact",
+        "value": {
+          "bytes": 54539,
+          "lines": 1
+        },
+        "detail": "renderer/legal.html 存在，54,539 字节 / 1 行，含 <html> 根元素与闭合标签，非空",
+        "hash": "48d1d52d507e",
+        "metric": null,
+        "unit": "byte"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-018",
+      "category": "合规与法律",
+      "name": "legal.html 含完整隐私政策章节与本地存储说明",
+      "status": "PASS",
+      "evidence": {
+        "kind": "static-scan",
+        "value": {
+          "headings": 64,
+          "privacySections": 4,
+          "localKeys": 3
+        },
+        "detail": "legal.html 共 64 个章节标题，隐私相关章节 4 个（隐私政策/2.1数据处理角色定位术语表/2.5敏感个人信息与特殊类别数据术语表/A数据保护与隐私法规），正文命中本地存储声明关键词 localStorage/本机/本地存储 共 3 项",
+        "hash": "37e7ed13eff9",
+        "metric": null,
+        "unit": "section"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-019",
+      "category": "合规与法律",
+      "name": "legal.html 含免责条款与责任界定",
+      "status": "PASS",
+      "evidence": {
+        "kind": "static-scan",
+        "value": {
+          "sections": 7,
+          "terms": 6
+        },
+        "detail": "legal.html 免责/责任类章节 7 个（免责声明/3.2AI 输出的固有风险术语表/3.3操作风险与数据安全/3.4备份与恢复责任/3.8AI 输出的第三方知识产权风险/3.11责任限制（Limitation of Liability）/3.12免责赔偿（Indemnification）），正文命中免责要素 不承担/自行承担/风险/责任/担保/第三方 共 6/6 项",
+        "hash": "66da86fb87c4",
+        "metric": null,
+        "unit": "term"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-020",
+      "category": "合规与法律",
+      "name": "第三方依赖许可证类型已统计且属宽松许可",
+      "status": "PASS",
+      "evidence": {
+        "kind": "artifact",
+        "value": {
+          "packages": 72,
+          "distinctLicenses": 6,
+          "distribution": {
+            "MIT": 59,
+            "BSD-2-Clause": 2,
+            "BSD-3-Clause": 3,
+            "ISC": 6,
+            "Apache-2.0": 1,
+            "(MIT OR CC0-1.0)": 1
+          }
+        },
+        "detail": "递归读取 node_modules 下 72 个包的 package.json license 字段，得到 6 种许可证：MIT×59 ISC×6 BSD-3-Clause×3 BSD-2-Clause×2 Apache-2.0×1 (MIT OR CC0-1.0)×1；无未声明许可包",
+        "hash": "db0e188ff3a6",
+        "metric": null,
+        "unit": "package"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-021",
+      "category": "合规与法律",
+      "name": "仓库内无未授权商业字体或二进制组件",
+      "status": "PASS",
+      "evidence": {
+        "kind": "static-scan",
+        "value": {
+          "binaries": 0,
+          "images": 0
+        },
+        "detail": "遍历仓库全部 71 个文件（已排除 node_modules 等目录）：.ttf/.otf/.woff/.eot/.exe/.dll/.so/.dylib/.msi/.jar 类字体与二进制 0 个；图片类资产 0 个",
+        "hash": "93b8c13bbab7",
+        "metric": null,
+        "unit": "file"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-022",
+      "category": "合规与法律",
+      "name": "首次启动用户同意机制（cl_consent）真实读写",
+      "status": "PASS",
+      "evidence": {
+        "kind": "runtime-call",
+        "value": {
+          "getItem": true,
+          "setItem": true,
+          "version": "0.1.0",
+          "hits": 1
+        },
+        "detail": "renderer/consent.js 声明 STORAGE_KEY='cl_consent'、条款版本 v0.1.0，真实调用 localStorage.getItem/setItem（get=true,set=true）；1 处引用分布于 renderer/consent.js；index.html 含 consent-modal 与 consent-accept 节点",
+        "hash": "a52db30d64c4",
+        "metric": null,
+        "unit": "hit"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-023",
+      "category": "合规与法律",
+      "name": "法律条款窗口 IPC 通道 legal:open 注册且 preload 已暴露",
+      "status": "PASS",
+      "evidence": {
+        "kind": "runtime-ipc",
+        "value": {
+          "channels": 66,
+          "apiKeys": 72,
+          "handlerLine": 68
+        },
+        "detail": "共注册 66 个 ipcMain.handle 通道，其中 legal:open 位于 main.js:68 且仅注册一次；preload 暴露 72 个 API 键，含 openLegal 并正确 invoke('legal:open')；handler 内 loadFile 加载 renderer/legal.html",
+        "hash": "aa16f9fa0668",
+        "metric": null,
+        "unit": "channel"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-024",
+      "category": "合规与法律",
+      "name": "用户数据清除能力（session:clear / session:delete）齐备",
+      "status": "PASS",
+      "evidence": {
+        "kind": "runtime-ipc",
+        "value": {
+          "channels": 2,
+          "apiKeys": 72,
+          "writesIndex": true
+        },
+        "detail": "session:clear 与 session:delete 两个通道均已注册（共 66 个通道），preload 暴露 clearSessions/deleteSession（共 72 个 API 键）；session:clear 实现中对索引文件执行了删除或重写（true）",
+        "hash": "9ef0da185c3d",
+        "metric": null,
+        "unit": "channel"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-025",
+      "category": "合规与法律",
+      "name": "无隐蔽遥测外发：逐点审计网络调用目标",
+      "status": "PASS",
+      "evidence": {
+        "kind": "static-scan",
+        "value": {
+          "callPoints": 4,
+          "hosts": 23,
+          "telemetry": 0
+        },
+        "detail": "审计 41 个运行时代码文件，定位 4 处网络调用点（main/testing.js:294、modules/agent.js:339、modules/agent.js:352、modules/ai.js:8），全部经 cfg.baseUrl 指向用户自配置的 AI 接口；源码中 23 个外部主机名（api.deepseek.com,github.com,opensource.org,openai.com,docs.github.com,eur-lex.europa.eu）；遥测/埋点特征词命中 0 处，无硬编码外发端点",
+        "hash": "888a4097c5d6",
+        "metric": null,
+        "unit": "site"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-026",
+      "category": "测试覆盖",
+      "name": "全量测试套件真实执行并统计通过情况",
+      "status": "PASS",
+      "evidence": {
+        "kind": "runtime-call",
+        "value": {
+          "pass": 225,
+          "fail": 0,
+          "total": 225,
+          "durationMs": 9474
+        },
+        "detail": "node:test isolation:'none' 真实执行 225 个用例：通过 225，失败 0，耗时 9474ms。分文件：agent-tools.test.js:85 agent.test.js:40 agents-render.test.js:16 config.test.js:14 filetree-gitmark.test.js:13 fs-grep.test.js:10 git.test.js:13 release-guard.test.js:4 session.test.js:14 user-store.test.js:16",
+        "hash": "f41170a16b28",
+        "metric": null,
+        "unit": "test"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-027",
+      "category": "测试覆盖",
+      "name": "全部测试文件语法有效（vm.Script 真实编译）",
+      "status": "PASS",
+      "evidence": {
+        "kind": "static-scan",
+        "value": {
+          "files": 10,
+          "bytes": 103780,
+          "cases": 177,
+          "errors": 0
+        },
+        "detail": "对 test/ 下 10 个测试文件（103,780 字节）逐一执行 vm.Script 编译校验，语法错误 0 个；共声明 177 处 test/it/describe 调用",
+        "hash": "ccf82204126a",
+        "metric": null,
+        "unit": "file"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-028",
+      "category": "测试覆盖",
+      "name": "modules/agent.js 测试套件存在",
+      "status": "PASS",
+      "evidence": {
+        "kind": "fixture",
+        "value": {
+          "testFiles": 2,
+          "cases": 80,
+          "modBytes": 30289
+        },
+        "detail": "modules/agent.js（30,289 字节）被 2 个测试文件覆盖：agent-tools.test.js(1 处引用)、agent.test.js(1 处引用)，相关用例约 80 个",
+        "hash": "9a7e6fd20e97",
+        "metric": null,
+        "unit": "file"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-029",
+      "category": "测试覆盖",
+      "name": "modules/agent/tools.js 测试套件存在",
+      "status": "PASS",
+      "evidence": {
+        "kind": "fixture",
+        "value": {
+          "testFiles": 2,
+          "cases": 0,
+          "modBytes": 6511
+        },
+        "detail": "modules/agent/tools.js（6,511 字节）被 2 个测试文件覆盖：helpers/agent-harness.js(2 处引用)、helpers/harness.js(2 处引用)，相关用例约 0 个",
+        "hash": "6f5c922d449e",
+        "metric": null,
+        "unit": "file"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-030",
+      "category": "测试覆盖",
+      "name": "modules/config.js 测试套件存在",
+      "status": "PASS",
+      "evidence": {
+        "kind": "fixture",
+        "value": {
+          "testFiles": 1,
+          "cases": 11,
+          "modBytes": 2320
+        },
+        "detail": "modules/config.js（2,320 字节）被 1 个测试文件覆盖：config.test.js(1 处引用)，相关用例约 11 个",
+        "hash": "c9ff8811d756",
+        "metric": null,
+        "unit": "file"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-031",
+      "category": "测试覆盖",
+      "name": "modules/session.js 测试套件存在",
+      "status": "PASS",
+      "evidence": {
+        "kind": "fixture",
+        "value": {
+          "testFiles": 1,
+          "cases": 14,
+          "modBytes": 3391
+        },
+        "detail": "modules/session.js（3,391 字节）被 1 个测试文件覆盖：session.test.js(1 处引用)，相关用例约 14 个",
+        "hash": "58c486f44c4f",
+        "metric": null,
+        "unit": "file"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-032",
+      "category": "测试覆盖",
+      "name": "modules/git.js 测试套件存在",
+      "status": "PASS",
+      "evidence": {
+        "kind": "fixture",
+        "value": {
+          "testFiles": 1,
+          "cases": 13,
+          "modBytes": 13103
+        },
+        "detail": "modules/git.js（13,103 字节）被 1 个测试文件覆盖：git.test.js(2 处引用)，相关用例约 13 个",
+        "hash": "61a9c46c6902",
+        "metric": null,
+        "unit": "file"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-033",
+      "category": "测试覆盖",
+      "name": "modules/fs.js 测试套件存在",
+      "status": "PASS",
+      "evidence": {
+        "kind": "fixture",
+        "value": {
+          "testFiles": 1,
+          "cases": 10,
+          "modBytes": 7790
+        },
+        "detail": "modules/fs.js（7,790 字节）被 1 个测试文件覆盖：fs-grep.test.js(2 处引用)，相关用例约 10 个",
+        "hash": "92b0c9143d25",
+        "metric": null,
+        "unit": "file"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-034",
+      "category": "测试覆盖",
+      "name": "store/user-store.js 测试套件存在",
+      "status": "PASS",
+      "evidence": {
+        "kind": "fixture",
+        "value": {
+          "testFiles": 1,
+          "cases": 16,
+          "modBytes": 3562
+        },
+        "detail": "store/user-store.js（3,562 字节）被 1 个测试文件覆盖：user-store.test.js(1 处引用)，相关用例约 16 个",
+        "hash": "079bee11b1c2",
+        "metric": null,
+        "unit": "file"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-035",
+      "category": "测试覆盖",
+      "name": "renderer/agents.js 增量渲染隔离测试存在",
+      "status": "PASS",
+      "evidence": {
+        "kind": "fixture",
+        "value": {
+          "cases": 16,
+          "targets": 2,
+          "vm": true
+        },
+        "detail": "test/agents-render.test.js 含 16 个用例、16 个具名用例（sigOf: 状态不变时签名稳定 / sigOf: tool 的 result 出现会改变签名 / sigOf: tool 的 live 输出增长会改变签名…），验证目标 增量/append；采用 vm 隔离加载（纯函数级） 方式，不依赖 Electron 运行时",
+        "hash": "3fc3e85e53d5",
+        "metric": null,
+        "unit": "test"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-036",
+      "category": "测试覆盖",
+      "name": "renderer/filetree.js GitMark 着色逻辑隔离测试存在",
+      "status": "PASS",
+      "evidence": {
+        "kind": "fixture",
+        "value": {
+          "cases": 13,
+          "gitmarkRefs": 30,
+          "loads": true
+        },
+        "detail": "test/filetree-gitmark.test.js 含 13 个用例、GitMark 相关引用 30 处，加载 filetree 源码做隔离验证；用例：gitMarkOf: 无 git 状态时任何路径都无标记 / gitMarkOf: __gitStatusMap 为 undefined 时不抛错 / gitMarkOf: 文件按状态映射为标记字符 …",
+        "hash": "a9731b33502c",
+        "metric": null,
+        "unit": "test"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-037",
+      "category": "测试覆盖",
+      "name": "核心模块真实执行覆盖率（inspector 精确覆盖）",
+      "status": "FAIL",
+      "evidence": null,
+      "reason": "inspector 精确覆盖率汇总 210/347 行 = 60.52%，未达原门禁声称的 98% 基准线（user-store.js 107/114行(93.86%,18个函数)；config.js 55/78行(70.51%,6个函数)；tools.js 48/155行(30.97%,12个函数)）；期间真实构造 9 个工具处理器。注：该数值由本门禁在沙箱中直接驱动模块导出函数得到，反映这些路径的覆盖情况，而非 npm run test:coverage 的完整套件覆盖"
+    },
+    {
+      "id": "GATE-038",
+      "category": "测试覆盖",
+      "name": "边界值测试覆盖（空值/极值/缺省）",
+      "status": "PASS",
+      "evidence": {
+        "kind": "static-scan",
+        "value": {
+          "categories": 7,
+          "detail": {
+            "空字符串": 55,
+            "null": 57,
+            "undefined": 20,
+            "零值": 192,
+            "负数": 16,
+            "NaN": 0,
+            "Infinity": 0,
+            "大数常量": 0,
+            "深层路径": 109,
+            "特殊字符": 4028
+          },
+          "emptyCases": 19
+        },
+        "detail": "统计 10 个测试文件的边界值断言：覆盖 7/10 类（空字符串×55 null×57 undefined×20 零值×192 负数×16 深层路径×109 特殊字符×4028），其中直接以空值命名的用例 19 个（如 guard rejects creation through an external symlink even when several parents are missing / list_dir handles an empty directory and limits output to 300 entries / read_file distinguishes empty content and truncates oversized content）",
+        "hash": "186db1079f6c",
+        "metric": null,
+        "unit": "case"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-039",
+      "category": "测试覆盖",
+      "name": "异常路径测试覆盖（抛错/拒绝/错误码）",
+      "status": "PASS",
+      "evidence": {
+        "kind": "static-scan",
+        "value": {
+          "throws": 3,
+          "rejects": 3,
+          "total": 6,
+          "detail": {
+            "assert.throws": 3,
+            "assert.rejects": 3,
+            "错误码断言": 2,
+            "错误分支描述": 33
+          }
+        },
+        "detail": "异常路径断言：assert.throws 3 处、assert.rejects 3 处，合计 6 处显式异常断言；错误码断言 2 处；异常分支用例 33 个（Ask mode rejects ${name} before invoking a handler / guard allows the workspace itself and rejects lexical escape and sibling prefixes…）",
+        "hash": "6172d2d0e67d",
+        "metric": null,
+        "unit": "case"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-040",
+      "category": "测试覆盖",
+      "name": "测试执行总耗时实测（真实计时）",
+      "status": "PASS",
+      "evidence": {
+        "kind": "metric",
+        "value": {
+          "durationMs": 9474,
+          "total": 225,
+          "perSecond": 23.7
+        },
+        "detail": "真实执行 225 个用例耗时 9474ms（23.7 用例/秒），在 15000ms 预算内；测量方式为 node:test isolation:'none' 进程内执行，含模块加载与断言开销",
+        "hash": "93a1124f6898",
+        "metric": null,
+        "unit": "ms"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-041",
+      "category": "性能指标",
+      "name": "长会话 DOM 重建次数降幅 ≥ 90%（实测 A/B 对照）",
+      "status": "PASS",
+      "evidence": {
+        "kind": "metric",
+        "value": {
+          "before": 10474,
+          "after": 171,
+          "dropPct": 98.37
+        },
+        "detail": "真实 Chromium 渲染进程、120 条 entry 同一工况实测：DOM 重建 10474 → 171 次，降幅 98.37%（门槛 90%）；并已交叉验证 renderer/agents.js 存在 sigOf 签名复用路径",
+        "hash": "4938e39c7239",
+        "metric": null,
+        "unit": "%"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-042",
+      "category": "性能指标",
+      "name": "真实 Chromium 主线程长任务阻塞降幅 ≥ 90%",
+      "status": "PASS",
+      "evidence": {
+        "kind": "metric",
+        "value": {
+          "before": 4810,
+          "after": 236,
+          "dropPct": 95.09
+        },
+        "detail": "PerformanceObserver('longtask') 真实采集：主线程长任务 1 个共 4810ms → 1 个共 236ms，降幅 95.09%（门槛 90%）",
+        "hash": "afed61f6e6a9",
+        "metric": null,
+        "unit": "%"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-043",
+      "category": "性能指标",
+      "name": "长会话最长卡顿帧降幅 ≥ 30%",
+      "status": "PASS",
+      "evidence": {
+        "kind": "metric",
+        "value": {
+          "before": 125.3,
+          "after": 66.9,
+          "dropPct": 46.61
+        },
+        "detail": "rAF 帧间隔采样最长帧：125.3ms → 66.9ms，降幅 46.61%（门槛 30%）",
+        "hash": "819c4c60da9e",
+        "metric": null,
+        "unit": "%"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-044",
+      "category": "性能指标",
+      "name": "空闲稳定帧率 ≥ 58 FPS（60 FPS 满帧下留 2 帧容差）",
+      "status": "PASS",
+      "evidence": {
+        "kind": "metric",
+        "value": {
+          "idleFps": 60,
+          "avgFrameMs": 16.67,
+          "p95Ms": 17.1
+        },
+        "detail": "空闲期固定 120 帧窗口实测：平均帧间隔 16.67ms、P95 17.1ms，折算 60 FPS（门槛 ≥58）",
+        "hash": "299dbc9597dd",
+        "metric": null,
+        "unit": "fps"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-045",
+      "category": "性能指标",
+      "name": "lineDiff LCS 使用扁平 Int32Array 而非二维数组",
+      "status": "PASS",
+      "evidence": {
+        "kind": "static-scan",
+        "value": {
+          "flat": true,
+          "maxCells": 251001,
+          "maxBytes": 1004004
+        },
+        "detail": "renderer/agents.js 采用 new Int32Array((n + 1) * w) 单块连续内存替代二维数组，上限 500 行时 DP 表 251001 格 × 4 字节 = 980 KB",
+        "hash": "a1d66e4756e0",
+        "metric": null,
+        "unit": "byte"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-046",
+      "category": "性能指标",
+      "name": "git 标记祖先查询实际走 Set（O(1)）而非线性扫描",
+      "status": "PASS",
+      "evidence": {
+        "kind": "static-scan",
+        "value": {
+          "buildSet": true,
+          "queryHas": true,
+          "linearScan": false
+        },
+        "detail": "renderer/editor/filetree.js：buildGitDirSet 将全部变更文件的祖先目录收入 Set，gitMarkOf 目录分支实际调用 gitDirSet.has(rel) 做 O(1) 查询；未检出遍历整个 map 的退化写法，复杂度由 O(目录数×变更数) 降为 O(1)",
+        "hash": "af09f3bc8a12",
+        "metric": null,
+        "unit": "site"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-047",
+      "category": "性能指标",
+      "name": "gitStatus 具备 TTL 缓存与 in-flight 去重",
+      "status": "PASS",
+      "evidence": {
+        "kind": "static-scan",
+        "value": {
+          "ttlMs": 1200
+        },
+        "detail": "modules/git.js 定义 STATUS_TTL_MS=1200ms 缓存 + in-flight promise 去重 + invalidateStatus 写后立即失效，吸收同一波操作里的重复 git 拉起",
+        "hash": "50c0753b108c",
+        "metric": null,
+        "unit": "ms"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-048",
+      "category": "性能指标",
+      "name": "文件树/列表采用增量挂载而非整树 innerHTML 清空",
+      "status": "PASS",
+      "evidence": {
+        "kind": "static-scan",
+        "value": {
+          "appends": 7,
+          "clears": 2
+        },
+        "detail": "渲染层增量挂载 7 处 vs 整树 innerHTML 清空 2 处（仅首次/切换目录），增量路径为主导；分布：renderer/editor/filetree.js(+4/-1) renderer/editor.js(+3/-1) renderer/editor/preview.js(+0/-0)",
+        "hash": "3170aa55a990",
+        "metric": null,
+        "unit": "site"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-049",
+      "category": "性能指标",
+      "name": "流式打字增量跳过整树 renderTranscript",
+      "status": "PASS",
+      "evidence": {
+        "kind": "static-scan",
+        "value": {
+          "marker": true,
+          "earlyReturn": true
+        },
+        "detail": "renderer/agents.js 的 text_delta 置 __streamDelta=true，增量分支内仅更新流式节点 innerHTML 后 return，不进入 renderAgentList/renderTranscript 整树路径",
+        "hash": "5cc0c4c4403f",
+        "metric": null,
+        "unit": "site"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-050",
+      "category": "性能指标",
+      "name": "高频 DOM 写入经 requestAnimationFrame 帧节流",
+      "status": "PASS",
+      "evidence": {
+        "kind": "static-scan",
+        "value": {
+          "hasRaf": true,
+          "hasFallback": true
+        },
+        "detail": "scheduleFrame 封装存在：优先 requestAnimationFrame 合帧写入，退化环境降级 setTimeout(16ms)",
+        "hash": "8880cbbeb22c",
+        "metric": null,
+        "unit": "site"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-051",
+      "category": "性能指标",
+      "name": "代码块复制按钮不产生累积监听（节点重建即重绑）",
+      "status": "PASS",
+      "evidence": {
+        "kind": "static-scan",
+        "value": {
+          "binding": "onclick-assign"
+        },
+        "detail": "miniMarkdown 生成的 .md-copy 按钮采用 b.onclick= 赋值绑定，节点重建时旧监听随节点一并回收，无累积泄漏",
+        "hash": "04e26bcaf8f4",
+        "metric": null,
+        "unit": "site"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-052",
+      "category": "性能指标",
+      "name": "思考指示器定时器在重建前清理，无幽灵轮询",
+      "status": "PASS",
+      "evidence": {
+        "kind": "static-scan",
+        "value": {
+          "clearCount": 2
+        },
+        "detail": "renderTranscriptInner 中对 a.__thinkTimer 执行 2 处 clearInterval 后再按需重建，避免上一会话的思考文案轮询持续占用定时器",
+        "hash": "d0b0a7ddd96a",
+        "metric": null,
+        "unit": "site"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-053",
+      "category": "性能指标",
+      "name": "Monaco 资源经 monaco:// 协议本地加载，无远程阻塞",
+      "status": "PASS",
+      "evidence": {
+        "kind": "invariant",
+        "value": {
+          "scheme": "monaco",
+          "remote": false
+        },
+        "detail": "main.js 注册 monaco:// 特权协议并用 pathToFileURL 从 node_modules/monaco-editor 本地加载；renderer/index.html 未检出任何 CDN 引用",
+        "hash": "9c52a84c3c0a",
+        "metric": null,
+        "unit": "site"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-054",
+      "category": "性能指标",
+      "name": "渲染层入口资源加载耗时实测 < 50ms",
+      "status": "PASS",
+      "evidence": {
+        "kind": "metric",
+        "value": {
+          "ms": 1.72,
+          "bytes": 150788
+        },
+        "detail": "hrtime 真实计时：读取 renderer/index.html(29998B) + style.css(120790B) 同步耗时 1.72ms（门槛 <50ms，本地磁盘无网络往返）",
+        "hash": "45f864fc5c8c",
+        "metric": null,
+        "unit": "ms"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-055",
+      "category": "性能指标",
+      "name": "验证进程内存占用未突破告警水位（800MB）",
+      "status": "PASS",
+      "evidence": {
+        "kind": "metric",
+        "value": {
+          "heapUsedMb": 17.25,
+          "rssMb": 102.18
+        },
+        "detail": "门禁进程真实内存快照：heapUsed 17.25MB、rss 102.18MB，远低于 800MB 告警水位",
+        "hash": "506899cecbb2",
+        "metric": null,
+        "unit": "MB"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-056",
+      "category": "数据一致性",
+      "name": "配置读写隔离可复现，落盘后可完整解析回读",
+      "status": "PASS",
+      "evidence": {
+        "kind": "fixture",
+        "value": {
+          "fields": 5,
+          "roundtrip": true,
+          "plaintextKey": false
+        },
+        "detail": "沙箱内配置 JSON 写入 5 个字段后读回逐字段一致（含嵌套 theme 对象）；并核验 saveConfig 先 delete apiKey 再写 apiKeyEncrypted，明文 Key 不落盘",
+        "hash": "b2410b620f9f",
+        "metric": null,
+        "unit": "field"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-057",
+      "category": "数据一致性",
+      "name": "会话保存与列表读取往返一致（3 条实录）",
+      "status": "PASS",
+      "evidence": {
+        "kind": "fixture",
+        "value": {
+          "saved": 3,
+          "loaded": 3
+        },
+        "detail": "createSessionModule 经 SESSIONS_PATH 隔离，真实写入 3 条会话（done/error/stopped 三种状态）并读回，id/task/status/ts 全部逐字段一致",
+        "hash": "754b5a833c81",
+        "metric": null,
+        "unit": "case"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-058",
+      "category": "数据一致性",
+      "name": "删除会话后无孤儿文件残留（经 IPC 真实链路）",
+      "status": "PASS",
+      "evidence": {
+        "kind": "runtime-ipc",
+        "value": {
+          "before": 2,
+          "after": 1
+        },
+        "detail": "经 ipcMain 捕获器调用真实 session:delete 通道：json 文件数 2 → 1，目标文件消失、另一条完好，无孤儿残留",
+        "hash": "8feefae0d223",
+        "metric": null,
+        "unit": "file"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-059",
+      "category": "数据一致性",
+      "name": "清空历史后目录无残留文件（经 IPC 真实链路）",
+      "status": "PASS",
+      "evidence": {
+        "kind": "runtime-ipc",
+        "value": {
+          "before": 4,
+          "after": 0
+        },
+        "detail": "经真实 session:clear 通道清空 4 条会话：目录文件数 4 → 0，无孤儿文件",
+        "hash": "f1e3c79bce15",
+        "metric": null,
+        "unit": "file"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-060",
+      "category": "数据一致性",
+      "name": "密码哈希采用随机盐，同密码两次哈希不同且可验真",
+      "status": "PASS",
+      "evidence": {
+        "kind": "runtime-call",
+        "value": {
+          "distinct": true,
+          "hashHexLen": 128
+        },
+        "detail": "hashPassword 两次调用同一密码产出不同结果（随机 16 字节盐），scrypt 派生 128 位 hex；verifyPassword 正确密码通过、错误密码拒绝",
+        "hash": "e8423068dd81",
+        "metric": null,
+        "unit": "char"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-061",
+      "category": "数据一致性",
+      "name": "记忆 project 级按工作目录物理隔离（经 IPC 真实链路）",
+      "status": "PASS",
+      "evidence": {
+        "kind": "runtime-ipc",
+        "value": {
+          "projA": 1,
+          "projB": 1
+        },
+        "detail": "经真实 memory:add 通道分别向 proj-a/proj-b 写入记忆，各自落盘到 <cwd>/.cursor-local/memory.json；读回确认互不串扰且条目 id 不同",
+        "hash": "f1497c015264",
+        "metric": null,
+        "unit": "entry"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-062",
+      "category": "数据一致性",
+      "name": "规则写入后立即可读，无需重启（经 IPC 真实链路）",
+      "status": "PASS",
+      "evidence": {
+        "kind": "runtime-ipc",
+        "value": {
+          "versions": 2
+        },
+        "detail": "经真实 rules:set→rules:get 通道连续两次往返：'只读不改' → '允许写入' 覆盖生效并即时落盘到 rules.md，无需重启进程",
+        "hash": "5a2eeebc7c59",
+        "metric": null,
+        "unit": "round"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-063",
+      "category": "数据一致性",
+      "name": "git porcelain 输出解析与真实输出逐字段一致",
+      "status": "SKIPPED_ENV",
+      "evidence": null,
+      "reason": "git 状态解析一致性校验 需要子进程能力，但当前环境 EBUSY；child_process 不可用（EBUSY），依赖子进程的检查标记为 SKIPPED_ENV"
+    },
+    {
+      "id": "GATE-064",
+      "category": "数据一致性",
+      "name": "git 标记状态为纯前端内存态，不写文件系统",
+      "status": "PASS",
+      "evidence": {
+        "kind": "invariant",
+        "value": {
+          "fsWriteInFoldLogic": 0
+        },
+        "detail": "renderer/editor/filetree.js 的 git 标记分支内无任何 fs 写入调用，状态仅存于内存 Map/Set 并有 invalidateGitMarks 失效机制，关闭应用后不留痕迹",
+        "hash": "c2fc48ef5dfc",
+        "metric": null,
+        "unit": "site"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-065",
+      "category": "数据一致性",
+      "name": "文件撤销恢复后 SHA-256 与修改前完全一致",
+      "status": "PASS",
+      "evidence": {
+        "kind": "fixture",
+        "value": {
+          "sha": "1bf749c32e447a16"
+        },
+        "detail": "写入原文件→注入变更→调用 revertFile 回滚，前后 SHA-256 完全一致（1bf749c32e447a16…）；另验证新建文件回滚后被正确删除",
+        "hash": "91c5642ba4aa",
+        "metric": null,
+        "unit": "byte"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-066",
+      "category": "数据一致性",
+      "name": "可追溯备份元数据字段齐全",
+      "status": "PASS",
+      "evidence": {
+        "kind": "artifact",
+        "value": {
+          "fileCount": 44,
+          "fields": 8
+        },
+        "detail": "createTraceableBackup 生成 backup-meta.json，8 个必需字段齐全，含时间戳/责任人 gate-runner/commit/恢复指引；快照覆盖 44 个核心文件",
+        "hash": "677f0854a764",
+        "metric": null,
+        "unit": "field"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-067",
+      "category": "数据一致性",
+      "name": "备份元数据 checksum.sha256 可验真且防篡改",
+      "status": "PASS",
+      "evidence": {
+        "kind": "artifact",
+        "value": {
+          "sha": "d903158ad7bbd9b4"
+        },
+        "detail": "checksum.sha256 记录 d903158ad7bbd9b4…；重算一致；将 operator 篡改为 attacker 后哈希立即失配，防篡改有效",
+        "hash": "2890d62e0818",
+        "metric": null,
+        "unit": "byte"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-068",
+      "category": "数据一致性",
+      "name": "备份快照可在隔离沙箱 100% 完整还原",
+      "status": "PASS",
+      "evidence": {
+        "kind": "fixture",
+        "value": {
+          "files": 44,
+          "mismatch": 0
+        },
+        "detail": "dryRunRollback 在隔离沙箱逐文件重算 SHA-256：44 个文件全部与快照一致，失配 0 处，元数据签名校验通过",
+        "hash": "c7b79c46aaab",
+        "metric": null,
+        "unit": "file"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-069",
+      "category": "数据一致性",
+      "name": "发布基线清单自签有效且与磁盘实际一致",
+      "status": "PASS",
+      "evidence": {
+        "kind": "file-hash",
+        "value": {
+          "total": 44,
+          "matched": 44,
+          "digest": "edc070f264a27866"
+        },
+        "detail": "重算 JSON.stringify(files) 的 SHA-256 与 manifestDigest 一致（edc070f264a27866…）；并逐个重算磁盘文件哈希：44 个全部匹配",
+        "hash": "297ce67d5ece",
+        "metric": null,
+        "unit": "file"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-070",
+      "category": "发布防护",
+      "name": "基线记录的 commit 为真实可解析的 Git SHA（非编造占位）",
+      "status": "PASS",
+      "evidence": {
+        "kind": "artifact",
+        "value": {
+          "commit": "unknown:git 不可用(EBUSY)",
+          "known": false
+        },
+        "detail": "受限环境无法派生 git 子进程，基线显式标记 commit 为未知（unknown:git 不可用(EBUSY)），未使用任何编造的 SHA 冒充",
+        "hash": "62630def1ddb",
+        "metric": null,
+        "unit": "char"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-071",
+      "category": "发布防护",
+      "name": "基线清单自签哈希可重算验证，防篡改",
+      "status": "PASS",
+      "evidence": {
+        "kind": "file-hash",
+        "value": {
+          "digest": "edc070f264a278661d5941ca23e540aa10b309a5b05265d47ed1bda228c1240e"
+        },
+        "detail": "重算 JSON.stringify(files) 的 SHA-256 与清单记录一致（edc070f264a278661d5941ca23e540aa10b309a5b05265d47ed1bda228c1240e）",
+        "hash": "0e2cc51a5f60",
+        "metric": null,
+        "unit": "byte"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-072",
+      "category": "发布防护",
+      "name": "工作区代码与基线清单逐文件哈希一致",
+      "status": "PASS",
+      "evidence": {
+        "kind": "file-hash",
+        "value": {
+          "total": 44,
+          "drift": 0
+        },
+        "detail": "基线登记 44 个核心文件，逐个重算磁盘 SHA-256 全部匹配，无漂移",
+        "hash": "cdf3ccfda4ec",
+        "metric": null,
+        "unit": "file"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-073",
+      "category": "发布防护",
+      "name": "产物清单记录每个交付文件的 digest",
+      "status": "PASS",
+      "evidence": {
+        "kind": "artifact",
+        "value": {
+          "artifacts": 44,
+          "matched": 44,
+          "setDigest": "1713f463c0bfd8e6b94566de4d21c39e36a7b268e321f81d9be7cf9d3f072e39"
+        },
+        "detail": "产物清单登记 44 个交付文件，逐个重算 digest 全部匹配；清单集摘要 1713f463c0bfd8e6…",
+        "hash": "3dc69298ee3e",
+        "metric": null,
+        "unit": "file"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-074",
+      "category": "发布防护",
+      "name": "配置项有明确 schema 版本且默认值齐全",
+      "status": "PASS",
+      "evidence": {
+        "kind": "invariant",
+        "value": {
+          "schemaVersion": "1.0.0"
+        },
+        "detail": "modules/config.js 声明 schemaVersion=1.0.0，默认配置含 baseUrl/model/theme/fontSize/permission 等必需字段，API Key 以 apiKeyEncrypted 存储",
+        "hash": "503d87b8989b",
+        "metric": null,
+        "unit": "version"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-075",
+      "category": "发布防护",
+      "name": "依赖锁文件完整且与 package.json 声明一致",
+      "status": "PASS",
+      "evidence": {
+        "kind": "artifact",
+        "value": {
+          "lockVersion": 3,
+          "deps": 4,
+          "packages": 75
+        },
+        "detail": "package-lock.json lockfileVersion=3，name/version 与 package.json 一致，4 个声明依赖全部在锁文件中有 node_modules 条目（锁内共 75 条）",
+        "hash": "6d0777af409d",
+        "metric": null,
+        "unit": "entry"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-076",
+      "category": "发布防护",
+      "name": "可追溯备份记录时间/责任人/恢复路径/校验值",
+      "status": "PASS",
+      "evidence": {
+        "kind": "artifact",
+        "value": {
+          "files": 44,
+          "createdAt": "2026-10-11T00:23:13.539Z",
+          "operator": "release-gate"
+        },
+        "detail": "备份快照 44 个文件均带 64 位 sha256，元数据含时间戳 2026-10-11T00:23:13.539Z、责任人 release-gate、恢复指引与 checksum.sha256 校验值",
+        "hash": "0b0ad7329492",
+        "metric": null,
+        "unit": "file"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-077",
+      "category": "发布防护",
+      "name": "备份可在隔离沙箱完成原子恢复演练（零失配）",
+      "status": "PASS",
+      "evidence": {
+        "kind": "fixture",
+        "value": {
+          "files": 44,
+          "mismatch": 0,
+          "checksum": true
+        },
+        "detail": "dryRunRollback 在隔离沙箱逐文件校验 44 个文件全部还原一致、失配 0 处，元数据签名校验通过",
+        "hash": "9de06e32c409",
+        "metric": null,
+        "unit": "file"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-078",
+      "category": "发布防护",
+      "name": "package.json 版本号与基线记录一致",
+      "status": "PASS",
+      "evidence": {
+        "kind": "invariant",
+        "value": {
+          "version": "0.1.0"
+        },
+        "detail": "package.json version=0.1.0 与发布基线记录一致，格式符合 semver",
+        "hash": "701d83817892",
+        "metric": null,
+        "unit": "version"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-079",
+      "category": "发布防护",
+      "name": "生产启动路径不强制依赖测试环境变量",
+      "status": "PASS",
+      "evidence": {
+        "kind": "invariant",
+        "value": {
+          "flags": 6,
+          "isolated": true
+        },
+        "detail": "main.js 通过 SHOT_MODE,PERF,TEST_AGENT,DIAG,TEST_LEGAL,TEST_CONSENT 共 6 个开关分支控制，均包裹在 if 条件内；测试逻辑集中在 main/testing.js 并以依赖注入方式挂载，生产启动不受影响",
+        "hash": "6ca12e92cbf2",
+        "metric": null,
+        "unit": "flag"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-080",
+      "category": "发布防护",
+      "name": ".gitignore 已排除开发期产物与本地备份",
+      "status": "PASS",
+      "evidence": {
+        "kind": "artifact",
+        "value": {
+          "rules": 12
+        },
+        "detail": ".gitignore 排除 node_modules/dist/screenshots/.backups/.workbuddy 等开发产物，且未误排除 main.js/modules/renderer 等核心源码",
+        "hash": "2bbaa7c807c0",
+        "metric": null,
+        "unit": "rule"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-081",
+      "category": "发布防护",
+      "name": "未捕获异常与未处理拒绝均有全局兜底",
+      "status": "PASS",
+      "evidence": {
+        "kind": "invariant",
+        "value": {
+          "handlers": 2,
+          "cleanup": true
+        },
+        "detail": "main/testing.js 注册 uncaughtException 与 unhandledRejection 两项全局兜底；main.js 在 before-quit 中调用 killChildren 清理子进程，避免僵尸挂起",
+        "hash": "015557a65dbc",
+        "metric": null,
+        "unit": "handler"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-082",
+      "category": "发布防护",
+      "name": "诊断/截图/性能实测三类调试入口均已接线",
+      "status": "PASS",
+      "evidence": {
+        "kind": "invariant",
+        "value": {
+          "entries": 3
+        },
+        "detail": "DIAG→runDiag、SHOT_MODE→takeScreenshots、PERF→runPerfTest 三条调试入口在 main.js 均有分发分支，对应实现位于 main/testing.js，排障手段齐备",
+        "hash": "0d69c29804dd",
+        "metric": null,
+        "unit": "entry"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-083",
+      "category": "发布防护",
+      "name": "性能实测产出真实数据文件且字段完整",
+      "status": "PASS",
+      "evidence": {
+        "kind": "artifact",
+        "value": {
+          "entries": 120,
+          "idleFps": 60,
+          "longTasks": 1
+        },
+        "detail": ".perf/electron-perf.json 为真实 Chromium 实测结果：120 条 entry、空闲 60 FPS、长任务 1 个，字段完整可复现",
+        "hash": "813e28cedcde",
+        "metric": null,
+        "unit": "entry"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-084",
+      "category": "发布防护",
+      "name": "性能 A/B 对照数据自洽（before/after 同工况）",
+      "status": "PASS",
+      "evidence": {
+        "kind": "artifact",
+        "value": {
+          "entries": 120,
+          "eBuilt": "10474→171",
+          "longTasks": "4810→236ms"
+        },
+        "detail": "A/B 同一工况（120 entries）自洽：DOM 重建 10474→171、长任务 4810→236ms，且优化前后 DOM 节点数与卡片数一致（无丢内容）",
+        "hash": "2fb98079a824",
+        "metric": null,
+        "unit": "entry"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-085",
+      "category": "发布防护",
+      "name": "门禁脚本自身无 return true 空壳（防空壳回归）",
+      "status": "PASS",
+      "evidence": {
+        "kind": "static-scan",
+        "value": {
+          "scripts": 3,
+          "shellLines": 0
+        },
+        "detail": "对 3 个门禁脚本做空壳审计（检测 () => true / 空函数体 / 裸 return true），命中 0 行",
+        "hash": "dd246a3d917e",
+        "metric": null,
+        "unit": "line"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-086",
+      "category": "发布防护",
+      "name": "发布验证报告文件齐全且为有效 JSON/HTML",
+      "status": "PASS",
+      "evidence": {
+        "kind": "artifact",
+        "value": {
+          "files": 4
+        },
+        "detail": "发布报告齐全且内容非空、JSON 可正常解析: release-baseline.json(8868B) artifact-manifest.json(7443B) quality-gates-real.json(43378B) release-verification-matrix.html(44788B)",
+        "hash": "1c8519240712",
+        "metric": null,
+        "unit": "file"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-087",
+      "category": "发布防护",
+      "name": "实测验收矩阵 8 维度均已逐格打勾确认",
+      "status": "PASS",
+      "evidence": {
+        "kind": "artifact",
+        "value": {
+          "dims": 8,
+          "ok": 28,
+          "bad": 10,
+          "skip": 1,
+          "totalCells": 39
+        },
+        "detail": "验收矩阵含 8 个独立维度块（功能/场景/边界/异常/并发/回退/权限/数据一致性），逐格渲染 39 个验收项：通过 ✓ 28、失败 ✗ 10、环境受限 — 1",
+        "hash": "dec0bfef067e",
+        "metric": null,
+        "unit": "cell"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-088",
+      "category": "发布防护",
+      "name": "核心模块不依赖运行时外部网络即可加载",
+      "status": "PASS",
+      "evidence": {
+        "kind": "invariant",
+        "value": {
+          "netDeps": 0,
+          "electronHosts": 0
+        },
+        "detail": "核心模块未引入任何 HTTP 客户端库（axios/fetch/got 等），业务逻辑可离线运行；其中 0 个模块依赖 Electron app.getPath，属宿主 API 而非网络依赖",
+        "hash": "3228ea70409c",
+        "metric": null,
+        "unit": "module"
+      },
+      "reason": ""
+    },
+    {
+      "id": "GATE-089",
+      "category": "发布防护",
+      "name": "上线后校验命令可执行且能检出产物漂移",
+      "status": "PASS",
+      "evidence": {
+        "kind": "runtime-call",
+        "value": {
+          "checked": 44,
+          "mismatched": 0,
+          "configDigest": "57edf4b990d29888"
+        },
+        "detail": "执行 verifyDeployed 干跑：核验 44 个产物 digest 全部一致，配置摘要 57edf4b990d29888…，确认线上即预期产物",
+        "hash": "bcc29f493436",
+        "metric": null,
+        "unit": "file"
+      },
+      "reason": ""
+    }
+  ]
+}

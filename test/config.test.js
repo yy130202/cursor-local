@@ -45,6 +45,7 @@ for (const [name, contents] of [['missing', undefined], ['invalid JSON', '{not-j
     const { module } = setup({ initial: contents === undefined ? {} : { [file]: contents } });
     const cfg = module.loadConfig();
     assert.deepEqual(cfg, {
+      schemaVersion: '1.0.0',
       baseUrl: 'https://api.deepseek.com/v1', apiKey: '', model: 'deepseek-flash',
       lastFolder: '', theme: { preset: 'aurora', custom: null }, aiComplete: true,
       permission: 'safe', keybindings: {}, fontSize: 14, tabSize: 2,
