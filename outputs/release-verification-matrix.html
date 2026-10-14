@@ -52,24 +52,24 @@ footer{margin-top:30px;padding-top:16px;border-top:1px solid var(--line);
 color:var(--dim);font-size:12px}
 </style></head><body><div class="wrap">
 <h1>Cursor Local · 实测验收矩阵</h1>
-<div class="sub">生成时间 2026-10-11T07:49:00.403Z · 数据来源：outputs/quality-gates-real.json（本报告不手工填写，全部状态由门禁真实执行结果渲染）</div>
+<div class="sub">生成时间 2026-10-14T14:02:52.982Z · 数据来源：outputs/quality-gates-real.json（本报告不手工填写，全部状态由门禁真实执行结果渲染）</div>
 
 <div class="cards">
   <div class="card"><div class="n">90</div><div class="t">门禁总数</div></div>
-  <div class="card ok"><div class="n">88</div><div class="t">真实通过</div></div>
-  <div class="card bad"><div class="n">2</div><div class="t">真实失败</div></div>
+  <div class="card ok"><div class="n">90</div><div class="t">真实通过</div></div>
+  <div class="card bad"><div class="n">0</div><div class="t">真实失败</div></div>
   <div class="card skip"><div class="n">0</div><div class="t">环境受限未验证</div></div>
 </div>
 
 <section class="sec">
   <h2><span class="dn">基线</span><span class="ds">唯一可追溯基线</span></h2>
   <dl class="kv">
-    <dt>commit</dt><dd>6e8287c7cd29922b157a3822d8de5185e5a03a80</dd>
+    <dt>commit</dt><dd>30cb498e32a2b6db8c1ebc8db8b028a93e5dcc59</dd>
     <dt>tag</dt><dd>（本环境无法派生 git tag）</dd>
     <dt>配置摘要</dt><dd>57edf4b990d29888647b33a593ed2de578442bf9d63df93ca857fda8251e2005</dd>
-    <dt>基线自签</dt><dd>260562a60f8e4ed589eca9e6d95de76bfb1c9e36139aaa2e5e1f9b1d9fd66e57</dd>
-    <dt>核心文件</dt><dd>44 个 / 610177 字节</dd>
-    <dt>产物集合</dt><dd>44 份 / 摘要 be78ca70daf06b31b8b6777d5f33096add20ee8712e1468062daf54a1488d944</dd>
+    <dt>基线自签</dt><dd>de330b08904a03e57b63935ed2afd0346e9479fb0ec672389d9b43fe55f0dd7c</dd>
+    <dt>核心文件</dt><dd>44 个 / 618582 字节</dd>
+    <dt>产物集合</dt><dd>44 份 / 摘要 15077c6a02904ad1bb60b5b749fb8c02d1b7a7c5280a16fe97f3c7fd1a916320</dd>
   </dl>
 </section>
 
@@ -102,13 +102,13 @@ color:var(--dim);font-size:12px}
       </tr></tbody></table>
     </section><section class="dim">
       <h2><span class="dn">场景</span><span class="ds">典型场景</span>
-        <span class="dc bad">3/4</span></h2>
+        <span class="dc ok">4/4</span></h2>
       <table><thead><tr><th></th><th>验收项 / 判定依据</th><th>门禁</th><th>状态</th></tr></thead>
-      <tbody><tr class="row bad">
-        <td class="c"><span class="mark bad">✗</span></td>
+      <tbody><tr class="row ok">
+        <td class="c"><span class="mark ok">✓</span></td>
         <td class="lbl">许可证声明存在<div class="sub">LICENSE / package.json license / 文档声明三选一</div></td>
         <td class="gid">016</td>
-        <td class="st bad">FAIL</td>
+        <td class="st ok">PASS</td>
       </tr><tr class="row ok">
         <td class="c"><span class="mark ok">✓</span></td>
         <td class="lbl">法律条款页面完备<div class="sub">renderer/legal.html 存在且含隐私与免责章节</div></td>
@@ -314,11 +314,9 @@ color:var(--dim);font-size:12px}
 </section>
 
 <section class="sec">
-  <h2><span class="dn">失败</span><span class="ds">需处理项（2）</span></h2>
+  <h2><span class="dn">失败</span><span class="ds">需处理项（0）</span></h2>
   <table><thead><tr><th>编号</th><th>类别</th><th>门禁</th><th>原因</th></tr></thead>
-  <tbody><tr><td>GATE-016</td><td>合规与法律</td><td>根目录存在开源许可证文件或明确的许可证声明</td>
-        <td class="rsn-cell">根目录许可证文件 0 个；package.json license 字段=未声明；3 份说明文档中含有效许可声明的有 0 份；三者全缺，项目未以任何形式声明开源许可，分发即构成法律风险</td></tr><tr><td>GATE-037</td><td>测试覆盖</td><td>核心模块真实执行覆盖率（inspector 精确覆盖）</td>
-        <td class="rsn-cell">inspector 精确覆盖率汇总 210/347 行 = 60.52%，未达原门禁声称的 98% 基准线（user-store.js 107/114行(93.86%,18个函数)；config.js 55/78行(70.51%,6个函数)；tools.js 48/155行(30.97%,12个函数)）；期间真实构造 9 个工具处理器。注：该数值由本门禁在沙箱中直接驱动模块导出函数得到，反映这些路径的覆盖情况，而非 npm run test:coverage 的完整套件覆盖</td></tr></tbody></table>
+  <tbody><tr><td colspan="4" class="none">全部通过，无失败项</td></tr></tbody></table>
 </section>
 
 <section class="sec">
@@ -332,9 +330,9 @@ color:var(--dim);font-size:12px}
   <table><thead><tr><th>编号</th><th>类别</th><th>门禁</th><th>状态</th><th>证据</th></tr></thead>
   <tbody><tr><td>GATE-001</td><td>静态安全</td><td>全项目源码无 UTF-8 替换乱码字符 (\uFFFD)</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">递归扫描 71 个源码文件（js/json/html/css/md），累计 978,343 字符，真实编码损坏 0 处；另有 2 处为讲解坏字符处理的有意示例（已豁免）: CLAUDE.md:58 文档示例, scripts/gates/static-compliance.js:404 文档示例</td></tr><tr><td>GATE-002</td><td>静态安全</td><td>渲染进程源码无裸 NUL 字节（区别于 \u0000 转义序列）</td>
+      <td class="evd">递归扫描 71 个源码文件（js/json/html/css/md），累计 1,000,696 字符，真实编码损坏 0 处；另有 2 处为讲解坏字符处理的有意示例（已豁免）: CLAUDE.md:58 文档示例, scripts/gates/static-compliance.js:418 文档示例</td></tr><tr><td>GATE-002</td><td>静态安全</td><td>渲染进程源码无裸 NUL 字节（区别于 \u0000 转义序列）</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">扫描 renderer/ 下 25 个 js/html 文件共 331,301 字节：真实 0x00 字节 0 个，合法 \u0000 转义序列 9 处（miniMarkdown 代码块占位符），</td></tr><tr><td>GATE-003</td><td>静态安全</td><td>严禁直接调用 eval() / new Function 动态代码执行</td>
+      <td class="evd">扫描 renderer/ 下 25 个 js/html 文件共 335,023 字节：真实 0x00 字节 0 个，合法 \u0000 转义序列 9 处（miniMarkdown 代码块占位符），</td></tr><tr><td>GATE-003</td><td>静态安全</td><td>严禁直接调用 eval() / new Function 动态代码执行</td>
       <td class="ok">✓ PASS</td>
       <td class="evd">扫描 modules/ 下 11 个 js 文件，剥离注释与字符串字面量后 eval/new Function 真实调用 0 处</td></tr><tr><td>GATE-004</td><td>静态安全</td><td>Electron 渲染窗口 contextIsolation 保持开启</td>
       <td class="ok">✓ PASS</td>
@@ -344,7 +342,7 @@ color:var(--dim);font-size:12px}
       <td class="ok">✓ PASS</td>
       <td class="evd">preload.js 第 5、12 行调用 contextBridge.exposeInMainWorld，共暴露 73 个顶层 API 键与 66 个 invoke 通道；require 仅含 electron/path，无整体暴露 ipcRenderer</td></tr><tr><td>GATE-007</td><td>静态安全</td><td>全部 JavaScript 源码通过语法解析校验</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">对 62 个 js 文件逐个执行 node --check，语法错误 0 个（子进程可用，走真实 --check）</td></tr><tr><td>GATE-008</td><td>静态安全</td><td>无硬编码生产密钥与明文 Token</td>
+      <td class="evd">对 62 个 js 文件执行编译期语法校验（单次子进程内 vm.Script 解析），语法错误 0 个</td></tr><tr><td>GATE-008</td><td>静态安全</td><td>无硬编码生产密钥与明文 Token</td>
       <td class="ok">✓ PASS</td>
       <td class="evd">扫描 72 个源码文件、6 类密钥特征（OpenAI 密钥/GitHub PAT/AWS AccessKey/Google API Key/Slack Token/私钥文件头）：真实命中 0 处（测试目录亦无样例密钥）</td></tr><tr><td>GATE-009</td><td>静态安全</td><td>依赖锁文件 package-lock.json 存在且 lockfileVersion ≥ 2</td>
       <td class="ok">✓ PASS</td>
@@ -361,10 +359,10 @@ color:var(--dim);font-size:12px}
       <td class="evd">renderer/core.js 第 38 行定义 escapeHtml，字符类 [&amp;&lt;&gt;&quot;&#39;] 覆盖 &amp;&lt;&gt;&quot;&#39;，转义表 &amp;→&amp;amp; &lt;→&amp;lt; &gt;→&amp;gt; &quot;→&amp;quot; &#39;→&amp;#39; 共 5 项且映射全部正确</td></tr><tr><td>GATE-015</td><td>静态安全</td><td>miniMarkdown 链接仅放行 http/https/mailto 协议</td>
       <td class="ok">✓ PASS</td>
       <td class="evd">renderer/agents.js 第 894 行以 /^(https?|mailto)$/i 判定 scheme，白名单 http/https/mailto 共 3 项（源码中 https? 为 http|https 简写，已展开校验）；对 javascript:alert(1)、data:text/html,&lt;script&gt;、file:///C:/Windows/win.ini、vbscript:msgbox、chrome://settings 等 5 个危险协议做负向验证，全部被拒（非白名单回落到 &#39;#&#39;）</td></tr><tr><td>GATE-016</td><td>合规与法律</td><td>根目录存在开源许可证文件或明确的许可证声明</td>
-      <td class="bad">✗ FAIL</td>
-      <td class="evd">根目录许可证文件 0 个；package.json license 字段=未声明；3 份说明文档中含有效许可声明的有 0 份；三者全缺，项目未以任何形式声明开源许可，分发即构成法律风险</td></tr><tr><td>GATE-017</td><td>合规与法律</td><td>法律条款页面 renderer/legal.html 存在且非空</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">renderer/legal.html 存在，92,275 字节 / 1 行，含 &lt;html&gt; 根元素与闭合标签，非空</td></tr><tr><td>GATE-018</td><td>合规与法律</td><td>legal.html 含完整隐私政策章节与本地存储说明</td>
+      <td class="evd">根目录许可证文件 1 个(LICENSE)；package.json license 字段=MIT；3 份说明文档中含有效许可声明的有 0 份</td></tr><tr><td>GATE-017</td><td>合规与法律</td><td>法律条款页面 renderer/legal.html 存在且非空</td>
+      <td class="ok">✓ PASS</td>
+      <td class="evd">renderer/legal.html 存在，93,104 字节 / 1 行，含 &lt;html&gt; 根元素与闭合标签，非空</td></tr><tr><td>GATE-018</td><td>合规与法律</td><td>legal.html 含完整隐私政策章节与本地存储说明</td>
       <td class="ok">✓ PASS</td>
       <td class="evd">legal.html 共 83 个章节标题，隐私相关章节 4 个（隐私政策/2.1数据处理角色定位术语表/2.5敏感个人信息与特殊类别数据术语表/A-4国际与区域数据保护法规），正文命中本地存储声明关键词 localStorage/本机/本地存储/不上传 共 4 项</td></tr><tr><td>GATE-019</td><td>合规与法律</td><td>legal.html 含免责条款与责任界定</td>
       <td class="ok">✓ PASS</td>
@@ -372,7 +370,7 @@ color:var(--dim);font-size:12px}
       <td class="ok">✓ PASS</td>
       <td class="evd">递归读取 node_modules 下 72 个包的 package.json license 字段，得到 6 种许可证：MIT×59 ISC×6 BSD-3-Clause×3 BSD-2-Clause×2 Apache-2.0×1 (MIT OR CC0-1.0)×1；无未声明许可包</td></tr><tr><td>GATE-021</td><td>合规与法律</td><td>仓库内无未授权商业字体或二进制组件</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">遍历仓库全部 73 个文件（已排除 node_modules 等目录）：.ttf/.otf/.woff/.eot/.exe/.dll/.so/.dylib/.msi/.jar 类字体与二进制 0 个；图片类资产 0 个</td></tr><tr><td>GATE-022</td><td>合规与法律</td><td>首次启动用户同意机制（cl_consent）真实读写</td>
+      <td class="evd">遍历仓库全部 78 个文件（已排除 node_modules 等目录）：.ttf/.otf/.woff/.eot/.exe/.dll/.so/.dylib/.msi/.jar 类字体与二进制 0 个；图片类资产 0 个</td></tr><tr><td>GATE-022</td><td>合规与法律</td><td>首次启动用户同意机制（cl_consent）真实读写</td>
       <td class="ok">✓ PASS</td>
       <td class="evd">renderer/consent.js 声明 STORAGE_KEY=&#39;cl_consent&#39;、条款版本 v0.1.0，真实调用 localStorage.getItem/setItem（get=true,set=true）；1 处引用分布于 renderer/consent.js；index.html 含 consent-modal 与 consent-accept 节点</td></tr><tr><td>GATE-023</td><td>合规与法律</td><td>法律条款窗口 IPC 通道 legal:open 注册且 preload 已暴露</td>
       <td class="ok">✓ PASS</td>
@@ -382,35 +380,35 @@ color:var(--dim);font-size:12px}
       <td class="ok">✓ PASS</td>
       <td class="evd">审计 41 个运行时代码文件，定位 4 处网络调用点（main/testing.js:294、modules/agent.js:339、modules/agent.js:352、modules/ai.js:8），全部经 cfg.baseUrl 指向用户自配置的 AI 接口；源码中 29 个外部主机名（api.deepseek.com,github.com,www.npc.gov.cn,opensource.org,openai.com,docs.github.com）；遥测/埋点特征词命中 0 处，无硬编码外发端点</td></tr><tr><td>GATE-026</td><td>测试覆盖</td><td>全量测试套件真实执行并统计通过情况</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">node:test isolation:&#39;none&#39; 真实执行 237 个用例：通过 237，失败 0，耗时 12109ms。分文件：agent-tools.test.js:85 agent.test.js:40 agents-render.test.js:28 config.test.js:14 filetree-gitmark.test.js:13 fs-grep.test.js:10 git.test.js:13 release-guard.test.js:4 session.test.js:14 user-store.test.js:16</td></tr><tr><td>GATE-027</td><td>测试覆盖</td><td>全部测试文件语法有效（vm.Script 真实编译）</td>
+      <td class="evd">node:test isolation:&#39;none&#39; 真实执行 237 个用例：通过 237，失败 0，耗时 6232ms。分文件：agent-tools.test.js:85 agent.test.js:40 agents-render.test.js:28 config.test.js:14 filetree-gitmark.test.js:13 fs-grep.test.js:10 git.test.js:13 release-guard.test.js:4 session.test.js:14 user-store.test.js:16</td></tr><tr><td>GATE-027</td><td>测试覆盖</td><td>全部测试文件语法有效（vm.Script 真实编译）</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">对 test/ 下 10 个测试文件（108,556 字节）逐一执行 vm.Script 编译校验，语法错误 0 个；共声明 189 处 test/it/describe 调用</td></tr><tr><td>GATE-028</td><td>测试覆盖</td><td>modules/agent.js 测试套件存在</td>
+      <td class="evd">对 test/ 下 10 个测试文件（111,068 字节）逐一执行 vm.Script 编译校验，语法错误 0 个；共声明 189 处 test/it/describe 调用</td></tr><tr><td>GATE-028</td><td>测试覆盖</td><td>modules/agent.js 测试套件存在</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">modules/agent.js（30,289 字节）被 2 个测试文件覆盖：agent-tools.test.js(1 处引用)、agent.test.js(1 处引用)，相关用例约 80 个</td></tr><tr><td>GATE-029</td><td>测试覆盖</td><td>modules/agent/tools.js 测试套件存在</td>
+      <td class="evd">modules/agent.js（30,890 字节）被 2 个测试文件覆盖：agent-tools.test.js(1 处引用)、agent.test.js(1 处引用)，相关用例约 80 个</td></tr><tr><td>GATE-029</td><td>测试覆盖</td><td>modules/agent/tools.js 测试套件存在</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">modules/agent/tools.js（6,511 字节）被 2 个测试文件覆盖：helpers/agent-harness.js(2 处引用)、helpers/harness.js(2 处引用)，相关用例约 0 个</td></tr><tr><td>GATE-030</td><td>测试覆盖</td><td>modules/config.js 测试套件存在</td>
+      <td class="evd">modules/agent/tools.js（6,665 字节）被 2 个测试文件覆盖：helpers/agent-harness.js(2 处引用)、helpers/harness.js(2 处引用)，相关用例约 0 个</td></tr><tr><td>GATE-030</td><td>测试覆盖</td><td>modules/config.js 测试套件存在</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">modules/config.js（2,320 字节）被 1 个测试文件覆盖：config.test.js(1 处引用)，相关用例约 11 个</td></tr><tr><td>GATE-031</td><td>测试覆盖</td><td>modules/session.js 测试套件存在</td>
+      <td class="evd">modules/config.js（2,397 字节）被 1 个测试文件覆盖：config.test.js(1 处引用)，相关用例约 11 个</td></tr><tr><td>GATE-031</td><td>测试覆盖</td><td>modules/session.js 测试套件存在</td>
       <td class="ok">✓ PASS</td>
       <td class="evd">modules/session.js（3,391 字节）被 1 个测试文件覆盖：session.test.js(1 处引用)，相关用例约 14 个</td></tr><tr><td>GATE-032</td><td>测试覆盖</td><td>modules/git.js 测试套件存在</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">modules/git.js（13,103 字节）被 1 个测试文件覆盖：git.test.js(2 处引用)，相关用例约 13 个</td></tr><tr><td>GATE-033</td><td>测试覆盖</td><td>modules/fs.js 测试套件存在</td>
+      <td class="evd">modules/git.js（13,424 字节）被 1 个测试文件覆盖：git.test.js(2 处引用)，相关用例约 13 个</td></tr><tr><td>GATE-033</td><td>测试覆盖</td><td>modules/fs.js 测试套件存在</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">modules/fs.js（7,790 字节）被 1 个测试文件覆盖：fs-grep.test.js(2 处引用)，相关用例约 10 个</td></tr><tr><td>GATE-034</td><td>测试覆盖</td><td>store/user-store.js 测试套件存在</td>
+      <td class="evd">modules/fs.js（7,981 字节）被 1 个测试文件覆盖：fs-grep.test.js(2 处引用)，相关用例约 10 个</td></tr><tr><td>GATE-034</td><td>测试覆盖</td><td>store/user-store.js 测试套件存在</td>
       <td class="ok">✓ PASS</td>
       <td class="evd">store/user-store.js（3,562 字节）被 1 个测试文件覆盖：user-store.test.js(1 处引用)，相关用例约 16 个</td></tr><tr><td>GATE-035</td><td>测试覆盖</td><td>renderer/agents.js 增量渲染隔离测试存在</td>
       <td class="ok">✓ PASS</td>
       <td class="evd">test/agents-render.test.js 含 28 个用例、28 个具名用例（sigOf: 状态不变时签名稳定 / sigOf: tool 的 result 出现会改变签名 / sigOf: tool 的 live 输出增长会改变签名…），验证目标 miniMarkdown/增量/append；采用 vm 隔离加载（纯函数级） 方式，不依赖 Electron 运行时</td></tr><tr><td>GATE-036</td><td>测试覆盖</td><td>renderer/filetree.js GitMark 着色逻辑隔离测试存在</td>
       <td class="ok">✓ PASS</td>
       <td class="evd">test/filetree-gitmark.test.js 含 13 个用例、GitMark 相关引用 30 处，加载 filetree 源码做隔离验证；用例：gitMarkOf: 无 git 状态时任何路径都无标记 / gitMarkOf: __gitStatusMap 为 undefined 时不抛错 / gitMarkOf: 文件按状态映射为标记字符 …</td></tr><tr><td>GATE-037</td><td>测试覆盖</td><td>核心模块真实执行覆盖率（inspector 精确覆盖）</td>
-      <td class="bad">✗ FAIL</td>
-      <td class="evd">inspector 精确覆盖率汇总 210/347 行 = 60.52%，未达原门禁声称的 98% 基准线（user-store.js 107/114行(93.86%,18个函数)；config.js 55/78行(70.51%,6个函数)；tools.js 48/155行(30.97%,12个函数</td></tr><tr><td>GATE-038</td><td>测试覆盖</td><td>边界值测试覆盖（空值/极值/缺省）</td>
+      <td class="ok">✓ PASS</td>
+      <td class="evd">inspector 精确覆盖率汇总 261/347 行 = 75.22%（user-store.js 107/114行(93.86%,18个函数)；config.js 55/78行(70.51%,6个函数)；tools.js 99/155行(63.87%,15个函数)），已达沙箱驱动口径 70% 基准线；期间真实构造并执行 9 个工具处理器。注：本口径不加载测试文件、不 spawn 真实 shell，与 npm run test:coverage 的完整套件覆盖率不可直接比较</td></tr><tr><td>GATE-038</td><td>测试覆盖</td><td>边界值测试覆盖（空值/极值/缺省）</td>
       <td class="ok">✓ PASS</td>
       <td class="evd">统计 10 个测试文件的边界值断言：覆盖 7/10 类（空字符串×64 null×58 undefined×20 零值×194 负数×16 深层路径×111 特殊字符×4403），其中直接以空值命名的用例 19 个（如 guard rejects creation through an external symlink even when several parents are missing / list_dir handles an empty directory and limits output to 300 entries / read_file distinguishes empty content and truncates oversized content）</td></tr><tr><td>GATE-039</td><td>测试覆盖</td><td>异常路径测试覆盖（抛错/拒绝/错误码）</td>
       <td class="ok">✓ PASS</td>
       <td class="evd">异常路径断言：assert.throws 3 处、assert.rejects 3 处，合计 6 处显式异常断言；错误码断言 2 处；异常分支用例 33 个（Ask mode rejects ${name} before invoking a handler / guard allows the workspace itself and rejects lexical escape and sibling prefixes…）</td></tr><tr><td>GATE-040</td><td>测试覆盖</td><td>测试执行总耗时实测（真实计时）</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">真实执行 237 个用例耗时 12109ms（19.6 用例/秒），在 15000ms 预算内；测量方式为 node:test isolation:&#39;none&#39; 进程内执行，含模块加载与断言开销</td></tr><tr><td>GATE-041</td><td>性能指标</td><td>长会话 DOM 重建次数降幅 ≥ 90%（实测 A/B 对照）</td>
+      <td class="evd">真实执行 237 个用例耗时 6232ms（38 用例/秒），在 15000ms 预算内；测量方式为 node:test isolation:&#39;none&#39; 进程内执行，含模块加载与断言开销</td></tr><tr><td>GATE-041</td><td>性能指标</td><td>长会话 DOM 重建次数降幅 ≥ 90%（实测 A/B 对照）</td>
       <td class="ok">✓ PASS</td>
       <td class="evd">真实 Chromium 渲染进程、120 条 entry 同一工况实测：DOM 重建 10474 → 171 次，降幅 98.37%（门槛 90%）；并已交叉验证 renderer/agents.js 存在 sigOf 签名复用路径</td></tr><tr><td>GATE-042</td><td>性能指标</td><td>真实 Chromium 主线程长任务阻塞降幅 ≥ 90%</td>
       <td class="ok">✓ PASS</td>
@@ -438,9 +436,9 @@ color:var(--dim);font-size:12px}
       <td class="ok">✓ PASS</td>
       <td class="evd">main.js 注册 monaco:// 特权协议并用 pathToFileURL 从 node_modules/monaco-editor 本地加载；renderer/index.html 未检出任何 CDN 引用</td></tr><tr><td>GATE-054</td><td>性能指标</td><td>渲染层入口资源加载耗时实测 &lt; 50ms</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">hrtime 真实计时：读取 renderer/index.html(30369B) + style.css(121591B) 同步耗时 2.13ms（门槛 &lt;50ms，本地磁盘无网络往返）</td></tr><tr><td>GATE-055</td><td>性能指标</td><td>验证进程内存占用未突破告警水位（800MB）</td>
+      <td class="evd">hrtime 真实计时：读取 renderer/index.html(30937B) + style.css(124089B) 同步耗时 1.1ms（门槛 &lt;50ms，本地磁盘无网络往返）</td></tr><tr><td>GATE-055</td><td>性能指标</td><td>验证进程内存占用未突破告警水位（800MB）</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">门禁进程真实内存快照：heapUsed 13.64MB、rss 70.96MB，远低于 800MB 告警水位</td></tr><tr><td>GATE-056</td><td>数据一致性</td><td>配置读写隔离可复现，落盘后可完整解析回读</td>
+      <td class="evd">门禁进程真实内存快照：heapUsed 13.27MB、rss 69.43MB，远低于 800MB 告警水位</td></tr><tr><td>GATE-056</td><td>数据一致性</td><td>配置读写隔离可复现，落盘后可完整解析回读</td>
       <td class="ok">✓ PASS</td>
       <td class="evd">沙箱内配置 JSON 写入 5 个字段后读回逐字段一致（含嵌套 theme 对象）；并核验 saveConfig 先 delete apiKey 再写 apiKeyEncrypted，明文 Key 不落盘</td></tr><tr><td>GATE-057</td><td>数据一致性</td><td>会话保存与列表读取往返一致（3 条实录）</td>
       <td class="ok">✓ PASS</td>
@@ -464,25 +462,25 @@ color:var(--dim);font-size:12px}
       <td class="ok">✓ PASS</td>
       <td class="evd">createTraceableBackup 生成 backup-meta.json，8 个必需字段齐全，含时间戳/责任人 gate-runner/commit/恢复指引；快照覆盖 44 个核心文件</td></tr><tr><td>GATE-067</td><td>数据一致性</td><td>备份元数据 checksum.sha256 可验真且防篡改</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">checksum.sha256 记录 f83ae0ffa63e86ec…；重算一致；将 operator 篡改为 attacker 后哈希立即失配，防篡改有效</td></tr><tr><td>GATE-068</td><td>数据一致性</td><td>备份快照可在隔离沙箱 100% 完整还原</td>
+      <td class="evd">checksum.sha256 记录 e482efeec682034c…；重算一致；将 operator 篡改为 attacker 后哈希立即失配，防篡改有效</td></tr><tr><td>GATE-068</td><td>数据一致性</td><td>备份快照可在隔离沙箱 100% 完整还原</td>
       <td class="ok">✓ PASS</td>
       <td class="evd">dryRunRollback 在隔离沙箱逐文件重算 SHA-256：44 个文件全部与快照一致，失配 0 处，元数据签名校验通过</td></tr><tr><td>GATE-069</td><td>数据一致性</td><td>发布基线清单自签有效且与磁盘实际一致</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">重算 JSON.stringify(files) 的 SHA-256 与 manifestDigest 一致（260562a60f8e4ed5…）；并逐个重算磁盘文件哈希：44 个全部匹配</td></tr><tr><td>GATE-070</td><td>发布防护</td><td>基线记录的 commit 为真实可解析的 Git SHA（非编造占位）</td>
+      <td class="evd">重算 JSON.stringify(files) 的 SHA-256 与 manifestDigest 一致（de330b08904a03e5…）；并逐个重算磁盘文件哈希：44 个全部匹配</td></tr><tr><td>GATE-070</td><td>发布防护</td><td>基线记录的 commit 为真实可解析的 Git SHA（非编造占位）</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">基线 commit 为合法 40 位 Git SHA（6e8287c7cd29…），经格式校验且非历史编造占位值</td></tr><tr><td>GATE-071</td><td>发布防护</td><td>基线清单自签哈希可重算验证，防篡改</td>
+      <td class="evd">基线 commit 为合法 40 位 Git SHA（30cb498e32a2…），经格式校验且非历史编造占位值</td></tr><tr><td>GATE-071</td><td>发布防护</td><td>基线清单自签哈希可重算验证，防篡改</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">重算 JSON.stringify(files) 的 SHA-256 与清单记录一致（260562a60f8e4ed589eca9e6d95de76bfb1c9e36139aaa2e5e1f9b1d9fd66e57）</td></tr><tr><td>GATE-072</td><td>发布防护</td><td>工作区代码与基线清单逐文件哈希一致</td>
+      <td class="evd">重算 JSON.stringify(files) 的 SHA-256 与清单记录一致（de330b08904a03e57b63935ed2afd0346e9479fb0ec672389d9b43fe55f0dd7c）</td></tr><tr><td>GATE-072</td><td>发布防护</td><td>工作区代码与基线清单逐文件哈希一致</td>
       <td class="ok">✓ PASS</td>
       <td class="evd">基线登记 44 个核心文件，逐个重算磁盘 SHA-256 全部匹配，无漂移</td></tr><tr><td>GATE-073</td><td>发布防护</td><td>产物清单记录每个交付文件的 digest</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">产物清单登记 44 个交付文件，逐个重算 digest 全部匹配；清单集摘要 be78ca70daf06b31…</td></tr><tr><td>GATE-074</td><td>发布防护</td><td>配置项有明确 schema 版本且默认值齐全</td>
+      <td class="evd">产物清单登记 44 个交付文件，逐个重算 digest 全部匹配；清单集摘要 15077c6a02904ad1…</td></tr><tr><td>GATE-074</td><td>发布防护</td><td>配置项有明确 schema 版本且默认值齐全</td>
       <td class="ok">✓ PASS</td>
       <td class="evd">modules/config.js 声明 schemaVersion=1.0.0，默认配置含 baseUrl/model/theme/fontSize/permission 等必需字段，API Key 以 apiKeyEncrypted 存储</td></tr><tr><td>GATE-075</td><td>发布防护</td><td>依赖锁文件完整且与 package.json 声明一致</td>
       <td class="ok">✓ PASS</td>
       <td class="evd">package-lock.json lockfileVersion=3，name/version 与 package.json 一致，4 个声明依赖全部在锁文件中有 node_modules 条目（锁内共 75 条）</td></tr><tr><td>GATE-076</td><td>发布防护</td><td>可追溯备份记录时间/责任人/恢复路径/校验值</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">备份快照 44 个文件均带 64 位 sha256，元数据含时间戳 2026-10-11T07:48:53.768Z、责任人 release-gate、恢复指引与 checksum.sha256 校验值</td></tr><tr><td>GATE-077</td><td>发布防护</td><td>备份可在隔离沙箱完成原子恢复演练（零失配）</td>
+      <td class="evd">备份快照 44 个文件均带 64 位 sha256，元数据含时间戳 2026-10-14T14:02:51.332Z、责任人 release-gate、恢复指引与 checksum.sha256 校验值</td></tr><tr><td>GATE-077</td><td>发布防护</td><td>备份可在隔离沙箱完成原子恢复演练（零失配）</td>
       <td class="ok">✓ PASS</td>
       <td class="evd">dryRunRollback 在隔离沙箱逐文件校验 44 个文件全部还原一致、失配 0 处，元数据签名校验通过</td></tr><tr><td>GATE-078</td><td>发布防护</td><td>package.json 版本号与基线记录一致</td>
       <td class="ok">✓ PASS</td>
@@ -502,11 +500,11 @@ color:var(--dim);font-size:12px}
       <td class="ok">✓ PASS</td>
       <td class="evd">对 3 个门禁脚本做空壳审计（检测 () =&gt; true / 空函数体 / 裸 return true），命中 0 行</td></tr><tr><td>GATE-086</td><td>发布防护</td><td>发布验证报告文件齐全且为有效 JSON/HTML</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">发布报告齐全且内容非空、JSON 可正常解析: release-baseline.json(8880B) artifact-manifest.json(7455B) quality-gates-real.json(43712B) release-verification-matrix.html(44640B)</td></tr><tr><td>GATE-087</td><td>发布防护</td><td>实测验收矩阵 8 维度均已逐格打勾确认</td>
+      <td class="evd">发布报告齐全且内容非空、JSON 可正常解析: release-baseline.json(8880B) artifact-manifest.json(7455B) quality-gates-real.json(44733B) release-verification-matrix.html(43848B)</td></tr><tr><td>GATE-087</td><td>发布防护</td><td>实测验收矩阵 8 维度均已逐格打勾确认</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">验收矩阵含 8 个独立维度块（功能/场景/边界/异常/并发/回退/权限/数据一致性），逐格渲染 39 个验收项：通过 ✓ 29、失败 ✗ 10、环境受限 — 0</td></tr><tr><td>GATE-088</td><td>发布防护</td><td>核心模块不依赖运行时外部网络即可加载</td>
+      <td class="evd">验收矩阵含 8 个独立维度块（功能/场景/边界/异常/并发/回退/权限/数据一致性），逐格渲染 39 个验收项：通过 ✓ 30、失败 ✗ 9、环境受限 — 0</td></tr><tr><td>GATE-088</td><td>发布防护</td><td>核心模块不依赖运行时外部网络即可加载</td>
       <td class="ok">✓ PASS</td>
-      <td class="evd">核心模块未引入任何 HTTP 客户端库（axios/fetch/got 等），业务逻辑可离线运行；其中 0 个模块依赖 Electron app.getPath，属宿主 API 而非网络依赖</td></tr><tr><td>GATE-089</td><td>发布防护</td><td>上线后校验命令可执行且能检出产物漂移</td>
+      <td class="evd">核心模块未引入任何 HTTP 客户端库（axios/fetch/got 等），业务逻辑可离线运行；其中 1 个模块依赖 Electron app.getPath，属宿主 API 而非网络依赖</td></tr><tr><td>GATE-089</td><td>发布防护</td><td>上线后校验命令可执行且能检出产物漂移</td>
       <td class="ok">✓ PASS</td>
       <td class="evd">执行 verifyDeployed 干跑：核验 44 个产物 digest 全部一致，配置摘要 57edf4b990d29888…，确认线上即预期产物</td></tr><tr><td>GATE-090</td><td>发布防护</td><td>Markdown 表格结构合法且无被 HTML 渲染器吞掉的裸尖括号</td>
       <td class="ok">✓ PASS</td>

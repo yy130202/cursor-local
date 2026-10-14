@@ -2,6 +2,8 @@
   "name": "cursor-local",
   "productName": "Cursor Local",
   "version": "0.1.0",
+  "license": "MIT",
+  "author": "Cursor Local Authors",
   "description": "复刻 Cursor 核心体验的本地 AI 编程工具（Editor Window + Agents Window）",
   "main": "main.js",
   "scripts": {

@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
-  "generatedAt": "2026-10-11T07:44:34.539Z",
+  "generatedAt": "2026-10-14T14:02:19.361Z",
   "project": "cursor-local",
   "version": "0.1.0",
-  "commit": "6e8287c7cd29922b157a3822d8de5185e5a03a80",
+  "commit": "30cb498e32a2b6db8c1ebc8db8b028a93e5dcc59",
   "tag": "",
   "configDigest": {
     "version": "0.1.0",
@@ -28,229 +28,229 @@
   },
   "metrics": {
     "fileCount": 44,
-    "totalBytes": 610177
+    "totalBytes": 618582
   },
   "files": {
     "main.js": {
-      "sha256": "bf37f34b2a7b4681662845821553eaa1a7d3b1bbe7b21f1b5b278c312bce1709",
-      "bytes": 8414,
-      "mtime": "2026-10-11T07:16:18.151Z"
+      "sha256": "3d4b3176acdb6ba9e378a34cd1d7f68c7281ed4d65d788a9f4cf03a248c2c781",
+      "bytes": 8612,
+      "mtime": "2026-10-14T12:22:03.234Z"
     },
     "main/testing.js": {
-      "sha256": "3c2c9318cfc06e49a6ebdcba16433a9bb662f27bdf3b635358ea897032884ff3",
-      "bytes": 25297,
-      "mtime": "2026-10-10T15:03:55.755Z"
+      "sha256": "d2f91386f69936966e1b8a33ffc9846fc5911f765b1c6af7a96aaaebe892ebc9",
+      "bytes": 25774,
+      "mtime": "2026-10-14T12:22:03.287Z"
     },
     "modules/agent.js": {
-      "sha256": "3f9f002a300c7ee2ea43cd77b1b56c22117bf919c53a84163a9f729a976d7df6",
-      "bytes": 30289,
-      "mtime": "2026-10-06T12:54:10.055Z"
+      "sha256": "024685591b8f70208dbebd057e122741eb9352bd59f7f634559c21170301231c",
+      "bytes": 30890,
+      "mtime": "2026-10-14T12:22:03.309Z"
     },
     "modules/agent/tools.js": {
-      "sha256": "b5569e75ccc428b24e6b8cd935327e21aa30fcd01c93c5e2d18b21c13b054eff",
-      "bytes": 6511,
-      "mtime": "2026-10-06T12:56:03.940Z"
+      "sha256": "ad7a91a32f242e56b3eb729304365fa2f4219474a9796fbf55d51fc7d600bcd6",
+      "bytes": 6665,
+      "mtime": "2026-10-14T12:22:03.333Z"
     },
     "modules/ai.js": {
       "sha256": "b7b3208f4feeca73fa3d1b32ca48c9fb4a41a22e918536ab350028402450a68c",
       "bytes": 4487,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-09-25T03:16:24.980Z"
     },
     "modules/auth.js": {
       "sha256": "9c688b5dadd1f9a6fdd0fc44b00085b6b638fac1bab2652893a3a3932f026761",
       "bytes": 2091,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-09-25T03:16:24.984Z"
     },
     "modules/config.js": {
-      "sha256": "6098ac5c52767c77ba63a171fec55f85e22b79f936146b4c8eee1f9e9835626d",
-      "bytes": 2320,
-      "mtime": "2026-10-11T00:01:48.095Z"
+      "sha256": "0e65454809aed0240acac8a134d65abb654d8f350a18411b1d5fd0230d593c12",
+      "bytes": 2397,
+      "mtime": "2026-10-14T12:22:03.354Z"
     },
     "modules/fs.js": {
-      "sha256": "22e777f6f82bf8b941b86817130f585a2f7084b6bc1050bf9bad1db55ca79584",
-      "bytes": 7790,
-      "mtime": "2026-10-07T04:28:25.841Z"
+      "sha256": "a8417dc3315fcccceff85e2caaed2008648951320c781e19ddf7dbde03cb45a8",
+      "bytes": 7981,
+      "mtime": "2026-10-14T12:22:03.373Z"
     },
     "modules/git.js": {
-      "sha256": "f7e73d4a5ed760b18eaa4e350884da0d4732409d0bf66e33919711082d93ea7d",
-      "bytes": 13103,
-      "mtime": "2026-10-07T04:22:17.608Z"
+      "sha256": "058318ce90ecd6dc9686841fa1d4abd2c6d3bf29a0516d14cff034175db83b2b",
+      "bytes": 13424,
+      "mtime": "2026-10-14T12:22:03.390Z"
     },
     "modules/log.js": {
       "sha256": "6df9f5c1965da2fbbd05a7a8d54a3c582ea7d871cebfbb1038510437abfc4f49",
       "bytes": 667,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-09-25T03:14:19.543Z"
     },
     "modules/memory.js": {
       "sha256": "2f718db8bf8310523ecac56a8abb08c00cc6892c73b8042b51eb0fbdda5c9591",
       "bytes": 2904,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-10-01T03:32:39.243Z"
     },
     "modules/session.js": {
       "sha256": "d477d2906c1d488af7550db991919a7b5903b1ec3d14c4e2b2b52c31b39c6e51",
       "bytes": 3391,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-09-29T12:05:19.996Z"
     },
     "modules/terminal.js": {
       "sha256": "b16fe347cb8a4190ea365604cc4775d7eab869e76bf2aa250517bcd36faaeb40",
       "bytes": 2341,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-09-29T13:03:48.215Z"
     },
     "package-lock.json": {
       "sha256": "65b1b4a06a9283886155af27de4b80e529b952401af4fc3f382e0b05a5d77548",
       "bytes": 32139,
-      "mtime": "2026-10-07T05:19:53.983Z"
+      "mtime": "2026-09-26T00:13:55.846Z"
     },
     "package.json": {
-      "sha256": "0d4741afdd47a8a4f2c824e77a8b588afd5751f6f90aeda3e55d776fc32aab3c",
-      "bytes": 1808,
-      "mtime": "2026-10-11T02:29:21.390Z"
+      "sha256": "951ea27eeaa05cf763b48184af6ae53b878b571b6cfce8fc31c5e7ba719a0686",
+      "bytes": 1864,
+      "mtime": "2026-10-14T13:34:31.277Z"
     },
     "preload.js": {
-      "sha256": "ac8cc1228de0150336f580fbd2d9ec8a00a5ff914a24a3885a4016e1b0ea02b1",
-      "bytes": 6134,
-      "mtime": "2026-10-11T07:27:21.117Z"
+      "sha256": "c5607af6bac981247e2c17b74bda5aa5a68386153b23da9230927aee86769b2f",
+      "bytes": 6244,
+      "mtime": "2026-10-14T12:22:03.493Z"
     },
     "renderer/agents.js": {
-      "sha256": "d87702a543b2c085b28110939c41af2c748b86c748033db346723e7ef8265327",
-      "bytes": 44935,
-      "mtime": "2026-10-11T06:16:05.395Z"
+      "sha256": "f4a472886095ac3967afdfa59870494a23b3f90d5779cf578108724866a745d3",
+      "bytes": 45953,
+      "mtime": "2026-10-14T12:22:03.523Z"
     },
     "renderer/auth.js": {
       "sha256": "56fe26d1129bcb19de77a337ac6be69dea18432559d6d4f6556e2a8b946c4f7c",
       "bytes": 4243,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-10-06T03:07:20.320Z"
     },
     "renderer/consent.js": {
-      "sha256": "0f39425bbfbf27791a4b5f128e083344ce55a89d0b90a2da7be28fd1136b3872",
-      "bytes": 3494,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "sha256": "0187883459341ba62756d4d029300ea9c377defbfa44fc34cf19c5351e931864",
+      "bytes": 3593,
+      "mtime": "2026-10-06T03:42:16.605Z"
     },
     "renderer/core.js": {
       "sha256": "1c94afd93109a2b1d450a7cb229eb67cdb901f488a396f735bb77091cf394c02",
       "bytes": 3316,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-10-06T03:06:44.662Z"
     },
     "renderer/diagnose.js": {
       "sha256": "761ee56b51e5d36da047f80d368a789f15d7688a54494f480eaff9d4852f74d6",
       "bytes": 3301,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-10-06T03:07:20.535Z"
     },
     "renderer/editor.js": {
       "sha256": "088d4821d6f3f7bf40f4eaa915329475dc166d8110cb63bc168148b0ca9f1cd6",
       "bytes": 20906,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-10-06T03:14:27.984Z"
     },
     "renderer/editor/breadcrumb.js": {
       "sha256": "f8658247f2e76fc8d6c0897a384e025cebdbf391aea66bec1d27912208e88fa4",
       "bytes": 5478,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-10-06T03:14:14.464Z"
     },
     "renderer/editor/filetree.js": {
-      "sha256": "061eefec1209b9794e65d79b0e3af076dc580ca6d303a9eb58e694804c8d2e96",
-      "bytes": 10803,
-      "mtime": "2026-10-10T23:58:46.497Z"
+      "sha256": "997bd6d6189cd0de85894c47b668c7db8e36d3fa268782f189d65eaf0a62bc4d",
+      "bytes": 11060,
+      "mtime": "2026-10-14T12:22:03.584Z"
     },
     "renderer/editor/preview.js": {
-      "sha256": "a624471bd0f4e946925376cdb1cf869b8b8375904afcb8709c4e9fa2579c4c1f",
-      "bytes": 6017,
-      "mtime": "2026-10-10T23:42:06.985Z"
+      "sha256": "7abe645278f4459d9c2fa98fa408f386d9927972954353d45a73c0e5be981c89",
+      "bytes": 6137,
+      "mtime": "2026-10-14T12:22:03.616Z"
     },
     "renderer/git.js": {
-      "sha256": "a857eaf3f3b397a1d4bb9a01fb46c2a7c064b2d0dd2e611e75efdf671090cdfa",
-      "bytes": 15715,
-      "mtime": "2026-10-07T04:16:10.734Z"
+      "sha256": "6c266d8705b537031019a53d0bc06047fa6065a7f433598d98874730dcd0da94",
+      "bytes": 16025,
+      "mtime": "2026-10-14T12:22:03.639Z"
     },
     "renderer/index.html": {
-      "sha256": "ff72912b82df21d46860c4852a366fef6b77a98662594d4e3ee60c94cf33864f",
-      "bytes": 33554,
-      "mtime": "2026-10-11T07:17:06.758Z"
+      "sha256": "183980e33922f1b63a686229584583638737bd9d9d413d4be796adb577e074cb",
+      "bytes": 34122,
+      "mtime": "2026-10-14T12:22:03.666Z"
     },
     "renderer/inline.js": {
       "sha256": "67d3146b43f6aec6ed360535822b06239352f6bd65c08a1d038305b2659597c9",
       "bytes": 3322,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-10-06T03:07:22.858Z"
     },
     "renderer/island.js": {
       "sha256": "8798c5b12f955f713cb07fbc25db5517529a1287900944be6aacaad2cb75b0dc",
       "bytes": 1015,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-10-06T03:07:22.653Z"
     },
     "renderer/keymap.js": {
       "sha256": "51e2ec0917690d12e27b9fb354e7aca2c546985fbbf38ded4d49e0e7f5127e54",
       "bytes": 8094,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-10-01T02:15:43.159Z"
     },
     "renderer/legal.html": {
-      "sha256": "0a2b65fba3d6d8251133e11528038950fb5661e07e9f912f54838ef0f98f272b",
-      "bytes": 92275,
-      "mtime": "2026-10-11T07:43:09.205Z"
+      "sha256": "c948240c666ca3d320cbee8d6337528b14a9ba67189e8120d257cb2805ce88ae",
+      "bytes": 93104,
+      "mtime": "2026-10-14T12:22:03.698Z"
     },
     "renderer/lockscreen.js": {
       "sha256": "35e005c2756740ffc84f0a3a34df3b9b4732403b9be2689705b8d8f69758709e",
       "bytes": 1964,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-09-29T11:46:57.105Z"
     },
     "renderer/log.js": {
       "sha256": "ca1d347756264eab6c9608a91174a0f9e49bea8fda940acb079582716400209e",
       "bytes": 1936,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-10-06T03:07:21.169Z"
     },
     "renderer/mention.js": {
       "sha256": "fcc4601cf22d77df5dc35ee02051083b4aaf4209f9cd418cd2477b9739fbe601",
       "bytes": 5028,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-10-06T03:07:21.521Z"
     },
     "renderer/menubar.js": {
       "sha256": "5e0e162d4416873e435d5a2d60fc9973653758ef0629e3dbaa14fcf60a9843d6",
       "bytes": 6271,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-10-06T03:12:35.083Z"
     },
     "renderer/model.js": {
       "sha256": "cde1616397ef55cb5621f72245105747f3e9392f97734af8c8f84703c64037c5",
       "bytes": 3745,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-10-06T03:07:23.280Z"
     },
     "renderer/modes.js": {
       "sha256": "d4fc76a2dc11f10122580172b5fd45c21ed4aff81d9671b9418496442808ceac",
       "bytes": 2324,
-      "mtime": "2026-10-11T02:29:08.838Z"
+      "mtime": "2026-10-06T03:07:23.493Z"
     },
     "renderer/palette.js": {
       "sha256": "ef05596d97f95d50db695169af7a8455844f0252e8639b5f5ec0842d36576eec",
       "bytes": 8088,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-10-06T03:07:21.758Z"
     },
     "renderer/renderer.js": {
-      "sha256": "811d1e023add9cde4f13076759882c455a1be41d3dea23044c121754d64bb5b5",
-      "bytes": 23216,
-      "mtime": "2026-10-11T07:17:16.501Z"
+      "sha256": "761e39dbd1e2f526f63b2a5cacad9c8f794865e6a2cde7e7c7664ad4f683ac75",
+      "bytes": 23737,
+      "mtime": "2026-10-14T12:22:03.729Z"
     },
     "renderer/style.css": {
-      "sha256": "8a240601a152bb961e3e6f28f95331563900f6ed0ca875781c0be50ce223c0ec",
-      "bytes": 124606,
-      "mtime": "2026-10-11T06:15:12.741Z"
+      "sha256": "ec0579ab4eb8b2fb0a95ac2043b131b5673e741587b6db692d930024e38a5e79",
+      "bytes": 127104,
+      "mtime": "2026-10-14T12:22:03.770Z"
     },
     "renderer/terminal.js": {
       "sha256": "7bea8d7abec94c386f5f00339460212072e30d427f2b9d8a68067133fac8a72e",
       "bytes": 11885,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-10-06T03:07:22.413Z"
     },
     "renderer/theme.js": {
       "sha256": "926158d6c669e027c1537d5ef58808398f7a3c927acf959d5055e3ed64a4b196",
       "bytes": 10376,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-10-06T03:07:22.192Z"
     },
     "store/billing.js": {
       "sha256": "59aead208c0917df028d9e24d02878fe9bdaac376759cbf13c3032dbd6167cc2",
       "bytes": 1022,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-09-25T00:15:16.857Z"
     },
     "store/user-store.js": {
       "sha256": "a0f39d036f07f299203454897e5dac81f473ab59a18610792ad448eccebc857b",
       "bytes": 3562,
-      "mtime": "2026-10-06T04:21:11.000Z"
+      "mtime": "2026-09-25T00:15:16.857Z"
     }
   },
-  "manifestDigest": "260562a60f8e4ed589eca9e6d95de76bfb1c9e36139aaa2e5e1f9b1d9fd66e57"
+  "manifestDigest": "de330b08904a03e57b63935ed2afd0346e9479fb0ec672389d9b43fe55f0dd7c"
 }
