@@ -7,6 +7,9 @@ const agentsState = {  agents: new Map(),   // id -> { id, task, cwd, status, en
   history: []          // 历史会话列表（session:list）
 };
 
+/* 供 AI 面板等外部模块读取当前选中会话（只读语义） */
+window.__currentAgentId = () => agentsState.selectedId;
+
 const agentListEl = document.getElementById('agent-list');
 const transcriptEl = document.getElementById('transcript');
 const agentsEmptyEl = document.getElementById('agents-empty');
@@ -185,6 +188,7 @@ function handleAgentEvent(ev) {
       for (let i = a.entries.length - 1; i >= 0; i--) {
         if (a.entries[i].kind === 'tool' && a.entries[i].name === ev.name && !a.entries[i].result) {
           a.entries[i].result = ev.result;
+          a.entries[i].ms = ev.ms;
           break;
         }
       }
@@ -414,7 +418,7 @@ function sigOf(en) {
   switch (en.kind) {
     case 'user': return 'u:' + en.text;
     case 'agent-msg': return 'm:' + (en.streaming ? '1' : '0') + ':' + en.text;
-    case 'tool': return 't:' + en.name + ':' + (en.result ? 1 : 0) + ':' + (en.live ? en.live.length : 0);
+    case 'tool': return 't:' + en.name + ':' + (en.result ? 1 : 0) + ':' + (en.live ? en.live.length : 0) + ':' + (en.ms == null ? '' : en.ms);
     case 'approval': return 'a:' + (en.resolved ? (en.allowed ? '1' : '0') : 'p');
     case 'change': return 'c:' + (en.reverted ? '1' : '0');
     case 'error': return 'e:' + en.text;
@@ -461,6 +465,7 @@ function buildEntryNode(en, isLast) {
         '<span class="tw ' + (en.result ? (en.result.startsWith('ERROR') || en.result.includes('拦截') ? 'err' : 'ok') : 'wait') + '">' +
           (en.result ? (en.result.startsWith('ERROR') || en.result.includes('拦截') ? (window.lucideIcon('circle-x') || '') : (window.lucideIcon('circle-check') || '')) : (window.lucideIcon('loader-circle') || '')) +
         '</span>' +
+        (en.result && typeof en.ms === 'number' ? '<span class="tc-ms">' + en.ms + 'ms</span>' : '') +
       '</div>' +
       (rSummary ? '<div class="tool-result">' + rSummary + '</div>' : '') +
       '<pre>' + CL.util.escapeHtml(
@@ -854,10 +859,10 @@ window.__demoAgentEntry = function () {
     entries: [
       { kind: 'user', text: '阅读项目结构，为 src/utils 添加日期格式化工具函数并补全测试' },
       { kind: 'agent-msg', text: '好的，我先查看项目的目录结构，了解现有代码组织方式。' },
-      { kind: 'tool', name: 'list_dir', args: { path: '.' }, result: 'main.js\npackage.json\nrenderer/\n  index.html\n  style.css\n  editor.js\n  agents.js\n  renderer.js' },
-      { kind: 'tool', name: 'read_file', args: { path: 'package.json' }, result: '{\n  "name": "cursor-local",\n  "version": "0.1.0",\n  "main": "main.js"\n}' },
+      { kind: 'tool', name: 'list_dir', args: { path: '.' }, ms: 18, result: 'main.js\npackage.json\nrenderer/\n  index.html\n  style.css\n  editor.js\n  agents.js\n  renderer.js' },
+      { kind: 'tool', name: 'read_file', args: { path: 'package.json' }, ms: 9, result: '{\n  "name": "cursor-local",\n  "version": "0.1.0",\n  "main": "main.js"\n}' },
       { kind: 'change', relPath: 'src/utils/date.js', before: null, after: 'export function formatDate(d) {\n  return d.toISOString().slice(0, 10);\n}\n', existed: false },
-      { kind: 'tool', name: 'run_command', args: { command: 'node --test src/utils' }, result: '退出码: 0\n✔ formatDate (2ms)\n\n1 pass, 0 fail' }
+      { kind: 'tool', name: 'run_command', args: { command: 'node --test src/utils' }, ms: 1240, result: '退出码: 0\n✔ formatDate (2ms)\n\n1 pass, 0 fail' }
     ]
   });
   selectAgent(id);

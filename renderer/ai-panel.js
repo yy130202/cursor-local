@@ -95,6 +95,23 @@
   if (TOGGLE_BTN) TOGGLE_BTN.onclick = toggle;
   if (COLLAPSE_BTN) COLLAPSE_BTN.onclick = () => setCollapsed(true);
   if (NEW_TASK_BTN) NEW_TASK_BTN.onclick = focusAiPanel;
+  /* Trajectory 导出（DSH 的可追溯性）：md 人类可读 / json 完整事件流 */
+  const EXPORT_MD = document.getElementById('ai-export-md');
+  const EXPORT_JSON = document.getElementById('ai-export-json');
+  async function exportTrajectory(format) {
+    const id = (typeof window.__currentAgentId === 'function' && window.__currentAgentId()) || null;
+    if (!id) { if (window.flashStatus) window.flashStatus('请先选择或创建一个会话'); return; }
+    let text = null;
+    try { text = await window.api.exportTrajectory(id, format); } catch { /* ignore */ }
+    if (!text) { if (window.flashStatus) window.flashStatus('导出失败：会话不存在'); return; }
+    const ext = format === 'json' ? 'json' : 'md';
+    const name = 'trajectory-' + id + '.' + ext;
+    if (window.downloadText) window.downloadText(name, text);
+    if (window.flashStatus) window.flashStatus('已导出轨迹 ' + name);
+  }
+  if (EXPORT_MD) EXPORT_MD.onclick = () => exportTrajectory('md');
+  if (EXPORT_JSON) EXPORT_JSON.onclick = () => exportTrajectory('json');
+
   if (THEME_QUICK_BTN) THEME_QUICK_BTN.onclick = () => {
     const t = document.getElementById('theme-btn');
     if (t && t.click) t.click();

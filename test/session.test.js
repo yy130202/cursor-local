@@ -169,3 +169,65 @@ test('session: failed revert propagates and does not notify the renderer', async
   await assert.rejects(module.revertFile({ path: 'file', existed: true, before: 'old' }), /write denied/);
   assert.equal(window.sent.length, 0);
 });
+
+/* ---- Trajectory 导出（阶段2新增） ---- */
+test('session: exportTrajectory md 含工具调用/结果/耗时与变更汇总', () => {
+  const { module, ipc } = setup();
+  // 造一个含完整事件流的会话
+  module.saveSession({
+    id: 'traj-1', task: '重构工具函数', cwd: workspace, status: 'done',
+    log: [
+      { kind: 'user_msg', text: '把 utils 里的格式化抽成函数' },
+      { kind: 'tool_call', name: 'read_file', args: { path: 'src/utils.js' } },
+      { kind: 'tool_result', name: 'read_file', result: 'export function f() {}', ms: 42 },
+      { kind: 'change', path: workspace + '/src/utils.js', relPath: 'src/utils.js', before: 'a\nb\n', after: 'a\nb\nc\n', existed: true },
+      { kind: 'text', text: '已抽成 formatDate 函数。' }
+    ],
+    changes: [{ path: workspace + '/src/utils.js', relPath: 'src/utils.js', before: 'a\nb\n', after: 'a\nb\nc\n', existed: true }]
+  });
+  const md = ipc.invoke('session:exportTrajectory', { id: 'traj-1', format: 'md' });
+  assert.match(md, /# 重构工具函数/);
+  assert.match(md, /read_file/);
+  assert.match(md, /42ms/, 'md 应包含工具耗时');
+  assert.match(md, /变更汇总/);
+  assert.match(md, /src\/utils\.js/);
+});
+
+test('session: exportTrajectory json 返回完整事件流', () => {
+  const { module, ipc } = setup();
+  module.saveSession({
+    id: 'traj-2', task: 'json 导出', cwd: workspace, status: 'done',
+    log: [{ kind: 'text', text: 'hi' }], changes: []
+  });
+  const json = ipc.invoke('session:exportTrajectory', { id: 'traj-2', format: 'json' });
+  const parsed = JSON.parse(json);
+  assert.equal(parsed.id, 'traj-2');
+  assert.equal(parsed.task, 'json 导出');
+  assert.ok(Array.isArray(parsed.log));
+});
+
+test('session: exportTrajectory 优先读内存 agents（未落盘的运行中会话）', () => {
+  // 注入 agents Map：内存命中时不应依赖磁盘
+  const mem = createMemoryFs({});
+  const logs = [];
+  const agents = new Map([['live-1', {
+    id: 'live-1', task: '内存会话', cwd: workspace, status: 'running',
+    log: [{ kind: 'text', text: '进行中' }], changes: []
+  }]]);
+  const module = loadModule('modules/session.js', {
+    requires: { fs: mem.fs, electron: { app: { getPath: () => userData } } },
+    globals: { process: { env: {} }, console: { error: () => undefined } }
+  }).createSessionModule({ winRef: () => createWindow(), addLog: (...a) => logs.push(a), agents });
+  const ipc = createIpc();
+  module.register(ipc);
+  // 磁盘上没有 live-1.json，只有内存有
+  const md = ipc.invoke('session:exportTrajectory', { id: 'live-1', format: 'md' });
+  assert.match(md, /# 内存会话/);
+  assert.match(md, /进行中/);
+});
+
+test('session: exportTrajectory 对不存在的会话返回 null', () => {
+  const { ipc } = setup();
+  const out = ipc.invoke('session:exportTrajectory', { id: 'nope-404', format: 'md' });
+  assert.equal(out, null);
+});

@@ -2447,3 +2447,10 @@ svg.lucide { color: #fff; }
   #ai-panel:not(.ai-collapsed) { width: 400px; }
   #ai-panel #agents-sidebar { width: 168px; }
 }
+
+/* 工具卡耗时徽标（Trajectory 可视化） */
+.tool-card .head .tc-ms {
+  font-family: Consolas, monospace; font-size: 10px; color: var(--text-dim);
+  background: rgba(255, 255, 255, .06); border-radius: 4px; padding: 1px 5px;
+  flex-shrink: 0;
+}

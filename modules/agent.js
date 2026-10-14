@@ -498,6 +498,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
           let args = {};
           try { args = JSON.parse(tc.function.arguments || '{}'); } catch { /* 忽略 */ }
           emitAgent(agent, 'tool_call', { name: fnName, args });
+          const __t0 = Date.now();
           let result;
           // 手动审批：敏感操作等用户确认
           if (needsApproval(agent, fnName)) {
@@ -505,7 +506,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
             if (agent.status === 'stopped' || agent.status === 'error') return;
             if (!ok) {
               result = '用户拒绝执行 ' + fnName + '，请调整方案或先向用户说明理由。';
-              emitAgent(agent, 'tool_result', { name: fnName, result });
+              emitAgent(agent, 'tool_result', { name: fnName, result, ms: 0 });
               agent.messages.push({ role: 'tool', tool_call_id: tc.id, content: result });
               continue;
             }
@@ -514,7 +515,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
           catch (err) { result = 'ERROR: ' + err.message; }
           if (agent.status === 'stopped' || agent.status === 'error') return;
           result = String(result);
-          emitAgent(agent, 'tool_result', { name: fnName, result: result.slice(0, 3000) });
+          emitAgent(agent, 'tool_result', { name: fnName, result: result.slice(0, 3000), ms: Date.now() - __t0 });
           agent.messages.push({ role: 'tool', tool_call_id: tc.id, content: result.slice(0, 12000) });
         }
       }

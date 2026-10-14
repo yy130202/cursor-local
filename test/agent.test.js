@@ -233,6 +233,8 @@ test('manual denial returns a tool result without performing the rejected write'
   assert.equal(h.fs.count('writeFile'), 0);
   assert.match(agent.messages.find((m) => m.role === 'tool').content, /用户拒绝/);
   assert.equal(h.timers.pending.size, 0);
+  // 阶段2：审批拒绝未真正执行工具，耗时应记为 0
+  assert.equal(agent.log.find((e) => e.kind === 'tool_result').ms, 0);
 });
 
 test('manual approval timeout rejects once and ignores late approval messages', async () => {
@@ -557,4 +559,19 @@ test('child cleanup tolerates individual kill failures and proceeds with remaini
   assert.doesNotThrow(() => h.api.killChildren(agent));
   assert.deepEqual(second.killed, ['SIGKILL']);
   assert.equal(agent.children.size, 0);
+});
+
+/* ---- Trajectory：tool_result 携带执行耗时（阶段2新增） ---- */
+test('tool_result 事件携带执行耗时 ms（非负整数）', async () => {
+  const h = createAgentHarness({ handlers: () => ({ read_file: async () => 'file body' }),
+    fetch: responses([sse(toolsDelta([['read_file', {}]]))], [sse({ content: 'done' })]) });
+  const seen = watchEvent(h, (e) => e.kind === 'tool_result');
+  const agent = h.makeAgent();
+  await h.api.runAgent(agent);
+  const ev = await seen;
+  assert.equal(typeof ev.ms, 'number', 'tool_result 应带 ms');
+  assert.ok(ev.ms >= 0, 'ms 应为非负数');
+  // 内存 log 中的 entry 同样带 ms（导出 Trajectory 时使用）
+  const logged = agent.log.find((e) => e.kind === 'tool_result');
+  assert.equal(typeof logged.ms, 'number');
 });

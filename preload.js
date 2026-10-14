@@ -22,6 +22,7 @@ contextBridge.exposeInMainWorld('api', {
     return () => ipcRenderer.removeListener('legal:navigate', h);
   },
   quit: () => ipcRenderer.invoke('app:quit'),
+  exportTrajectory: (id, format) => ipcRenderer.invoke('session:exportTrajectory', { id, format }),
   readFile: (p) => ipcRenderer.invoke('fs:readFile', p),
   writeFile: (p, c) => ipcRenderer.invoke('fs:writeFile', p, c),
   createFile: (p) => ipcRenderer.invoke('fs:createFile', p),

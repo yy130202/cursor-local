@@ -34,7 +34,7 @@ const log = createLog(winRef);
 const addLog = log.addLog;
 const logs = log.logs;
 
-const sessionMod = createSessionModule({ winRef, addLog });
+const sessionMod = createSessionModule({ winRef, addLog, agents });
 const memoryMod = createMemoryModule();
 const agentMod = createAgentModule({ winRef, addLog, loadConfig, agents, saveSession: sessionMod.saveSession, rootDir: __dirname, memory: memoryMod });
 const gitMod = createGitModule({ winRef, addLog });
