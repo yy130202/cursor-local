@@ -22,7 +22,7 @@
  *   notifyFs(p) 通知渲染进程刷新文件树
  */
 function createToolHandlers(deps) {
-  const { fsp, path, win, addLog, runCommand, searchInDir,
+  const { fsp, path, win, addLog, runCommand, searchInDir, spawnChild,
     resolveAgentPath, assertRealInsideWorkspace, emitAgent,
     checkDangerousCommand, checkCatastrophic } = deps;
 
@@ -130,6 +130,25 @@ function createToolHandlers(deps) {
       log('info', '移动 ' + from + ' → ' + to);
       notify(from);
       return '[OK] 已移动 ' + from + ' → ' + to;
+    },
+
+    /* ---------- 子任务（并行/串行拆解，DSH 的子 Agent 思路） ---------- */
+
+    async spawn_subagent({ agent, args, cwd, log }) {
+      /*
+       * 把一个独立子目标交给新的子 agent，并等待其完成。
+       * 典型用途：把「读三个模块分别总结」拆成三个并行子任务；
+       * 或把长任务的后半段拆出去，让父任务先返回中间结论。
+       * 注意：子任务同样受父级的权限档位与沙箱约束（创建时继承 cwd/mode）。
+       */
+      const task = String(args.task || '').trim();
+      if (!task) return 'ERROR: spawn_subagent 需要提供 task（子任务描述）';
+      const parentId = agent && agent.id;
+      if (!parentId) return 'ERROR: 当前没有父会话上下文';
+      const r = await spawnChild({ parentId, task, cwd: args.cwd || cwd, mode: args.mode });
+      if (!r.ok) return `[子任务未成功完成] ${r.reason || r.status || '未知原因'}`;
+      const body = r.summary ? `\n\n子任务结论：\n${r.summary}` : '';
+      return `[OK] 子任务 ${r.id} 已完成（${r.status}）${body}`;
     },
 
     /* ---------- 命令执行 ---------- */

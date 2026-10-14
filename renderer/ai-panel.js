@@ -95,6 +95,28 @@
   if (TOGGLE_BTN) TOGGLE_BTN.onclick = toggle;
   if (COLLAPSE_BTN) COLLAPSE_BTN.onclick = () => setCollapsed(true);
   if (NEW_TASK_BTN) NEW_TASK_BTN.onclick = focusAiPanel;
+  /* 拆为子任务：把当前会话的一个子目标交给新的子 agent（UI 侧手动通道） */
+  const SPLIT_BTN = document.getElementById('ai-split-task');
+  if (SPLIT_BTN) SPLIT_BTN.onclick = async () => {
+    const parentId = (typeof window.__currentAgentId === 'function' && window.__currentAgentId()) || null;
+    if (!parentId) { if (window.flashStatus) window.flashStatus('请先选择或创建一个会话'); return; }
+    const input = document.getElementById('followup-input');
+    const task = input ? input.value.trim() : '';
+    if (!task) {
+      if (input) { input.focus(); input.placeholder = '先输入子任务描述，再点「拆为子任务」…（Enter 发送）'; }
+      if (window.flashStatus) window.flashStatus('请在底部输入框填写子任务描述');
+      return;
+    }
+    let r = null;
+    try { r = await window.api.createChildAgent({ parentId, task }); } catch { /* ignore */ }
+    if (r && r.ok) {
+      if (input) input.value = '';
+      if (window.flashStatus) window.flashStatus('已创建子任务 ' + r.id);
+    } else {
+      if (window.flashStatus) window.flashStatus((r && r.reason) || '创建子任务失败');
+    }
+  };
+
   /* Trajectory 导出（DSH 的可追溯性）：md 人类可读 / json 完整事件流 */
   const EXPORT_MD = document.getElementById('ai-export-md');
   const EXPORT_JSON = document.getElementById('ai-export-json');

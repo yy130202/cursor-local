@@ -52,7 +52,7 @@ test('runAgent builds authenticated stream requests and completes a text-only re
   assert.equal(body.stream, true);
   assert.equal(body.model, 'test-model');
   assert.equal(body.tool_choice, 'auto');
-  assert.equal(body.tools.length, 9);
+  assert.equal(body.tools.length, 10); // 9 个基础工具 + spawn_subagent（新增工具时同步更新）
   assert.equal(body.messages[1].content, agent.task);
   assert.equal(agent.messages[2].role, 'assistant');
   assert.equal(agent.messages[2].content, '完成');
@@ -626,4 +626,61 @@ test('批准计划对非 waiting 会话返回失败', () => {
   const missing = h.ipc.invoke('agent:approvePlan', { id: 'no-such-agent' });
   assert.equal(missing.ok, false);
   assert.match(missing.reason, /会话不存在/);
+});
+
+/* ---- 子任务拆解（阶段4新增） ---- */
+test('createAgent 记录 parentId 并注册到父级 children', () => {
+  const h = createAgentHarness();
+  const parent = h.makeAgent({ task: '父任务' });
+  // 通过 IPC 创建子任务
+  const r = h.ipc.invoke('agent:createChild', { parentId: parent.id, task: '子任务：总结 renderer' });
+  assert.equal(r.ok, true);
+  assert.ok(r.id);
+  const child = h.agents.get(r.id);
+  assert.equal(child.parentId, parent.id, '子任务应记录 parentId');
+  assert.ok(parent.children.has(child), '父任务 children 应包含子任务');
+  assert.equal(child.cwd, parent.cwd, '子任务缺省继承父任务 cwd');
+});
+
+test('createChild 校验父会话存在与任务非空', () => {
+  const h = createAgentHarness();
+  const missing = h.ipc.invoke('agent:createChild', { parentId: 'no-such', task: 'x' });
+  assert.equal(missing.ok, false);
+  assert.match(missing.reason, /父会话不存在/);
+  const parent = h.makeAgent();
+  const empty = h.ipc.invoke('agent:createChild', { parentId: parent.id, task: '  ' });
+  assert.equal(empty.ok, false);
+  assert.match(empty.reason, /子任务描述为空/);
+});
+
+test('spawn_subagent 工具创建子 agent 并等待其完成后返回结论', async () => {
+  // 走真实 handler（不覆盖工具表）：父调 spawn_subagent → 创建子 agent → 轮询等待其完成
+  const h = createAgentHarness({
+    fetch: responses(
+      [sse(toolsDelta([['spawn_subagent', { task: '总结 renderer 目录' }]]))], // 父：调 spawn_subagent
+      [sse({ content: '子任务结论：renderer 有 12 个模块。' })],                  // 子：只回文字后 done
+      [sse({ content: '父任务综合完成。' })]                                     // 父：收尾
+    )
+  });
+  const parent = h.makeAgent({ task: '父任务' });
+  const toolResult = watchEvent(h, (e) => e.kind === 'tool_result' && e.name === 'spawn_subagent');
+  await h.api.runAgent(parent);
+  const ev = await toolResult;
+  assert.match(ev.result, /子任务/);
+  // 子任务确实被创建并完成了
+  const child = [...h.agents.values()].find((a) => a.parentId === parent.id);
+  assert.ok(child, '应存在子任务');
+  assert.equal(child.status, 'done');
+  assert.match(ev.result, /renderer 有 12 个模块/, '工具结果应带回子任务结论');
+});
+
+test('stop 父任务时级联停止子 agent', () => {
+  const h = createAgentHarness();
+  const parent = h.makeAgent({ task: '父' });
+  const r = h.ipc.invoke('agent:createChild', { parentId: parent.id, task: '子' });
+  const child = h.agents.get(r.id);
+  // 手工把父置为 running 再 stop（makeAgent 默认 running）
+  h.ipc.invoke('agent:stop', parent.id);
+  assert.equal(parent.status, 'stopped');
+  assert.equal(child.status, 'stopped', '子任务应被级联停止');
 });

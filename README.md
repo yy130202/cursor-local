@@ -21,7 +21,7 @@
 - 变更卡片可一键「撤销改动」，逐字节还原原始文件
 - 历史会话按时间分组，支持搜索、导出 Markdown、删除
 
-**内置 9 个工具**：`list_dir` 查目录、`list_tree` 目录树、`read_file` 读文件、`write_file` 写文件、`delete_file` 删除、`move_file` 移动、`search_files` 内容搜索、`get_file_info` 文件信息、`run_command` 执行终端命令。
+**内置 10 个工具**：`list_dir` 查目录、`list_tree` 目录树、`read_file` 读文件、`write_file` 写文件、`delete_file` 删除、`move_file` 移动、`search_files` 内容搜索、`get_file_info` 文件信息、`run_command` 执行终端命令、`spawn_subagent` 拆子任务（创建子 Agent 并等待其完成，支持任务拆解与并行）。
 
 ### 两种工作模式
 顶部 `◧ Editor` / `🤖 Agents` 一键切换（AI 面板显隐）。
@@ -60,7 +60,7 @@ cursor-local/
 │   └── testing.js         # 开发期自动化：截图 / 回归 / 诊断 / 性能实测
 ├── modules/               # 业务模块（单一职责，均以工厂函数 + 依赖注入组织）
 │   ├── agent.js           #   Agent 引擎：工具循环、沙箱、审批流、SSE 流式解析
-│   ├── agent/tools.js     #   9 个工具实现（依赖全部外部注入，便于隔离测试）
+│   ├── agent/tools.js     #  10 个工具实现（依赖全部外部注入，便于隔离测试）
 │   ├── ai.js              #   LLM 对话、补全、选区编辑、内联改写、诊断
 │   ├── auth.js            #   用户系统：注册 / 登录 / 会话
 │   ├── config.js          #   配置持久化 + API Key 加密

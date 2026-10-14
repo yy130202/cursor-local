@@ -2493,3 +2493,27 @@ svg.lucide { color: #fff; }
 .plan-card .plan-approve:disabled { opacity: .5; cursor: default; }
 .plan-card .plan-replan { background: transparent; border-color: var(--glass-border); color: var(--text-dim); }
 .plan-card .plan-replan:hover { color: var(--text); border-color: var(--text-dim); }
+
+/* ==================== 子任务卡 + 列表层级缩进 ==================== */
+.subtask-card { border-left: 2px solid rgba(255, 255, 255, .22); }
+.subtask-card .head { display: flex; align-items: center; gap: 8px; }
+.subtask-card .tag.subtask-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 6px;
+  background: rgba(255, 255, 255, .07); color: var(--text-dim);
+}
+.subtask-card .tag.subtask-tag svg.lucide { width: 11px; height: 11px; }
+.subtask-card .st-task { flex: 1; min-width: 0; font-size: 12px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.subtask-card .st-state { font-size: 10.5px; font-family: Consolas, monospace; color: var(--text-dim); }
+.subtask-card.resolved .st-state { color: #7ee787; }
+
+/* 会话列表：子任务按深度缩进 */
+#ai-panel #agent-list .agent-item.sub-depth-1 { padding-left: 22px; }
+#ai-panel #agent-list .agent-item.sub-depth-2 { padding-left: 34px; }
+#ai-panel #agent-list .agent-item.sub-depth-3 { padding-left: 46px; }
+#ai-panel #agent-list .agent-item.sub-depth-4 { padding-left: 58px; }
+#ai-panel #agent-list .agent-item[class*="sub-depth-"] .row1::before {
+  content: ""; display: inline-block; width: 8px; height: 8px;
+  border-left: 1px solid rgba(255, 255, 255, .22); border-bottom: 1px solid rgba(255, 255, 255, .22);
+  margin-right: 6px; flex-shrink: 0;
+}

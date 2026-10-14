@@ -5,6 +5,7 @@ const { spawn } = require('child_process');
 const { createToolHandlers } = require('./agent/tools');
 
 function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, rootDir, memory }) {
+  let agentSeq = 0; // 会话序号（模块作用域：createAgent 与 register 共用）
   const win = () => winRef();
 
   /* ---- 终端命令执行 ---- */
@@ -66,7 +67,8 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
     { type: 'function', function: { name: 'move_file', description: '移动或重命名文件/目录', parameters: { type: 'object', properties: { from: { type: 'string', description: '源路径' }, to: { type: 'string', description: '目标路径' } }, required: ['from', 'to'] } } },
     { type: 'function', function: { name: 'search_files', description: '在目录中搜索包含关键词的文件（返回文件、行号、内容）', parameters: { type: 'object', properties: { pattern: { type: 'string', description: '搜索关键词' }, path: { type: 'string', description: '起始目录，默认工作目录' } }, required: ['pattern'] } } },
     { type: 'function', function: { name: 'get_file_info', description: '获取文件信息（大小、修改时间、类型）', parameters: { type: 'object', properties: { path: { type: 'string', description: '文件路径' } }, required: ['path'] } } },
-    { type: 'function', function: { name: 'run_command', description: '在工作目录执行终端命令（npm/node/python/git 等），返回退出码和输出', parameters: { type: 'object', properties: { command: { type: 'string', description: '要执行的命令' } }, required: ['command'] } } }
+    { type: 'function', function: { name: 'run_command', description: '在工作目录执行终端命令（npm/node/python/git 等），返回退出码和输出', parameters: { type: 'object', properties: { command: { type: 'string', description: '要执行的命令' } }, required: ['command'] } } },
+    { type: 'function', function: { name: 'spawn_subagent', description: '把一个独立的子目标拆成子任务，交给新的子 Agent 执行并等待其完成后返回结论。适合：① 并行处理多个独立子目标（如分别总结多个模块）；② 将长任务的后半段拆出去以缩短父任务耗时。子任务继承父任务的工作目录与权限档位。', parameters: { type: 'object', properties: { task: { type: 'string', description: '子任务的完整描述（自包含，子 Agent 看不到父任务上下文）' }, cwd: { type: 'string', description: '子任务工作目录，缺省继承父任务' }, mode: { type: 'string', enum: ['craft', 'ask', 'plan'], description: '子任务模式，缺省 craft' } }, required: ['task'] } } }
   ];
 
   function resolveAgentPath(cwd, p) {
@@ -283,13 +285,112 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
 
   /* 工具处理器表：工具行为在 modules/agent/tools.js，此处仅做依赖注入 */
   const TOOL_HANDLERS = createToolHandlers({
-    fsp, path, win, addLog, runCommand, searchInDir,
+    fsp, path, win, addLog, runCommand, searchInDir, spawnChild,
     resolveAgentPath, assertRealInsideWorkspace, emitAgent,
     checkDangerousCommand, checkCatastrophic
   });
 
   /* 工具分发器：只负责「模式拦截 → 构造上下文 → 表驱动调用 → 统一错误包装」。
      新增工具只需在 tools.js 追加处理器，本函数永远不需要改动。 */
+  /*
+   * ============ 会话创建 / 停止 / 子任务（模块作用域，不依赖 ipcMain）============
+   * spawnChild 要作为依赖注入进工具表，因此必须定义在 createToolHandlers 调用之前；
+   * 而 ipcMain 只是 register() 的参数，不是模块作用域变量。
+   */
+
+  /* 统一创建入口（顶层任务与子任务共用） */
+  function createAgent({ task, cwd, mode, parentId }) {
+    agentSeq += 1;
+    const agent = {
+      id: 'agent-' + Date.now() + '-' + agentSeq,
+      task: String(task || '').trim(),
+      cwd: cwd || rootDir,
+      mode: mode || 'craft',
+      readonly: mode === 'ask',
+      parentId: parentId || null,
+      status: 'running',
+      messages: [],
+      log: [],
+      children: new Set()
+    };
+    agents.set(agent.id, agent);
+    if (parentId) {
+      const parent = agents.get(parentId);
+      if (parent) parent.children.add(agent);
+    }
+    emitAgent(agent, 'meta', { task: agent.task, cwd: agent.cwd, ts: Date.now(), parentId: parentId || null });
+    runAgent(agent);
+    return { id: agent.id };
+  }
+
+  /* 停止单个 agent（含级联停止子 agent，递归） */
+  function stopAgent(id) {
+    const a = agents.get(id);
+    if (!a || a.status === 'stopped') return false;
+    a.status = 'stopped';
+    clearPendingApprovals(a); // 先拒绝挂起审批，再杀进程
+    killChildren(a);
+    emitAgent(a, 'status', { status: 'stopped' });
+    if (a.log.length > 200) a.log = a.log.slice(-200);
+    notifyAgentDone(a); // 停止也是终态：唤醒等待中的 spawn_child
+    for (const child of agents.values()) {
+      if (child.parentId === id && child.status !== 'stopped') stopAgent(child.id);
+    }
+    return true;
+  }
+
+  /*
+   * 触发 agent 的「完成」回调（供 spawnChild 等待子任务终态）。
+   * 放在模块作用域：agentLoop 收尾与 stopAgent 都会调用。
+   * 之所以不用轮询：harness 的测试替身会拦截 setTimeout/setInterval，
+   * 轮询在单测里永远不会推进，会直接把测试挂死。
+   */
+  function notifyAgentDone(agent) {
+    if (!agent || !agent.__onDone || !agent.__onDone.length) return;
+    const cbs = agent.__onDone;
+    agent.__onDone = [];
+    for (const cb of cbs) { try { cb(agent); } catch { /* ignore */ } }
+  }
+
+  /*
+   * spawn_child：创建子 agent 并等待其完成（轮询终态，600s 超时兜底）。
+   * 不用 ipcMain.on('agent:event') 监听——emitAgent 是直接
+   * win.webContents.send 给渲染进程，并不经 ipcMain 事件系统。
+   */
+  function spawnChild({ parentId, task, cwd, mode }) {
+    const parent = agents.get(parentId);
+    if (!parent) return Promise.resolve({ ok: false, reason: '父会话不存在' });
+    const r = createAgent({ task, cwd: cwd || parent.cwd, mode: mode || 'craft', parentId });
+    addLog('info', 'agent', `spawn_subagent 创建子任务 ${r.id}（父 ${parentId}）`);
+    return new Promise((resolve) => {
+      let settled = false;
+      const child = agents.get(r.id);
+      const finish = (why) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        if (why === 'timeout') {
+          stopAgent(r.id);
+          resolve({ ok: false, id: r.id, reason: '子任务超时（600s），已停止' });
+          return;
+        }
+        // 流式路径只 emit text_delta（增量碎片），MOCK 路径 emit text（整段）——两者都要收
+        const summary = (child.log || [])
+          .filter((e) => e.kind === 'text' || e.kind === 'text_delta')
+          .map((e) => e.text || '')
+          .join('')
+          .slice(-2000);
+        resolve({ ok: child.status === 'done', id: r.id, status: child.status, summary });
+      };
+      // 子 agent 终态回调（agentLoop 收尾 / stopAgent 会触发）
+      child.__onDone = child.__onDone || [];
+      child.__onDone.push(() => finish('done'));
+      // 超时兜底
+      const timer = setTimeout(() => finish('timeout'), 600000);
+      if (timer.unref) timer.unref();
+    });
+  }
+
   async function executeTool(agent, name, args) {
     if (agent.mode === 'plan') {
       return 'ERROR: 当前为计划模式，已拦截工具调用 ' + name;
@@ -542,29 +643,22 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
       killChildren(agent);
       if (agent.log.length > 200) agent.log = agent.log.slice(-200);
       saveSession(agent);
+      notifyAgentDone(agent); // 通知等待中的 spawn_child
     }
   }
 
   /* ---- IPC 注册 ---- */
-  let agentSeq = 0;
   function register(ipcMain) {
-    ipcMain.handle('agent:create', (_e, { task, cwd, mode }) => {
-      agentSeq += 1;
-      const agent = {
-        id: 'agent-' + Date.now() + '-' + agentSeq,
-        task: String(task || '').trim(),
-        cwd: cwd || rootDir,
-        mode: mode || 'craft',
-        readonly: mode === 'ask',
-        status: 'running',
-        messages: [],
-        log: [],
-        children: new Set()
-      };
-      agents.set(agent.id, agent);
-      emitAgent(agent, 'meta', { task: agent.task, cwd: agent.cwd, ts: Date.now() });
-      runAgent(agent);
-      return { id: agent.id };
+    ipcMain.handle('agent:create', (_e, payload) => createAgent(payload || {}));
+
+    /* 子任务：UI「拆为子任务」按钮（模型自主通道是 spawn_subagent 工具） */
+    ipcMain.handle('agent:createChild', (_e, payload) => {
+      const { parentId, task, cwd, mode } = payload || {};
+      if (!parentId || !agents.get(parentId)) return { ok: false, reason: '父会话不存在' };
+      if (!String(task || '').trim()) return { ok: false, reason: '子任务描述为空' };
+      const r = createAgent({ task, cwd: cwd || agents.get(parentId).cwd, mode: mode || 'craft', parentId });
+      addLog('info', 'agent', `创建子任务 ${r.id}（父 ${parentId}）`);
+      return { ok: true, id: r.id };
     });
 
     ipcMain.handle('agent:approval', (_e, { callId, allowed }) => {
@@ -577,17 +671,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
       return [...agents.values()].map((a) => ({ id: a.id, task: a.task, cwd: a.cwd, status: a.status, log: a.log }));
     });
 
-    ipcMain.handle('agent:stop', (_e, id) => {
-      const a = agents.get(id);
-      if (a) {
-        a.status = 'stopped';
-        clearPendingApprovals(a); // 先拒绝挂起审批，再杀进程
-        killChildren(a);
-        emitAgent(a, 'status', { status: 'stopped' });
-        if (a.log.length > 200) a.log = a.log.slice(-200);
-      }
-      return true;
-    });
+    ipcMain.handle('agent:stop', (_e, id) => { stopAgent(id); return true; });
 
     ipcMain.handle('agent:approvePlan', (_e, payload) => {
       const id = typeof payload === 'string' ? payload : payload && payload.id;
@@ -634,7 +718,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
     return { ok: true };
   }
 
-  return { register, executeTool, runAgent, killChildren, emitAgent, clearPendingApprovals, approvePlan };
+  return { register, executeTool, runAgent, killChildren, emitAgent, clearPendingApprovals, approvePlan, createAgent, stopAgent, spawnChild };
 }
 
 module.exports = { createAgentModule };

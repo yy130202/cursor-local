@@ -126,6 +126,11 @@ function handleAgentEvent(ev) {
       a.__reasoning = ''; // 新任务：清空上一轮思考流
       a.entries.push({ kind: 'user', text: ev.task });
       if (typeof window.updateIsland === 'function') window.updateIsland('running', 'Agent 运行中 · ' + (ev.task || '').slice(0, 24));
+      // 子任务：meta 带 parentId 且指向当前选中会话时，在父会话里记一条 subtask
+      if (ev.parentId && ev.parentId === agentsState.selectedId) {
+        const pa = agentsState.agents.get(agentsState.selectedId);
+        if (pa) pa.entries.push({ kind: 'subtask', id: ev.agentId, task: ev.task, status: 'running' });
+      }
       break;
     case 'user_msg':
       closeStreaming(a);
@@ -207,6 +212,14 @@ function handleAgentEvent(ev) {
       a.entries.push({ kind: 'error', text: ev.text });
       break;
     case 'status':
+      // 子任务终态同步到父会话的 subtask entry（先于本地状态更新，保证同帧渲染）
+      if (ev.agentId && ['done', 'stopped', 'error'].includes(ev.status)) {
+        for (const pa of agentsState.agents.values()) {
+          if (!pa.parentId) continue;
+          const st = pa.entries.find((e) => e.kind === 'subtask' && e.id === ev.agentId);
+          if (st) st.status = ev.status;
+        }
+      }
       a.status = ev.status;
       // 环境光反馈：运行辉光呼吸 / 完成绿色脉冲
       if (ev.status === 'running') document.body.classList.add('aura-running');
@@ -259,11 +272,24 @@ function statusLabel(s) {
    并级联 renderHistory —— 历史列表与 agent 事件无关，纯属浪费）。
    签名：task + cwd + status + 是否选中。任一变化才重建该行。 */
 function agentItemSig(a) {
-  return a.task + '' + a.cwd + '' + a.status + '' + (a.id === agentsState.selectedId ? '1' : '0');
+  return a.task + '' + a.cwd + '' + a.status + '' + (a.id === agentsState.selectedId ? '1' : '0') + '' + (a.parentId || '');
 }
 
 function renderAgentList() {
-  const list = [...agentsState.agents.values()].reverse();
+  const all = [...agentsState.agents.values()];
+  // 计算每个 agent 的子树深度（父 → 子 → 孙），用于列表缩进
+  const depthOf = new Map();
+  for (const a of all) {
+    let d = 0; let cur = a; const seen = new Set();
+    while (cur && cur.parentId && !seen.has(cur.id)) {
+      seen.add(cur.id);
+      const p = agentsState.agents.get(cur.parentId);
+      if (!p) break;
+      d += 1; cur = p;
+    }
+    depthOf.set(a.id, Math.min(d, 4));
+  }
+  const list = all.reverse();
   const items = agentsState.__listItems || (agentsState.__listItems = []);
   // 数量变化 → 增删尾部节点；数量不变 → 逐行按签名复用
   for (let i = list.length; i < items.length; i++) {
@@ -276,6 +302,7 @@ function renderAgentList() {
     const sig = agentItemSig(a);
     let el = items[i];
     if (el && el.__sig !== sig && el.isConnected) {
+      el.className = 'agent-item' + (depthOf.get(a.id) ? ' sub-depth-' + depthOf.get(a.id) : '');
       el.innerHTML =
         '<div class="row1">' +
           '<span class="dot ' + a.status + '"></span>' +
@@ -286,7 +313,7 @@ function renderAgentList() {
       if (el.__id !== a.id) { el.__id = a.id; el.onclick = () => selectAgent(el.__id); }
     } else if (!el) {
       el = document.createElement('div');
-      el.className = 'agent-item';
+      el.className = 'agent-item' + (depthOf.get(a.id) ? ' sub-depth-' + depthOf.get(a.id) : '');
       el.innerHTML =
         '<div class="row1">' +
           '<span class="dot ' + a.status + '"></span>' +
@@ -422,8 +449,9 @@ function sigOf(en) {
   switch (en.kind) {
     case 'user': return 'u:' + en.text;
     case 'agent-msg': return 'm:' + (en.streaming ? '1' : '0') + ':' + en.text;
-    case 'tool': return 't:' + en.name + ':' + (en.result ? 1 : 0) + ':' + (en.live ? en.live.length : 0) + ':' + (en.ms == null ? '' : en.ms);
-    case 'plan': return 'p:' + en.text.length;
+    case 'tool': return 't:' + en.name + (en.result ? 1 : 0) + (en.live ? en.live.length : 0) + (en.ms || '');
+    case 'plan': return 'p' + en.text.length;
+    case 'subtask': return 's' + en.id + en.status;
     case 'approval': return 'a:' + (en.resolved ? (en.allowed ? '1' : '0') : 'p');
     case 'change': return 'c:' + (en.reverted ? '1' : '0');
     case 'error': return 'e:' + en.text;
@@ -481,6 +509,18 @@ function buildEntryNode(en, isLast) {
     const trEl = card.querySelector('.tool-result');
     if (trEl) trEl.onclick = () => card.classList.toggle('open');
     d.appendChild(card);
+    return { node: d };
+  }
+  if (en.kind === 'subtask') {
+    // 子任务卡：显示子任务描述与终态
+    d.className = 'entry subtask-card' + (en.status && en.status !== 'running' ? ' resolved' : '') + inCls;
+    const stateText = en.status === 'done' ? '已完成' : en.status === 'error' ? '出错' : en.status === 'stopped' ? '已停止' : '进行中';
+    d.innerHTML =
+      '<div class="head">' +
+        '<span class="tag subtask-tag">' + (window.lucideIcon('git-fork') || '') + '子任务</span>' +
+        '<span class="st-task">' + CL.util.escapeHtml(en.task || '') + '</span>' +
+        '<span class="st-state">' + stateText + '</span>' +
+      '</div>';
     return { node: d };
   }
   if (en.kind === 'plan') {
