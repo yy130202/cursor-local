@@ -198,6 +198,10 @@ function handleAgentEvent(ev) {
       closeStreaming(a);
       a.entries.push({ kind: 'change', path: ev.path, relPath: ev.relPath, before: ev.before, after: ev.after, existed: ev.existed });
       break;
+    case 'plan':
+      closeStreaming(a);
+      a.entries.push({ kind: 'plan', text: ev.text });
+      break;
     case 'error':
       closeStreaming(a);
       a.entries.push({ kind: 'error', text: ev.text });
@@ -419,6 +423,7 @@ function sigOf(en) {
     case 'user': return 'u:' + en.text;
     case 'agent-msg': return 'm:' + (en.streaming ? '1' : '0') + ':' + en.text;
     case 'tool': return 't:' + en.name + ':' + (en.result ? 1 : 0) + ':' + (en.live ? en.live.length : 0) + ':' + (en.ms == null ? '' : en.ms);
+    case 'plan': return 'p:' + en.text.length;
     case 'approval': return 'a:' + (en.resolved ? (en.allowed ? '1' : '0') : 'p');
     case 'change': return 'c:' + (en.reverted ? '1' : '0');
     case 'error': return 'e:' + en.text;
@@ -476,6 +481,34 @@ function buildEntryNode(en, isLast) {
     const trEl = card.querySelector('.tool-result');
     if (trEl) trEl.onclick = () => card.classList.toggle('open');
     d.appendChild(card);
+    return { node: d };
+  }
+  if (en.kind === 'plan') {
+    // 计划卡（plan-execute 第一阶段产出）：展示计划 + 「批准并执行」/「重新规划」
+    d.className = 'entry plan-card' + (en.resolved ? ' resolved' : '') + inCls;
+    d.innerHTML =
+      '<div class="head">' +
+        '<span class="tag plan-tag">' + (window.lucideIcon('list-checks') || '') + '实施计划</span>' +
+        '<span class="plan-state">' + (en.resolved ? '已批准' : '待批准') + '</span>' +
+      '</div>' +
+      '<div class="plan-body">' + (typeof miniMarkdown === 'function' ? miniMarkdown(en.text) : CL.util.escapeHtml(en.text)) + '</div>' +
+      (en.resolved ? '' :
+        '<div class="plan-actions">' +
+          '<button class="plan-approve action">' + (window.lucideIcon('play') || '') + '批准并执行</button>' +
+          '<button class="plan-replan action ghost">' + (window.lucideIcon('rotate-ccw') || '') + '重新规划</button>' +
+        '</div>');
+    const ap = d.querySelector('.plan-approve');
+    if (ap) ap.onclick = async () => {
+      ap.disabled = true;
+      const r = await window.api.approvePlan(en.agentId || (window.__currentAgentId && window.__currentAgentId()));
+      if (r && r.ok) { en.resolved = true; renderTranscript(); }
+      else { ap.disabled = false; if (window.flashStatus) window.flashStatus((r && r.reason) || '批准失败'); }
+    };
+    const rp = d.querySelector('.plan-replan');
+    if (rp) rp.onclick = () => {
+      const input = document.getElementById('followup-input');
+      if (input) { input.value = '请重新规划：'; input.focus(); }
+    };
     return { node: d };
   }
   if (en.kind === 'approval') {

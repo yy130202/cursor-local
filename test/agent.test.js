@@ -575,3 +575,55 @@ test('tool_result 事件携带执行耗时 ms（非负整数）', async () => {
   const logged = agent.log.find((e) => e.kind === 'tool_result');
   assert.equal(typeof logged.ms, 'number');
 });
+
+/* ---- plan-execute 双阶段（阶段3新增） ---- */
+test('plan 模式产出计划事件并停住等待批准（waiting）', async () => {
+  const h = createAgentHarness({
+    fetch: responses([sse({ content: '1. 读取 src/utils.js\n2. 抽取 formatDate\n3. 补测试\n\n涉及文件：src/utils.js\n风险：无' })], [])
+  });
+  const agent = h.makeAgent({ mode: 'plan' });
+  const planEv = watchEvent(h, (e) => e.kind === 'plan');
+  await h.api.runAgent(agent);
+  const ev = await planEv;
+  assert.match(ev.text, /formatDate/);
+  assert.equal(agent.status, 'waiting');
+  assert.equal(agent.mode, 'plan', '批准前应保持 plan 模式');
+  assert.match(agent.plan, /1\. 读取/);
+});
+
+test('批准计划后切 craft 并续跑执行', async () => {
+  const h = createAgentHarness({
+    handlers: () => ({ write_file: async () => 'ok' }),
+    fetch: responses(
+      [sse({ content: '1. 写文件\n涉及文件：a.txt' })],                      // plan 轮
+      [sse(toolsDelta([['write_file', { path: 'a.txt', content: 'x' }]]))],  // 执行轮
+      [sse({ content: '已完成。' })]                                         // 收尾
+    )
+  });
+  const agent = h.makeAgent({ mode: 'plan' });
+  await h.api.runAgent(agent);
+  assert.equal(agent.status, 'waiting');
+
+  // 批准 → 切 craft 续跑；等 status done 事件确认收尾
+  const done = watchEvent(h, (e) => e.kind === 'status' && e.status === 'done');
+  const r = h.ipc.invoke('agent:approvePlan', { id: agent.id });
+  assert.equal(r.ok, true);
+  await done;
+  assert.equal(agent.mode, 'craft', '批准后应切到 craft');
+  assert.equal(agent.status, 'done');
+  // 批准信息进入消息历史（执行轮模型能看到"计划已批准"）
+  assert.ok(agent.messages.some((m) => m.role === 'user' && /计划已批准/.test(m.content || '')));
+  // 工具确实被执行
+  assert.ok(agent.log.some((e) => e.kind === 'tool_result'));
+});
+
+test('批准计划对非 waiting 会话返回失败', () => {
+  const h = createAgentHarness();
+  const agent = h.makeAgent();
+  const r = h.ipc.invoke('agent:approvePlan', { id: agent.id });
+  assert.equal(r.ok, false);
+  assert.match(r.reason, /没有待批准的计划/);
+  const missing = h.ipc.invoke('agent:approvePlan', { id: 'no-such-agent' });
+  assert.equal(missing.ok, false);
+  assert.match(missing.reason, /会话不存在/);
+});

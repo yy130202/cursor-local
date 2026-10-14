@@ -23,6 +23,7 @@ contextBridge.exposeInMainWorld('api', {
   },
   quit: () => ipcRenderer.invoke('app:quit'),
   exportTrajectory: (id, format) => ipcRenderer.invoke('session:exportTrajectory', { id, format }),
+  approvePlan: (id) => ipcRenderer.invoke('agent:approvePlan', { id }),
   readFile: (p) => ipcRenderer.invoke('fs:readFile', p),
   writeFile: (p, c) => ipcRenderer.invoke('fs:writeFile', p, c),
   createFile: (p) => ipcRenderer.invoke('fs:createFile', p),

@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-10-14T22:37:24.279Z",
-  "commit": "d7c01d55ad213deb3a03f70de002d57409f87296",
+  "generatedAt": "2026-10-14T22:47:25.581Z",
+  "commit": "29cc30aaef0784626ec46c5a24ab7bb83e4a9c74",
   "tag": "baseline-ai-buddy",
   "configDigest": {
     "version": "0.1.0",
@@ -20,10 +20,10 @@
   },
   "metrics": {
     "artifactCount": 45,
-    "totalBytes": 615533
+    "totalBytes": 621671
   },
   "missing": [],
-  "setDigest": "38f24b40221ab0123ab585e27102698c16fb6e4e2a1cb79a6577ceb94283e90f",
+  "setDigest": "b3a35fdf8d32724f59c1ab8d1ae6c66aecda161901b6bbf4e0d80e0050d9dcbc",
   "artifacts": [
     {
       "path": "main.js",
@@ -37,8 +37,8 @@
     },
     {
       "path": "modules/agent.js",
-      "sha256": "b88baa02fe62a99acc98c858aa7ebf3ba45c02b047a0e77a689a6b41604bdd5d",
-      "bytes": 30956
+      "sha256": "ccf9b4f04078a48dac202adbfc0b2f90eee15c5b4edad38cd34cae18a7ad0a13",
+      "bytes": 33064
     },
     {
       "path": "modules/agent/tools.js",
@@ -102,13 +102,13 @@
     },
     {
       "path": "preload.js",
-      "sha256": "a7fd7f3f4434ca6db17a0c6c1cb96cbce59a85b1f4c2afd858e4b9bab76f3066",
-      "bytes": 6345
+      "sha256": "5d3776c238f00612018126e258f7e6b4a7f7f0f6111db28b44bca735a461235e",
+      "bytes": 6418
     },
     {
       "path": "renderer/agents.js",
-      "sha256": "a2161d70435316ad758cae14604808b21d7755093479853b4dc48ec979379fa1",
-      "bytes": 46368
+      "sha256": "fb54ff133eb16dc630b7f556e0702ef6118d0864120efe142acf58dffcc3dc2f",
+      "bytes": 48198
     },
     {
       "path": "renderer/ai-panel.js",
@@ -227,8 +227,8 @@
     },
     {
       "path": "renderer/style.css",
-      "sha256": "11a2c2316805d2a83950b2d5454401731965688765d053b993a3ca7b77f88d24",
-      "bytes": 124704
+      "sha256": "7880938165e65f9042b2e4e168c256c00aeb0aaac44378bc21ebfdc87f9bf606",
+      "bytes": 126831
     },
     {
       "path": "renderer/terminal.js",

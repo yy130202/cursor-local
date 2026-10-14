@@ -431,7 +431,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
       '请自主完成用户任务：先查看相关文件结构，再读取/修改代码，必要时运行命令验证。',
       '【重要】每次调用工具前后都必须用简体中文给用户文字反馈：调用前说明意图，调用后总结结果与发现。绝对不要只甩出工具调用而不给任何文字说明。',
       '任务收尾时必须给出总结：做了什么、发现了什么、结论与建议的下一步。写文件时必须给出完整最终内容。',
-      agent.mode === 'plan' ? '【计划模式】只输出实施计划（步骤、涉及文件、风险点），不要调用任何工具、不要修改任何文件。' : '',
+      agent.mode === 'plan' ? '【计划模式】只输出实施计划，不要调用任何工具、不要修改任何文件。计划必须包含：① 编号的实施步骤（每步一句话说明做什么）；② 涉及的文件路径清单；③ 风险点与回滚方式。输出后等待用户批准，批准才会进入执行。' : '',
       agent.mode === 'ask' ? '【问答模式】只回答问题与解释代码，不要调用修改类工具。' : ''
     ].filter(Boolean);
     // 注入记忆与规则（跨会话共享的用户偏好 / 项目规则）
@@ -487,6 +487,15 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
             agent.__askedSummary = true;
             agent.messages.push({ role: 'user', content: '请用简体中文简要总结：你刚才做了什么、发现了什么、结论是什么、建议的下一步是什么。' });
             continue;
+          }
+          // 计划模式：产出计划并停住，等用户批准后由 agent:approvePlan 切 craft 续跑
+          if (agent.mode === 'plan' && content && content.trim() && !agent.__planApproved) {
+            agent.plan = content;
+            agent.status = 'waiting';
+            emitAgent(agent, 'plan', { text: content });
+            emitAgent(agent, 'status', { status: 'waiting' });
+            addLog('info', 'agent', `计划已生成，等待用户批准：${agent.id}`);
+            return;
           }
           agent.status = 'done';
           emitAgent(agent, 'status', { status: 'done' });
@@ -580,6 +589,12 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
       return true;
     });
 
+    ipcMain.handle('agent:approvePlan', (_e, payload) => {
+      const id = typeof payload === 'string' ? payload : payload && payload.id;
+      const r = approvePlan(id);
+      if (!r.ok) addLog('warning', 'agent', `批准计划失败：${r.reason}（${id}）`);
+      return r;
+    });
     ipcMain.handle('agent:followup', (_e, { id, task }) => {
       const a = agents.get(id);
       if (!a) return { ok: false, error: 'Agent 不存在' };
@@ -596,7 +611,30 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
     });
   }
 
-  return { register, executeTool, runAgent, killChildren, emitAgent, clearPendingApprovals };
+  /**
+   * 批准计划（plan-execute 双阶段的第二阶段）：
+   * 校验会话存在且处于 waiting → 切 craft 模式 → 注入「计划已批准」→ 续跑 agentLoop。
+   */
+  function approvePlan(id) {
+    const agent = agents.get(id);
+    if (!agent) return { ok: false, reason: '会话不存在' };
+    if (agent.status !== 'waiting' || !agent.plan) return { ok: false, reason: '当前没有待批准的计划' };
+    agent.__planApproved = true;
+    agent.mode = 'craft';
+    agent.messages.push({ role: 'user', content: '计划已批准，请严格按照以下计划执行：\n\n' + agent.plan });
+    agent.status = 'running';
+    emitAgent(agent, 'user_msg', { text: '计划已批准，请按计划执行。' });
+    emitAgent(agent, 'status', { status: 'running' });
+    addLog('info', 'agent', `计划已批准，进入执行：${id}`);
+    const cfg = loadConfig();
+    agentLoop(agent, cfg).catch((err) => {
+      agent.status = 'error';
+      emitAgent(agent, 'error', { text: String(err && err.message || err) });
+    });
+    return { ok: true };
+  }
+
+  return { register, executeTool, runAgent, killChildren, emitAgent, clearPendingApprovals, approvePlan };
 }
 
 module.exports = { createAgentModule };

@@ -2,25 +2,29 @@
 
 复刻 Cursor 核心体验的**本地桌面 AI 编程工具**，基于 Electron + Monaco Editor（VS Code 官方编辑器内核），内置可在本地自主读文件、改代码、跑终端命令的并行 AI Agent。
 
+许可证：MIT（见 [LICENSE](./LICENSE)）。
+
 ## 功能
 
 ### Editor Window（传统编辑器）
 - 左侧文件树（懒加载、目录展开/收起、按文件类型着色图标）
-- 多标签页（打开/切换/关闭、未保存 ● 标记、Ctrl+S 保存）
+- 多标签页（打开/切换/关闭、拖拽排序、未保存 ● 标记、Ctrl+S 保存）
 - Monaco 语法高亮编辑器（自动识别 JS/TS/Python/HTML/CSS/JSON/Markdown 等）
-- Git 集成：文件树状态标记、gutter 变更标记、侧栏提交面板、逐行 diff 对比
+- Git 集成：文件树状态标记、gutter 变更标记、侧栏提交面板、并排 diff 对比
+- 全局搜索（分块并发 grep）、命令面板、@ 文件引用、Markdown 实时预览
+- 非文本文件查看器：图片 / 音频 / 视频 / 压缩包内容列表
 
 ### Agents Window（Agent 优先工作台）
 - 新建 Agent 任务，Agent 在**当前工作目录**自主工作
 - 支持**多个 Agent 并行**运行，侧栏切换查看
-- 完整展示 Agent 每一步：思考说明、工具调用、文件变更、执行结果
+- 完整展示 Agent 每一步：思考说明、推理流、工具调用、文件变更、执行结果
 - 变更卡片可一键「撤销改动」，逐字节还原原始文件
-- 历史会话按时间分组，支持导出 Markdown
+- 历史会话按时间分组，支持搜索、导出 Markdown、删除
 
 **内置 9 个工具**：`list_dir` 查目录、`list_tree` 目录树、`read_file` 读文件、`write_file` 写文件、`delete_file` 删除、`move_file` 移动、`search_files` 内容搜索、`get_file_info` 文件信息、`run_command` 执行终端命令。
 
-### 两种窗口随时切换
-顶部 `◧ Editor` / `🤖 Agents` 一键切换。
+### 两种工作模式
+顶部 `◧ Editor` / `🤖 Agents` 一键切换（AI 面板显隐）。
 
 ## 运行
 
@@ -40,52 +44,80 @@ npm start
 
 - **Base URL**：`https://api.deepseek.com/v1`
 - **API Key**：`sk-你的真实Key`
-- **模型 ID**：`deepseek-flash`
+- **模型 ID**：`deepseek-flash`（`modules/config.js` 的默认值，可改为任意兼容模型）
 
-配置保存在本地 `%APPDATA%/cursor-local/config.json`，不会上传。API Key 经 Electron `safeStorage` 加密后落盘，不以明文存储。
+配置保存在本地 `%APPDATA%/cursor-local/config.json`，不会上传。API Key 经 Electron `safeStorage` 加密后落盘，不以明文存储（safeStorage 不可用时降级明文并打印告警）。
 
 > 接口遵循 OpenAI 兼容协议，可替换为任意兼容服务（DeepSeek、Moonshot、通义、OpenAI 等），只需改 Base URL / Key / 模型。
 
 ## 目录结构
 
 ```
-cursor-local-main/
-├── main.js              # 主进程入口：模块组装、窗口创建、IPC 注册
-├── preload.js           # contextBridge 安全暴露 API（渲染层无 Node 能力）
+cursor-local/
+├── main.js                # 主进程入口：模块组装、窗口创建、IPC 注册
+├── preload.js             # contextBridge 安全暴露 API（渲染层无 Node 能力）
 ├── main/
-│   └── testing.js       # 开发期自动化：截图 / 回归 / 诊断 / 性能实测
-├── modules/             # 业务模块（单一职责，均以工厂函数 + 依赖注入组织）
-│   ├── agent.js         #   Agent 引擎：工具循环、危险命令拦截、SSE 流式解析
-│   ├── agent/tools.js   #   9 个工具实现（依赖全部外部注入，便于隔离测试）
-│   ├── config.js        #   配置持久化 + API Key 加密
-│   ├── fs.js            #   文件读写、归档、并发 grep
-│   ├── git.js           #   Git 状态/暂存/提交，1200ms TTL 缓存
-│   ├── log.js           #   日志模块（debug/info/warning/error，上限 1500 条）
-│   ├── memory.js        #   记忆与规则（global / project 两级作用域）
-│   ├── session.js       #   会话持久化、导出、文件回滚
-│   ├── terminal.js      #   终端实例管理
-│   └── ai.js            #   LLM 对话、补全、内联编辑
+│   └── testing.js         # 开发期自动化：截图 / 回归 / 诊断 / 性能实测
+├── modules/               # 业务模块（单一职责，均以工厂函数 + 依赖注入组织）
+│   ├── agent.js           #   Agent 引擎：工具循环、沙箱、审批流、SSE 流式解析
+│   ├── agent/tools.js     #   9 个工具实现（依赖全部外部注入，便于隔离测试）
+│   ├── ai.js              #   LLM 对话、补全、选区编辑、内联改写、诊断
+│   ├── auth.js            #   用户系统：注册 / 登录 / 会话
+│   ├── config.js          #   配置持久化 + API Key 加密
+│   ├── fs.js              #   文件读写、归档列表、并发 grep
+│   ├── git.js             #   Git 状态/diff/暂存/提交/分支，1200ms TTL 缓存
+│   ├── log.js             #   日志模块（debug/info/warning/error，上限 1500 条）
+│   ├── memory.js          #   记忆与规则（global / project 两级作用域）
+│   ├── session.js         #   会话持久化、导出、文件回滚
+│   └── terminal.js        #   终端实例管理（xterm 双向流）
 ├── store/
-│   └── user-store.js    # 用户存储：scrypt 加盐哈希、配置加密
-├── renderer/            # 渲染层（core.js 提供 escapeHtml 等公共能力）
-│   ├── agents.js        #   Agents 工作台：增量 DOM 渲染 + 行级 LCS diff
-│   ├── editor.js        #   Editor 窗口：文件树 + 标签页 + Monaco
-│   └── editor/
-│       ├── filetree.js  #     文件树：懒加载 + Git 标记（Set O(1) 查询）
-│       └── preview.js   #     媒体预览：图片/音频/视频
+│   ├── user-store.js      #   用户存储：scrypt 加盐哈希、配置加密
+│   └── billing.js         #   计费结构占位（BILLING_ENABLED=false，未启用）
+├── renderer/              # 渲染层（core.js 零副作用，最先加载）
+│   ├── index.html         #   主窗口结构
+│   ├── style.css          #   全局样式与主题变量
+│   ├── renderer.js        #   顶层逻辑：视图切换、设置面板、状态栏、启动
+│   ├── core.js            #   escapeHtml 等公共纯函数（统一入口）
+│   ├── agents.js          #   Agents 工作台：增量 DOM 渲染 + 行级 LCS diff
+│   ├── editor.js          #   Editor 窗口：文件树 + 标签页 + Monaco
+│   ├── editor/
+│   │   ├── filetree.js    #     文件树：懒加载 + Git 标记
+│   │   ├── breadcrumb.js  #     面包屑导航
+│   │   └── preview.js     #     Markdown 预览 + 媒体预览
+│   ├── ai-panel.js        #   AI 搭子面板（显隐管理）
+│   ├── inline.js          #   内联改写浮层
+│   ├── diagnose.js        #   AI 代码诊断面板
+│   ├── git.js             #   Git 侧栏：更改列表、diff、分支、历史
+│   ├── terminal.js        #   终端面板（xterm 前端）
+│   ├── palette.js         #   命令面板
+│   ├── keymap.js          #   快捷键注册与录制
+│   ├── mention.js         #   @ 文件引用注入
+│   ├── menubar.js         #   菜单栏
+│   ├── theme.js           #   主题（预设 / 自定义 / 亮暗切换）
+│   ├── island.js          #   状态胶囊
+│   ├── log.js             #   日志查看面板
+│   ├── auth.js            #   登录 / 注册 UI
+│   ├── lockscreen.js      #   启动锁屏
+│   ├── consent.js         #   协议同意弹窗
+│   ├── model.js           #   模型名展示映射
+│   ├── modes.js           #   Agent 模式（craft / plan / ask）
+│   └── legal.html         #   法律条款独立窗口
 ├── scripts/
-│   ├── release-guard.js # 发布防护引擎：基线/备份/回滚/产物/上线校验
+│   ├── release-guard.js   # 发布防护引擎：基线/备份/回滚/产物/上线校验
+│   ├── smoke-and-gates.js # 旧版门禁（已被 scripts/gates/ 取代）
 │   ├── lib/
-│   │   └── verify-harness.js   # 可断言测试地基（证据强制 + 空壳审计）
-│   └── gates/           # 验证体系
+│   │   └── verify-harness.js  # 可断言测试地基（证据强制 + 空壳审计）
+│   └── gates/             # 验证体系
 │       ├── smoke-suite.js      #   119 项全维烟测
 │       ├── static-compliance.js#   门禁 001-040 源码合规
 │       ├── perf-consistency.js #   门禁 041-069 性能与数据一致性
 │       ├── release-ops.js      #   门禁 070-089 发布防护
 │       ├── build-matrix.js     #   验收矩阵生成
 │       └── index.js            #   门禁编排入口
-├── test/                # 237 项单元测试
-├── outputs/             # 验证产物（基线清单、门禁结果、验收矩阵）
+├── test/                  # 237 项单元测试
+│   ├── helpers/           #   测试地基（harness / agent-harness）
+│   └── *.test.js          #   agent、agent-tools、git、fs-grep、session…
+├── outputs/               # 验证产物（基线清单、门禁结果、验收矩阵）
 └── start.bat
 ```
 
@@ -110,11 +142,12 @@ cursor-local-main/
 
 ```bash
 npm test                    # 237 项单元测试
+npm run test:coverage       # 核心模块真实行覆盖率
 npm run verify:smoke        # 119 项全维烟测
-npm run verify:gates        # 89 项质量门禁（含三态汇总与失败明细）
+npm run verify:gates        # 90 项质量门禁（含三态汇总与失败明细）
 npm run verify:matrix       # 由门禁真实结果渲染验收矩阵
 
-npm run release:baseline    # 生成 SHA-256 基线清单（44 个核心文件 + 自签摘要）
+npm run release:baseline    # 生成 SHA-256 基线清单
 npm run release:verify      # 校验工作区与基线是否一致
 npm run release:artifact    # 生成产物清单（逐文件 digest + 集合摘要）
 npm run release:dryrun      # 上线前全量预演：基线→备份→回滚演练→上线后校验
@@ -122,16 +155,44 @@ npm run release:deployed    # 上线后校验：产物 digest、配置摘要、�
 npm run release:rollback    # 沙箱无损回滚演练
 ```
 
-### 当前状态
+### 当前状态（最近一次实测）
 
-- **单元测试**：237 / 237 通过
-- **全维烟测**：118 通过 / 0 失败 / 1 环境受限（119 项）
-- **质量门禁**：86 通过 / 2 失败 / 1 环境受限（89 项，通过率 97.73%）
+| 验证项 | 结果 |
+| --- | --- |
+| 单元测试 | **237 / 237 通过**（2.7s） |
+| 核心模块行覆盖率 | **92.35%**（分支 95.42%、函数 98.15%） |
+| 全维烟测 | 117 通过 / 1 失败 / 1 环境受限（119 项） |
+| 质量门禁 | 88 通过 / 2 失败 / 0 环境受限（90 项，通过率 97.78%） |
 
-**两条已知失败项**（均为真实问题，非工具误报）：
+核心模块覆盖率明细：
 
-- **无许可证声明**：LICENSE 文件、`package.json` license 字段、文档声明三者全缺，分发存在法律风险。
-- **核心模块真实覆盖率 60.52%**，远低于早期声称的 98%；其中 `modules/agent/tools.js` 仅 30.97%。
+| 文件 | 行 | 分支 | 函数 |
+| --- | --- | --- | --- |
+| `modules/agent.js` | 98.17% | 93.10% | 100% |
+| `modules/agent/tools.js` | 100% | 98.72% | 100% |
+| `modules/config.js` | 100% | 100% | 100% |
+| `modules/session.js` | 57.87% | 98.18% | 87.50% |
+| `store/user-store.js` | 100% | 100% | 100% |
+
+**当前 2 项失败（GATE-069 / GATE-072）与 1 项烟测失败（SMK-044）是同一个原因**：
+代码改动后未重跑 `npm run release:baseline`，基线清单与工作区哈希不一致。
+这不是代码缺陷，但会让基线校验失去预警意义 —— 修复方式见下方「基线维护工作流」。
+
+唯一 1 项环境受限（SMK-025）：验证 API Key 加密需要 Electron `safeStorage`（仅主进程可用），
+在纯 Node 测试环境无法执行，故记 `SKIPPED_ENV` 而非通过。
+
+### 基线维护工作流
+
+基线清单（`outputs/release-baseline.json`）是「工作区未被意外篡改」的参照物。
+**每次完成一批源码改动并跑通单测后，必须重新固化基线**，否则基线校验会持续报错并失去意义：
+
+```bash
+npm test && npm run release:baseline   # 1. 确认改动是预期的、单测通过
+npm run verify:gates                   # 2. 重新校验，确认失败项归零
+```
+
+判断标准：**基线失败项只应在「刚改完代码、尚未固化」的窗口期出现**。
+若在稳定状态下仍报基线不一致，说明有未预期的文件被修改，需要排查。
 
 ### 验收矩阵
 
@@ -155,11 +216,18 @@ Agent 工作台采用增量 DOM 渲染（按渲染签名 `sigOf` 复用节点）
 
 - **渲染进程零 Node 能力**：`contextIsolation: true`、`nodeIntegration: false`，preload 仅经 `contextBridge` 白名单暴露
 - **HTML 转义统一入口**：`escapeHtml` 覆盖 `& < > " '` 五个敏感字符，属性插值一律转义
-- **链接协议白名单**：Markdown 链接仅放行 `http/https/mailto`，`javascript:` 等一律降级为 `#`
-- **路径越界拦截**：Agent 工具的路径操作统一经工作区守卫，拒绝 `../` 穿越与外部符号链接
+- **链接协议白名单**：Markdown 链接仅放行 `http/https/mailto`，并先剔除 URL 中的控制字符（`javascript:` 及其 `\u0000` 变体一律降级为 `#`）
+- **路径越界拦截**：Agent 工具的路径操作统一经工作区守卫，先做词法判断、再用 `realpath` 解符号链接，拒绝 `../` 穿越与外部符号链接
 - **危险命令拦截**：受限档位拦截 `rm -rf`、`format`、`del /s /q` 等；完全访问档位仅拦毁灭性命令
-- **密码存储**：scrypt + 16 字节随机盐，同密码两次哈希不同
+- **权限三档**：自动审批 / 手动审批（敏感操作逐条确认）/ 完全访问
+- **密码存储**：scrypt + 16 字节随机盐 + `timingSafeEqual` 比对，同密码两次哈希不同
 - **密钥本地加密**：API Key 走 `safeStorage`，不落明文
+
+### 已知的信任边界限制
+
+Agent 侧工具受工作区沙箱约束；但同样能力经 preload 直接暴露的 IPC 通道（`fs:delete`、`session:delete` 等）
+**当前不做路径校验**，信任渲染层。这是有意的设计取舍，但在渲染层出现 XSS 或 preload 侧缺陷时会成为提权路径。
+后续应把 Agent 侧的 `assertRealInsideWorkspace` 复用到这些 IPC 通道上。
 
 ## 打包为独立 exe（可选）
 

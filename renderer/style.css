@@ -2454,3 +2454,42 @@ svg.lucide { color: #fff; }
   background: rgba(255, 255, 255, .06); border-radius: 4px; padding: 1px 5px;
   flex-shrink: 0;
 }
+
+/* ==================== 计划卡（plan-execute 第一阶段） ==================== */
+.plan-card { border-left: 2px solid var(--yellow, #cca700); }
+.plan-card .head { display: flex; align-items: center; gap: 8px; }
+.plan-card .tag.plan-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px;
+  background: rgba(204, 167, 0, .16); color: #e3c26a;
+}
+.plan-card .tag.plan-tag svg.lucide { width: 12px; height: 12px; }
+.plan-card .plan-state {
+  font-size: 10.5px; font-family: Consolas, monospace;
+  color: var(--text-dim); background: rgba(255, 255, 255, .06);
+  padding: 1px 7px; border-radius: 4px;
+}
+.plan-card.resolved .plan-state { color: #7ee787; background: rgba(126, 231, 135, .12); }
+.plan-card .plan-body {
+  margin-top: 10px; padding: 11px 13px; border-radius: 8px;
+  background: rgba(255, 255, 255, .032); border: 1px solid var(--glass-border);
+  font-size: 12px; line-height: 1.75; white-space: normal;
+}
+.plan-card .plan-body .md-h { font-weight: 700; color: #fff; margin: 8px 0 4px; }
+.plan-card .plan-body .md-li { padding-left: 16px; position: relative; }
+.plan-card .plan-body code.md-inline {
+  font-family: Consolas, monospace; font-size: 11px;
+  background: rgba(255, 255, 255, .08); padding: 0 4px; border-radius: 3px;
+}
+.plan-card .plan-actions { display: flex; gap: 8px; margin-top: 11px; }
+.plan-card .plan-actions .action {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11.5px; font-weight: 600; padding: 5px 12px; border-radius: 7px;
+  cursor: pointer; border: 1px solid transparent; font-family: inherit;
+}
+.plan-card .plan-actions .action svg.lucide { width: 12px; height: 12px; }
+.plan-card .plan-approve { background: rgba(255, 255, 255, .92); color: #111; }
+.plan-card .plan-approve:hover:not(:disabled) { background: #fff; }
+.plan-card .plan-approve:disabled { opacity: .5; cursor: default; }
+.plan-card .plan-replan { background: transparent; border-color: var(--glass-border); color: var(--text-dim); }
+.plan-card .plan-replan:hover { color: var(--text); border-color: var(--text-dim); }
