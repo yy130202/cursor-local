@@ -2,15 +2,14 @@
 (function () {
   /* ---- 命令注册表（分组 + 快捷键提示） ---- */
   const commands = [
-    { id: 'home', title: '回到主页', icon: 'home', group: '导航', key: '', action: () => switchMode('home') },
-    { id: 'editor', title: '切换到编辑器', icon: 'file-code-2', group: '导航', key: '', action: () => switchMode('editor') },
-    { id: 'agents', title: '切换到 Agents 工作台', icon: 'bot', group: '导航', key: '', action: () => switchMode('agents') },
+    { id: 'ai-panel', title: 'AI 搭子面板', icon: 'bot', group: '导航', key: 'Ctrl+Alt+B', action: () => { if (typeof window.__focusAiPanel === 'function') window.__focusAiPanel(); } },
+    { id: 'editor-full', title: '编辑器全宽（收起 AI 面板）', icon: 'file-code-2', group: '导航', key: '', action: () => switchMode('editor') },
     { id: 'open-folder', title: '打开文件夹', icon: 'folder-open', group: '文件', key: '', action: () => openFolder() },
     { id: 'search', title: '全局搜索', icon: 'search', group: '文件', key: 'Ctrl+Shift+F', action: () => openGlobalSearch() },
     { id: 'save', title: '保存当前文件', icon: 'save', group: '文件', key: 'Ctrl+S', action: () => { if (typeof saveActive === 'function') saveActive(); } },
     { id: 'inline', title: '内联改写选中代码', icon: 'message-square', group: 'AI', key: 'Ctrl+I', action: () => window.openInlineChat && window.openInlineChat() },
     { id: 'diagnose', title: 'AI 代码诊断', icon: 'stethoscope', group: 'AI', key: 'Ctrl+Alt+D', action: () => window.openDiagnose && window.openDiagnose() },
-    { id: 'new-agent', title: '新建 Agent 任务', icon: 'plus', group: 'Agent', key: '', action: () => { switchMode('agents'); const i = document.getElementById('followup-input'); if (i) i.focus(); } },
+    { id: 'new-agent', title: '新建 AI 任务', icon: 'plus', group: 'AI 搭子', key: '', action: () => { if (typeof window.__focusAiPanel === 'function') window.__focusAiPanel(); const i = document.getElementById('followup-input'); if (i) i.focus(); } },
     { id: 'git', title: '打开 Git 面板', icon: 'git-branch', group: '视图', key: '', action: () => window.openGitPanel && window.openGitPanel() },
     { id: 'terminal', title: '打开终端', icon: 'terminal', group: '视图', key: '', action: () => window.openTerminal && window.openTerminal() },
     { id: 'theme', title: '切换下一个主题', icon: 'palette', group: '视图', key: '', action: () => cycleTheme() },

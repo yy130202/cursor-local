@@ -9,7 +9,7 @@
 
   function updateTexts() {
     const m = MODES.find((x) => x.id === window.__agentMode) || MODES[0];
-    ['home-mode-text', 'agents-mode-text'].forEach((sid) => {
+    ['agents-mode-text'].forEach((sid) => {
       const el = document.getElementById(sid);
       if (el) el.textContent = m.name;
     });
@@ -44,7 +44,7 @@
   }
 
   (function bind() {
-    ['home-mode-chip', 'agents-mode-chip'].forEach((id) => {
+    ['agents-mode-chip'].forEach((id) => {
       const el = document.getElementById(id);
       if (el) el.onclick = (e) => { e.stopPropagation(); toggleMenu(el); };
     });

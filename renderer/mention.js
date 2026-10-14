@@ -113,7 +113,7 @@
     if (panel && !panel.classList.contains('hidden') && !panel.contains(e.target) && e.target !== activeInput) close();
   });
 
-  (function init() { bindInput('followup-input'); bindInput('home-task-input'); })();
+  (function init() { bindInput('followup-input'); })();
 
   // 发送前提取 @filepath，转为上下文注入
   window.extractMentions = function (text) {

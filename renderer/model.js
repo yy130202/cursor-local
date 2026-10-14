@@ -24,12 +24,10 @@
   async function applyModelText() {
     const id = await currentModel();
     const name = window.modelDisplayName(id);
-    ['home-model-text', 'agents-model-text'].forEach((sid) => {
+    ['agents-model-text'].forEach((sid) => {
       const el = document.getElementById(sid);
       if (el) el.textContent = name;
     });
-    const sm = document.getElementById('stat-model');
-    if (sm) sm.textContent = name;
   }
 
   async function toggleModelMenu(anchor) {
@@ -76,9 +74,7 @@
   }
 
   (function bind() {
-    const hc = document.getElementById('home-model-chip');
     const ac = document.getElementById('agents-model-chip');
-    if (hc) hc.onclick = (e) => { e.stopPropagation(); toggleModelMenu(hc); };
     if (ac) ac.onclick = (e) => { e.stopPropagation(); toggleModelMenu(ac); };
     applyModelText();
   })();

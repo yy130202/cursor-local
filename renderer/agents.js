@@ -840,8 +840,9 @@ window.__debugAgents = function () {
 };
 
 window.__switchToAgents = function () {
-  document.getElementById('mode-agents').click();
+  if (typeof window.__focusAiPanel === 'function') window.__focusAiPanel();
 };
+window.__focusAiPanel = window.__focusAiPanel || window.__switchToAgents;
 
 window.__demoAgentEntry = function () {
   const id = 'demo-agent';

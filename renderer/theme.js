@@ -219,7 +219,6 @@ function bindThemeUI() {
     }
   };
   bindColor('theme-custom-color');
-  bindColor('home-theme-color');
   // 点击外部关闭
   document.addEventListener('click', () => {
     document.getElementById('theme-panel').classList.add('hidden');
@@ -238,7 +237,7 @@ async function initTheme() {
   renderThemeCards();
   markActiveCard();
   if (currentTheme.custom) {
-    ['theme-custom-color', 'home-theme-color'].forEach((id) => {
+    ['theme-custom-color'].forEach((id) => {
       const el = document.getElementById(id);
       if (el) el.value = currentTheme.custom;
     });

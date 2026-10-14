@@ -64,8 +64,6 @@ function createTesting({ winRef, agents, rootDir, config, agentApi, sessionApi, 
       };
       return JSON.stringify({
         swatch: cs('.swatch-block', ['display', 'width', 'height']),
-        hero: cs('.hero-banner', ['height']),
-        heroLeft: cs('.hero-left', ['height'])
       });
     })()`);
     console.log('[diag]', r);
@@ -94,20 +92,24 @@ function createTesting({ winRef, agents, rootDir, config, agentApi, sessionApi, 
   try {
     await sleep(2500); // 等待 monaco 加载
 
-    // 1. 主页
+    // 1. 编辑器（唯一视图）+ AI 搭子面板结构断言
     const homeDbg = await winRef().webContents.executeJavaScript(`(async () => {
-      const hc = document.getElementById('home-view').className;
       const bootDebug = window.__bootDebug || null;
       const bootError = window.__bootError || null;
-      if (typeof switchMode === 'function') switchMode('home');
+      const panel = document.getElementById('ai-panel');
+      // 截图前先穿过锁屏（正常用户路径）
+      const ls = document.getElementById('lockscreen');
+      if (ls) ls.click();
+      await new Promise((r) => setTimeout(r, 600));
       return JSON.stringify({
-        homeClassBefore: hc,
-        homeActiveNow: document.getElementById('home-view').classList.contains('active'),
         bootDebug, bootError,
+        editorActive: document.getElementById('editor-view').classList.contains('active'),
+        aiPanelExists: !!panel,
+        aiPanelCollapsed: panel ? panel.classList.contains('ai-collapsed') : null,
+        hasFiletree: !!document.getElementById('filetree-panel'),
+        hasTranscript: !!document.getElementById('transcript'),
+        hasComposer: !!document.getElementById('agents-composer'),
         themeCards: document.querySelectorAll('.theme-card').length,
-        orbs: document.querySelectorAll('.orb').length,
-        recentCards: document.querySelectorAll('.recent-card').length,
-        composer: !!document.getElementById('home-composer'),
         snavItems: document.querySelectorAll('.snav-item').length,
         accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
         lucideIcons: document.querySelectorAll('svg.lucide').length
@@ -159,7 +161,7 @@ function createTesting({ winRef, agents, rootDir, config, agentApi, sessionApi, 
     console.log('[debug theme]', themeTest);
 
     // 3. Agents
-    await winRef().webContents.executeJavaScript(`switchMode('agents'); window.__demoAgentEntry();`);
+    await winRef().webContents.executeJavaScript(`if (window.__focusAiPanel) window.__focusAiPanel(); window.__demoAgentEntry();`);
     await sleep(800);
     const dbg2 = await winRef().webContents.executeJavaScript('JSON.stringify(window.__debugAgents())');
     console.log('[debug agents]', dbg2);
@@ -279,7 +281,7 @@ function createTesting({ winRef, agents, rootDir, config, agentApi, sessionApi, 
       return JSON.stringify({ light, dark });
     })()`);
     console.log('[debug lightmode]', lightTest);
-    await winRef().webContents.executeJavaScript('switchMode("home"); window.setMode("light")');
+    await winRef().webContents.executeJavaScript('window.setMode("light")');
     await sleep(400);
     await captureTo(path.join(shotDir, '04-light.png'));
     await winRef().webContents.executeJavaScript('window.setMode("dark")');
@@ -448,7 +450,7 @@ process.on('uncaughtException', (e) => console.error('[uncaughtException]', e));
       await sleep(2600);
       // 切到 Agents 视图
       await winRef().webContents.executeJavaScript(
-        `(() => { const b = document.getElementById('mode-agents'); if (b) b.click(); })()`
+        `(() => { if (window.__focusAiPanel) window.__focusAiPanel(); })()`
       );
       await sleep(700);
       const r = await winRef().webContents.executeJavaScript(`(async () => {

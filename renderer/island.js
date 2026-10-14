@@ -9,7 +9,7 @@
     el.className = 'island hidden';
     el.innerHTML = '<span class="island-dot"></span><span class="island-text"></span>';
     document.body.appendChild(el);
-    el.onclick = () => { if (typeof switchMode === 'function') switchMode('agents'); };
+    el.onclick = () => { if (typeof window.__focusAiPanel === 'function') window.__focusAiPanel(); };
     return el;
   }
 

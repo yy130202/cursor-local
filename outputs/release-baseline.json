@@ -1,10 +1,10 @@
 {
   "schemaVersion": "2.0.0",
-  "generatedAt": "2026-10-14T14:02:19.361Z",
+  "generatedAt": "2026-10-14T22:16:11.536Z",
   "project": "cursor-local",
   "version": "0.1.0",
-  "commit": "30cb498e32a2b6db8c1ebc8db8b028a93e5dcc59",
-  "tag": "",
+  "commit": "42e666db945becbe71d4465ef57e418d178e6e15",
+  "tag": "baseline-ai-buddy",
   "configDigest": {
     "version": "0.1.0",
     "lockSha256": "65b1b4a06a9283886155af27de4b80e529b952401af4fc3f382e0b05a5d77548",

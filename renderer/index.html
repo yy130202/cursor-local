@@ -15,17 +15,12 @@
       <span class="logo-mark"><i data-lucide="terminal"></i></span>
       <span class="logo-text">Cursor Local</span>
     </div>
-    <div class="mode-switch">
-      <button id="mode-home" title="主页"><i data-lucide="home"></i><span>Home</span></button>
-      <button id="mode-editor" title="传统代码编辑器"><i data-lucide="file-code-2"></i><span>Editor</span></button>
-      <button id="mode-agents" title="Agent 工作台"><i data-lucide="bot"></i><span>Agents</span></button>
-    </div>
     <div class="top-search" id="top-search" title="全局搜索（Ctrl+Shift+F）">
       <span class="ts-ico"><i data-lucide="search"></i></span>
       <input id="top-search-input" placeholder="搜索" spellcheck="false" readonly>
     </div>
     <div class="spacer"></div>
-    <button id="open-agents-btn" class="open-agents-btn" title="切换到 Agent 工作台"><i data-lucide="bot"></i><span>打开 Agents</span></button>
+    <button id="ai-toggle-btn" class="open-agents-btn" title="AI 搭子面板（Ctrl+Alt+B）"><i data-lucide="bot"></i><span>AI 搭子</span></button>
     <div id="workdir-label"></div>
     <button id="open-folder-btn" class="action icon-btn" title="打开文件夹"><i data-lucide="folder-open"></i></button>
     <button id="git-btn" class="action icon-btn" title="源代码管理（Git）"><i data-lucide="git-branch"></i></button>
@@ -42,129 +37,8 @@
   </header>
 
   <main>
-    <!-- Home Window（主页，Vape 产品页风格） -->
-    <section id="home-view" class="view active">
-      <div class="home-content">
-
-        <!-- 渐变 Hero 大卡片：左文右 UI 假窗 -->
-        <div class="hero-banner">
-          <div class="hero-left">
-            <div class="icon-tile on-accent"><i data-lucide="terminal"></i></div>
-            <h1>你 7×24 小时的<br>编码伙伴</h1>
-            <p class="hero-desc">Cursor Local 是运行在本地的 AI 编程 Agent：读写代码、执行命令、多任务并行，数据不出你的电脑。</p>
-            <ul class="check-list">
-              <li><span class="ck"><i data-lucide="check"></i></span>并行多 Agent，diff 审阅一键回滚</li>
-              <li><span class="ck"><i data-lucide="check"></i></span>本地安全沙箱，危险命令自动拦截</li>
-              <li><span class="ck"><i data-lucide="check"></i></span>流式输出，OpenAI 兼容任意模型</li>
-            </ul>
-            <button class="cta-btn" id="cta-start"><span>开始使用</span><i data-lucide="chevron-right"></i></button>
-          </div>
-          <div class="hero-right">
-            <div class="fake-window">
-              <div class="fw-bar"><span></span><span></span><span></span></div>
-              <div class="fw-line w55"></div>
-              <div class="fw-line w80 accent"></div>
-              <div class="fw-line w70"></div>
-              <div class="fw-line w40"></div>
-              <div class="fw-chips"><span class="fw-chip">Agent</span><span class="fw-chip ghost">diff ✓</span><span class="fw-chip ghost">沙箱</span></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 快捷操作卡片 -->
-        <div class="section-block">
-          <div class="section-head">
-            <div class="icon-tile"><i data-lucide="zap"></i></div>
-            <div><h2>快捷操作</h2><p>常用功能，一键直达</p></div>
-          </div>
-          <div class="quick-grid">
-            <div class="quick-card" id="qc-file"><div class="qc-icon"><i data-lucide="file-plus-2"></i></div><div class="qc-body"><div class="qc-title">新建文件</div><div class="qc-hint">Ctrl+N</div></div></div>
-            <div class="quick-card" id="qc-folder"><div class="qc-icon"><i data-lucide="folder-open"></i></div><div class="qc-body"><div class="qc-title">打开文件夹</div><div class="qc-hint">Ctrl+O</div></div></div>
-            <div class="quick-card" id="qc-terminal"><div class="qc-icon"><i data-lucide="square-terminal"></i></div><div class="qc-body"><div class="qc-title">新开终端</div><div class="qc-hint">Ctrl+`</div></div></div>
-            <div class="quick-card" id="qc-palette"><div class="qc-icon"><i data-lucide="command"></i></div><div class="qc-body"><div class="qc-title">命令面板</div><div class="qc-hint">Ctrl+P</div></div></div>
-          </div>
-        </div>
-
-        <!-- 主题：12 套渐变色卡 -->
-        <div class="section-block">
-          <div class="section-head">
-            <div class="icon-tile"><i data-lucide="palette"></i></div>
-            <div><h2>主题</h2><p>12 款渐变配色，一键切换全局强调色</p></div>
-            <input type="color" id="home-theme-color" class="mini-color" title="自定义颜色" value="#7c3aed">
-          </div>
-          <div class="theme-cards theme-grid" id="theme-cards"></div>
-        </div>
-
-        <!-- 特性 3 列卡片 -->
-        <div class="section-block">
-          <div class="section-head">
-            <div class="icon-tile"><i data-lucide="sparkles"></i></div>
-            <div><h2>更多能力</h2><p>为日常编码而生的完整工具链</p></div>
-          </div>
-          <div class="feature-grid">
-            <div class="feature-card">
-              <div class="feature-top"><div class="icon-tile"><i data-lucide="bot"></i></div><span class="fw-chip">Agent</span></div>
-              <h3>并行 Agent 工作台</h3>
-              <p>同时运行多个 Agent，各自读写代码、执行终端命令，流式输出全程可见，还能追加后续任务续跑。</p>
-              <div class="mini-preview" aria-hidden="true">
-                <div class="mp-line w40 accent"></div>
-                <div class="mp-line w90"></div>
-                <div class="mp-line w70"></div>
-                <div class="mp-line w50"></div>
-              </div>
-              <a class="learn-more" id="lm-agents"><span>进入工作台</span><i data-lucide="chevron-right"></i></a>
-            </div>
-            <div class="feature-card">
-              <div class="feature-top"><div class="icon-tile pink"><i data-lucide="git-compare"></i></div><span class="fw-chip pink">diff</span></div>
-              <h3>变更审阅与回滚</h3>
-              <p>每次写文件自动生成行级 diff，新增绿、删除红，看清楚每一行改动，一键撤销任何变更。</p>
-              <a class="learn-more" id="lm-agents2"><span>查看变更</span><i data-lucide="chevron-right"></i></a>
-            </div>
-            <div class="feature-card">
-              <div class="feature-top"><div class="icon-tile"><i data-lucide="shield-check"></i></div><span class="fw-chip ghost">sandbox</span></div>
-              <h3>本地安全沙箱</h3>
-              <p>文件访问锁定在工作目录内，危险命令自动拦截，API Key 加密存储，数据完全留在本机。</p>
-              <a class="learn-more" id="lm-editor"><span>打开编辑器</span><i data-lucide="chevron-right"></i></a>
-            </div>
-          </div>
-        </div>
-
-        <!-- 统计概览：大数字 + 每日提示 -->
-        <div class="section-block">
-          <div class="stat-grid">
-            <div class="stat-card"><div class="stat-num" id="stat-files">—</div><div class="stat-label"><i data-lucide="files"></i>项目文件</div></div>
-            <div class="stat-card"><div class="stat-num" id="stat-sessions">—</div><div class="stat-label"><i data-lucide="history"></i>历史会话</div></div>
-            <div class="stat-card"><div class="stat-num stat-num-sm" id="stat-model">—</div><div class="stat-label"><i data-lucide="cpu"></i>当前模型</div></div>
-            <div class="stat-card stat-tip-card"><div class="stat-tip-emoji">💡</div><div class="stat-tip-text" id="stat-tip">按 Ctrl+P 打开命令面板</div></div>
-          </div>
-        </div>
-
-        <!-- 最近会话（动态） -->
-        <div class="section-block hidden" id="recent-section">
-          <div class="section-head">
-            <div class="icon-tile"><i data-lucide="history"></i></div>
-            <div><h2>最近会话</h2><p>继续上次未完成的 Agent 任务</p></div>
-          </div>
-          <div class="recent-grid" id="recent-list"></div>
-        </div>
-
-        <!-- 大输入框（启动 Agent） -->
-        <div class="composer" id="home-composer">
-          <textarea id="home-task-input" rows="3" placeholder="描述任务，让 Agent 替你写代码、改文件、跑命令…"></textarea>
-          <div class="composer-bar">
-            <div class="composer-left">
-              <button class="mini-chip mode-chip" id="home-mode-chip" title="选择工作模式"><i data-lucide="hammer"></i><span id="home-mode-text">Craft</span><i data-lucide="chevron-down" class="chev"></i></button>
-              <span class="mini-chip" id="home-cwd-chip" title="工作目录"><i data-lucide="folder"></i><span id="home-cwd-text">未选择文件夹</span></span>
-              <span class="mini-chip" id="home-model-chip" title="选择模型"><i data-lucide="cpu"></i><span id="home-model-text">-</span></span>
-            </div>
-            <button class="send-btn" id="home-send" title="启动 Agent（Enter）"><i data-lucide="arrow-up"></i></button>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- Editor Window -->
-    <section id="editor-view" class="view">
+    <section id="editor-view" class="view active">
       <div id="filetree-panel">
         <div class="panel-title"><span>资源管理器</span></div>
         <div class="tree-filter-wrap"><input id="tree-filter" class="tree-filter" placeholder="搜索文件…" spellcheck="false"></div>
@@ -203,8 +77,19 @@
       </div>
     </section>
 
-    <!-- Agents Window（Cursor 风格：时间分组列表 + 气泡 + 底部 follow-up） -->
-    <section id="agents-view" class="view">
+    <!-- AI 搭子面板（右侧分栏，可折叠 / 可调宽） -->
+    <aside id="ai-panel" class="ai-collapsed">
+      <div class="ai-resizer" id="ai-resizer" title="拖动调整宽度"></div>
+      <div id="ai-panel-head">
+        <span class="ai-brand"><i data-lucide="bot"></i><span>AI 搭子</span></span>
+        <div class="spacer"></div>
+        <button id="ai-new-task" class="action icon-btn" title="新建任务（聚焦输入框）"><i data-lucide="square-check"></i></button>
+        <button id="ai-export-md" class="action icon-btn" title="导出 Markdown 轨迹"><i data-lucide="download"></i></button>
+        <button id="ai-export-json" class="action icon-btn" title="导出 JSON 轨迹"><i data-lucide="braces"></i></button>
+        <button id="ai-theme-quick" class="action icon-btn" title="主题颜色"><i data-lucide="palette"></i></button>
+        <button id="ai-collapse" class="action icon-btn" title="折叠面板（Ctrl+Alt+B）"><i data-lucide="panel-right-close"></i></button>
+      </div>
+      <div id="ai-body">
       <div id="agents-sidebar">
         <button id="new-task-btn" class="new-task-btn" title="新建任务（聚焦输入框）"><i data-lucide="square-check"></i><span>新建任务</span></button>
         <div class="panel-title"><span>Agents</span><button id="new-agent-btn"><i data-lucide="plus"></i>新建</button></div>
@@ -255,7 +140,8 @@
           </div>
         </div>
       </div>
-    </section>
+      </div>
+    </aside>
   </main>
 
   <footer id="statusbar">
@@ -563,6 +449,7 @@
   <script src="model.js"></script>
   <script src="modes.js"></script>
   <script src="mention.js"></script>
+  <script src="ai-panel.js"></script>
   <script src="renderer.js"></script>
 </body>
 </html>

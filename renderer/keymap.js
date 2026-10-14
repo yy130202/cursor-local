@@ -12,6 +12,8 @@
     { id: 'ai.complete', label: '触发 AI 补全', icon: 'sparkles', key: 'Alt+\\', action: () => window.triggerAiComplete && window.triggerAiComplete() },
     { id: 'inline.chat', label: '内联改写', icon: 'message-square', key: 'Ctrl+I', action: () => window.openInlineChat && window.openInlineChat() },
     { id: 'ai.diagnose', label: 'AI 代码诊断', icon: 'stethoscope', key: 'Ctrl+Alt+D', action: () => window.openDiagnose && window.openDiagnose() },
+    { id: 'ai.panel', label: 'AI 搭子面板', icon: 'bot', key: 'Ctrl+Alt+B', action: () => { const p = document.getElementById('ai-panel'); if (!p) return; if (p.classList.contains('ai-collapsed')) { if (window.__focusAiPanel) window.__focusAiPanel(); } else { p.classList.add('ai-collapsed'); } } },
+    { id: 'ai.newTask', label: '新建 AI 任务', icon: 'square-check', key: '', action: () => { if (window.__focusAiPanel) window.__focusAiPanel(); const i = document.getElementById('followup-input'); if (i) i.focus(); } },
     { id: 'view.fullscreen', label: '切换全屏', icon: 'maximize', key: 'F11', action: () => window.api && window.api.toggleFullscreen && window.api.toggleFullscreen() },
     { id: 'editor.format', label: '格式化文档', icon: 'align-left', key: 'Shift+Alt+F', action: () => { const ed = (typeof EditorState !== 'undefined' && EditorState.editor); if (ed) ed.getAction('editor.action.formatDocument').run(); } },
     { id: 'editor.foldAll', label: '折叠所有区域', icon: 'fold-vertical', key: '', action: () => { const ed = (typeof EditorState !== 'undefined' && EditorState.editor); if (ed) ed.getAction('editor.foldAll').run(); } },

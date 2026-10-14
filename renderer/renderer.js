@@ -1,48 +1,14 @@
 /* Cursor Local - 顶层渲染逻辑：窗口切换 + 主页 composer + 设置（导航式） + 状态栏 */
 
-/* ---- 模式切换（Home / Editor / Agents）---- */
-const btnHome = document.getElementById('mode-home');
-const btnEditor = document.getElementById('mode-editor');
-const btnAgents = document.getElementById('mode-agents');
-
+/* ---- 视图（单一编辑器视图；AI 搭子面板显隐由 ai-panel.js 管理）----
+ * switchMode 保留以兼容既有调用点：home/agents 归一为展开 AI 面板，
+ * editor 折叠 AI 面板让编辑器全宽。 */
 function switchMode(mode) {
-  btnHome.classList.toggle('active', mode === 'home');
-  btnEditor.classList.toggle('active', mode === 'editor');
-  btnAgents.classList.toggle('active', mode === 'agents');
-  document.getElementById('home-view').classList.toggle('active', mode === 'home');
-  document.getElementById('editor-view').classList.toggle('active', mode === 'editor');
-  document.getElementById('agents-view').classList.toggle('active', mode === 'agents');
-  if (mode === 'home' && typeof renderRecent === 'function') renderRecent();
-}
-
-btnHome.onclick = () => switchMode('home');
-btnEditor.onclick = () => switchMode('editor');
-btnAgents.onclick = () => switchMode('agents');
-
-/* ---- 主页「最近会话」动态卡片 ---- */
-async function renderRecent() {
-  const list = document.getElementById('recent-list');
-  const section = document.getElementById('recent-section');
-  if (!list || !section) return;
-  let sessions = [];
-  try { sessions = await window.api.listSessions(); } catch { /* 忽略 */ }
-  sessions.sort((a, b) => (b.ts || 0) - (a.ts || 0));
-  const recent = sessions.slice(0, 3);
-  if (!recent.length) { section.classList.add('hidden'); return; }
-  section.classList.remove('hidden');
-  list.innerHTML = '';
-  recent.forEach((s) => {
-    const card = document.createElement('div');
-    card.className = 'recent-card';
-    const time = new Date(s.ts).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
-    card.innerHTML =
-      '<span class="dot ' + (s.status || 'done') + '"></span>' +
-      '<div class="recent-body"><div class="recent-task">' + CL.util.escapeHtml(s.task || '（会话）') + '</div>' +
-      '<div class="recent-meta">' + time + '</div></div>' +
-      '<button class="recent-open">打开</button>';
-    card.onclick = () => { switchMode('agents'); if (typeof openHistory === 'function') openHistory(s); };
-    list.appendChild(card);
-  });
+  const panel = document.getElementById('ai-panel');
+  if (!panel) return;
+  if (mode === 'editor') panel.classList.add('ai-collapsed');
+  else panel.classList.remove('ai-collapsed');
+  if (mode === 'agents' && typeof window.__focusAiPanel === 'function') window.__focusAiPanel();
 }
 
 /* 前端下载文本文件 */
@@ -54,41 +20,6 @@ function downloadText(filename, text) {
   URL.revokeObjectURL(url);
 }
 window.downloadText = downloadText;
-
-/* ---- 主页：CTA / 特性卡片入口 ---- */
-const ctaStart = document.getElementById('cta-start');
-if (ctaStart) ctaStart.onclick = () => {
-  const i = document.getElementById('home-task-input');
-  if (i) i.focus();
-};
-const lmAgents = document.getElementById('lm-agents');
-if (lmAgents) lmAgents.onclick = () => switchMode('agents');
-const lmAgents2 = document.getElementById('lm-agents2');
-if (lmAgents2) lmAgents2.onclick = () => switchMode('agents');
-const lmEditor = document.getElementById('lm-editor');
-if (lmEditor) lmEditor.onclick = () => switchMode('editor');
-
-async function sendHomeTask() {
-  const input = document.getElementById('home-task-input');
-  const raw = input.value.trim();
-  if (!raw) { input.focus(); return; }
-  const { task, context } = window.extractMentions ? window.extractMentions(raw) : { task: raw, context: '' };
-  const fullTask = (context + task).trim();
-  const cwd = EditorState.currentFolder || '';
-  const r = await window.api.createAgent({ task: fullTask, cwd, mode: window.__agentMode || 'craft' });
-  input.value = '';
-  switchMode('agents');
-  if (typeof selectAgent === 'function') selectAgent(r.id);
-}
-
-const homeSend = document.getElementById('home-send');
-if (homeSend) homeSend.onclick = sendHomeTask;
-const homeTaskInput = document.getElementById('home-task-input');
-if (homeTaskInput) {
-  homeTaskInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendHomeTask(); }
-  });
-}
 
 /* ---- 设置（导航式） ---- */
 const modal = document.getElementById('settings-modal');
@@ -292,21 +223,9 @@ function refreshStatusBar(cfg) {
     '模型: ' + mName + ' · ' + (cfg.baseUrl || '');
   const noKey = !cfg.apiKey;
   document.getElementById('status-warn').style.display = noKey ? '' : 'none';
-  // 主页 / Agents 输入框的模型与目录 chip
-  const mt = document.getElementById('home-model-text');
-  if (mt) mt.textContent = mName;
+  // Agents 输入框的模型 chip
   const at = document.getElementById('agents-model-text');
   if (at) at.textContent = mName;
-  updateCwdChip();
-}
-
-function updateCwdChip() {
-  const el = document.getElementById('home-cwd-text');
-  if (el) {
-    const c = EditorState.currentFolder;
-    el.textContent = c ? c.split(/[\\/]/).pop() : '未选择文件夹';
-    el.title = c || '';
-  }
 }
 
 /* ---- 启动 ---- */
@@ -331,7 +250,6 @@ function updateCwdChip() {
     EditorState.currentFolder = cfg.lastFolder;
     document.getElementById('workdir-label').textContent = cfg.lastFolder;
     document.getElementById('status-right').textContent = '工作目录: ' + cfg.lastFolder;
-    updateCwdChip();
     CL.editor.filetree.render();
   }
   // 主题 + 用户系统初始化
@@ -350,54 +268,7 @@ function updateCwdChip() {
     const st = document.getElementById('ls-status');
     if (st) st.textContent = cfg.apiKey ? ('模型 ' + (cfg.model || '-')) : '未配置 API Key';
   }
-  switchMode('home'); // 默认进主页
-  if (typeof refreshStats === 'function') refreshStats();
 })();
-
-/* 输入聚焦环境光（Aura） */
-(function bindAuraInput() {
-  const el = document.getElementById('home-task-input');
-  if (el) {
-    el.addEventListener('focus', () => document.body.classList.add('aura-input'));
-    el.addEventListener('blur', () => document.body.classList.remove('aura-input'));
-  }
-})();
-
-/* 快捷操作卡片绑定 */
-(function bindQuickCards() {
-  const bind = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
-  bind('qc-folder', () => { if (typeof openFolder === 'function') openFolder(); });
-  bind('qc-terminal', () => { if (typeof window.openTerminal === 'function') window.openTerminal(); });
-  bind('qc-palette', () => { if (typeof window.openPalette === 'function') window.openPalette(); });
-  bind('qc-file', () => {
-    const cwd = (typeof EditorState !== 'undefined' && EditorState.currentFolder) || null;
-    if (!cwd) { if (typeof openFolder === 'function') openFolder(); return; }
-    if (typeof switchMode === 'function') switchMode('editor');
-    if (typeof CL.editor.filetree.startCreate === 'function') CL.editor.filetree.startCreate(cwd, false);
-  });
-})();
-
-/* 统计卡：模型 + 每日提示 */
-const DAILY_TIPS = [
-  '按 Ctrl+P 打开命令面板，快速执行任意功能',
-  '按 Ctrl+I 内联改写选中的代码',
-  'Agent 做的每一次改动都能一键回滚',
-  '按 F11 全屏，专注编码',
-  '光标停在代码上按 Ctrl+Alt+E，让 AI 解释它',
-  '按 Alt+\\ 手动触发 AI 补全',
-  '文件树顶部搜索框可快速定位文件',
-  '危险命令会被自动拦截，放心让 Agent 干活'
-];
-async function refreshStats() {
-  try {
-    const cfg = await window.api.getConfig();
-    const m = document.getElementById('stat-model');
-    if (m) m.textContent = cfg.model || '未配置';
-  } catch { /* ignore */ }
-  const t = document.getElementById('stat-tip');
-  if (t) t.textContent = DAILY_TIPS[new Date().getDate() % DAILY_TIPS.length];
-}
-window.refreshStats = refreshStats;
 
 /* 自绘标题栏窗口控制 + 双击顶栏最大化 */
 (function bindWinControls() {
@@ -418,11 +289,11 @@ window.refreshStats = refreshStats;
 (function bindTopbarExtras() {
   const ts = document.getElementById('top-search');
   if (ts) ts.onclick = () => { if (typeof window.openGlobalSearch === 'function') window.openGlobalSearch(); };
-  const oa = document.getElementById('open-agents-btn');
-  if (oa) oa.onclick = () => { if (typeof switchMode === 'function') switchMode('agents'); };
+  const oa = document.getElementById('ai-toggle-btn');
+  if (oa) oa.onclick = () => { if (typeof window.__focusAiPanel === 'function') window.__focusAiPanel(); };
   const nt = document.getElementById('new-task-btn');
   if (nt) nt.onclick = () => {
-    if (typeof switchMode === 'function') switchMode('agents');
+    if (typeof window.__focusAiPanel === 'function') window.__focusAiPanel();
     const input = document.getElementById('followup-input');
     if (input) { input.focus(); input.placeholder = '描述新任务…（Enter 发送）'; }
   };
