@@ -169,6 +169,52 @@ function createTesting({ winRef, agents, rootDir, config, agentApi, sessionApi, 
     await sleep(1800);
     const dbg = await winRef().webContents.executeJavaScript('JSON.stringify(window.__debugState())');
     console.log('[debug editor]', dbg);
+
+    /* 无障碍断言：语义角色 + 文件树键盘导航。
+       热区尺寸与对比度是「看得见」的无障碍；语义角色与键盘可达是「看不见」的那一半 ——
+       对屏幕阅读器用户，一棵没有 role=treeitem 的文件树等于不可导航，
+       而这类缺失在截图里完全看不出来，只能靠断言守着。
+       注意：文件树是异步懒加载的，必须在 openFolderForDemo + sleep 之后才查得到内容。 */
+    const a11y = JSON.parse(await winRef().webContents.executeJavaScript(`(async () => {
+      const q = (s) => document.querySelectorAll(s);
+      const rows = q('#filetree .tree-item');
+      const r = {
+        treeRole: document.getElementById('filetree').getAttribute('role'),
+        rows: rows.length,
+        roleOk: q('#filetree .tree-item[role="treeitem"]').length,
+        levelOk: q('#filetree .tree-item[aria-level]').length,
+        selOk: q('#filetree .tree-item[aria-selected]').length,
+        expanded: q('#filetree .tree-item[aria-expanded]').length,
+        tablist: document.getElementById('tabbar').getAttribute('role'),
+        logRole: document.getElementById('transcript').getAttribute('role'),
+        logLive: document.getElementById('transcript').getAttribute('aria-live'),
+        labeled: q('[aria-label]').length,
+        kbMove: false
+      };
+      const first = rows[0];
+      if (first && rows.length > 1) {
+        first.focus();
+        const before = document.activeElement;
+        before.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+        r.kbMove = document.activeElement !== before && document.activeElement.classList.contains('tree-item');
+      }
+      return JSON.stringify(r);
+    })()`));
+    const a11yBad = [];
+    if (a11y.treeRole !== 'tree') a11yBad.push('文件树缺 role=tree');
+    if (a11y.rows > 0 && (a11y.roleOk !== a11y.rows || a11y.levelOk !== a11y.rows || a11y.selOk !== a11y.rows)) {
+      a11yBad.push('树项语义不全：' + a11y.rows + ' 项中 role=' + a11y.roleOk + ' level=' + a11y.levelOk + ' selected=' + a11y.selOk);
+    }
+    if (a11y.expanded < 1) a11yBad.push('目录项缺 aria-expanded');
+    if (a11y.tablist !== 'tablist') a11yBad.push('标签栏缺 role=tablist');
+    if (a11y.logRole !== 'log' || a11y.logLive !== 'polite') a11yBad.push('会话记录缺 role=log / aria-live');
+    if (!a11y.kbMove) a11yBad.push('文件树方向键未移动焦点');
+    if (a11yBad.length) {
+      console.log('[assert FAIL] 无障碍语义与键盘：' + a11yBad.join('；'));
+      process.exitCode = 1;
+    } else {
+      console.log('[assert OK] 无障碍：树项 ' + a11y.rows + ' 项语义完整、' + a11y.expanded + ' 个目录含展开态、' + a11y.labeled + ' 处 aria-label、方向键导航可用');
+    }
     // 选区颜色诊断：从主题服务读取实际选区颜色值
     const deco = await winRef().webContents.executeJavaScript(`(async () => {
       const ed = EditorState.editor;

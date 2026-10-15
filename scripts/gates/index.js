@@ -93,11 +93,12 @@ async function runAllGates() {
   const c = await runReleaseGates();
 
   const items = [...a.items, ...b.items, ...c.items];
-  // 编号连续性校验：门禁必须完整覆盖 GATE-001 ~ GATE-089，缺号即视为编排错误
+  // 编号连续性校验：门禁必须完整覆盖 GATE-001 ~ GATE-091，缺号即视为编排错误
   const ids = items.map((x) => x.id);
   const dup = ids.filter((id, i) => ids.indexOf(id) !== i);
   if (dup.length) throw new Error(`门禁编号重复: ${[...new Set(dup)].join(', ')}`);
-  const expected = Array.from({ length: 89 }, (_, i) => `GATE-${String(i + 1).padStart(3, '0')}`);
+  // 上界取实际最大编号，避免"新增了门禁但期望值没跟着改，导致编号校验形同虚设"
+  const expected = Array.from({ length: 91 }, (_, i) => `GATE-${String(i + 1).padStart(3, '0')}`);
   const missing = expected.filter((id) => !ids.includes(id));
   if (missing.length) throw new Error(`门禁编号缺失 ${missing.length} 个: ${missing.join(', ')}`);
 

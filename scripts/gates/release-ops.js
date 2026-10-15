@@ -1,6 +1,6 @@
 'use strict';
 /**
- * Cursor Local - 发布防护与运维门禁（GATE-070 ~ GATE-089，共 20 项）
+ * Cursor Local - 发布防护与运维门禁（GATE-070 ~ GATE-091，共 22 项）
  *
  * 【这一组要解决的历史问题】
  *   1. commit 兜底值造假：release-guard.js 早期版本在 git 不可用时
@@ -514,6 +514,41 @@ async function runReleaseGates() {
       `逐行解析 ${docs.length} 份文档（${docs.join('、')}）共 ${tableCount} 个 Markdown 表格：`
       + `分隔行全部合法、各表列数与表头一致；剥离行内代码后无残留裸尖括号，`
       + `文档在任何 HTML 渲染器下均不会丢字`, 'file');
+  }));
+
+  /* ---- GATE-091：样式 token 引用完整性 ----
+     存在意义：CSS 里 var(--x) 指向不存在的变量时，浏览器不报错，而是让整条声明在
+     「计算值阶段」失效并回落到初始值 —— 一种完全静默的样式丢失。
+     本项目真实踩过：设计系统落地把 :root 改成别名层时漏映射 --r-sm/md/lg/xl/full，
+     结果 8 处 border-radius 全部变直角，控制台无任何提示，截图断言也因未覆盖圆角而漏过。
+     这条门禁把「token 改名后忘记同步」变成上线前的硬失败。 */
+  items.push(makeItem('GATE-091', '发布防护', '样式 token 引用完整（无 var() 指向未定义变量）', () => {
+    const FILES = ['renderer/tokens.css', 'renderer/style.css'];
+    /* 允许由运行时注入 —— 名单来源：renderer/theme.js 里所有 root.style.setProperty('--x', ...)。
+       这些变量按用户所选主题色在启动时写入 document.documentElement，不出现在静态 CSS 里。 */
+    const RUNTIME = new Set([
+      '--accent', '--accent-2', '--accent-solid', '--accent-solid-hi', '--accent-contrast',
+      '--accent-soft', '--accent-hover', '--glow',
+      '--orb-1', '--orb-2', '--orb-3',
+    ]);
+    const defined = new Set();
+    const used = [];
+    for (const rel of FILES) {
+      const src = readSrc(rel);
+      must(src && src.length > 0, `${rel} 内容为空`);
+      for (const m of src.matchAll(/(?:^|[;{\s])(--[a-zA-Z0-9-]+)\s*:/gm)) defined.add(m[1]);
+      for (const m of src.matchAll(/var\(\s*(--[a-zA-Z0-9-]+)/g)) used.push({ rel, name: m[1] });
+    }
+    const missing = [...new Set(used
+      .filter((u) => !defined.has(u.name) && !RUNTIME.has(u.name))
+      .map((u) => `${u.rel} → ${u.name}`))];
+    must(missing.length === 0,
+      `有 ${missing.length} 处 var() 指向未定义变量（该声明会在计算值阶段静默失效）：${missing.slice(0, 10).join(', ')}`);
+    return metric(EvidenceKind.METRIC,
+      { files: FILES.length, definitions: defined.size, references: used.length, runtimeInjected: RUNTIME.size, unresolved: 0 },
+      `扫描 ${FILES.join('、')}：${defined.size} 个变量定义、${used.length} 处 var() 引用，`
+      + `除 ${RUNTIME.size} 个由 theme.js 运行时注入的强调色变量外全部可解析`,
+      'file');
   }));
 
   return { items };

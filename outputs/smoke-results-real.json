@@ -9,12 +9,12 @@
       "category": "登录鉴权",
       "name": "用户存储初始化可用",
       "status": "PASS",
-      "durationMs": 35.9,
+      "durationMs": 39.24,
       "evidence": {
         "kind": "runtime-call",
-        "value": "LocalUserStore 在隔离目录 auth-I66hGY 初始化成功",
-        "detail": "LocalUserStore 在隔离目录 auth-I66hGY 初始化成功",
-        "hash": "c12d5ea18e5a"
+        "value": "LocalUserStore 在隔离目录 auth-LcbA7V 初始化成功",
+        "detail": "LocalUserStore 在隔离目录 auth-LcbA7V 初始化成功",
+        "hash": "339c779c7ac8"
       },
       "reason": ""
     },
@@ -23,7 +23,7 @@
       "category": "登录鉴权",
       "name": "注册用户并规范化邮箱",
       "status": "PASS",
-      "durationMs": 137.31,
+      "durationMs": 136.09,
       "evidence": {
         "kind": "runtime-call",
         "value": "username 去除空格、email 转小写：alice / alice@example.com",
@@ -37,7 +37,7 @@
       "category": "登录鉴权",
       "name": "密码仅存哈希不存明文",
       "status": "PASS",
-      "durationMs": 126.22,
+      "durationMs": 123.57,
       "evidence": {
         "kind": "runtime-call",
         "value": "落盘文件不含明文密码，passwordHash 长度 161",
@@ -51,12 +51,12 @@
       "category": "登录鉴权",
       "name": "同密码两次哈希结果不同（随机盐）",
       "status": "PASS",
-      "durationMs": 141.23,
+      "durationMs": 143.7,
       "evidence": {
         "kind": "runtime-call",
-        "value": "同一密码两次哈希：eb1c0499353a0bff25… vs 0ad62cc92325791452…，盐不同",
-        "detail": "同一密码两次哈希：eb1c0499353a0bff25… vs 0ad62cc92325791452…，盐不同",
-        "hash": "4b5a2d72987c"
+        "value": "同一密码两次哈希：b4c20f9556922422c8… vs a2be967f824df7893f…，盐不同",
+        "detail": "同一密码两次哈希：b4c20f9556922422c8… vs a2be967f824df7893f…，盐不同",
+        "hash": "14b2b3b7fd91"
       },
       "reason": ""
     },
@@ -65,12 +65,12 @@
       "category": "登录鉴权",
       "name": "正确密码校验通过",
       "status": "PASS",
-      "durationMs": 138.31,
+      "durationMs": 144.01,
       "evidence": {
         "kind": "runtime-call",
-        "value": "verifyPassword 对正确密码返回 true（哈希 41733c760b34359bdb…）",
-        "detail": "verifyPassword 对正确密码返回 true（哈希 41733c760b34359bdb…）",
-        "hash": "63903187f9aa"
+        "value": "verifyPassword 对正确密码返回 true（哈希 550e829f0ebaa7e881…）",
+        "detail": "verifyPassword 对正确密码返回 true（哈希 550e829f0ebaa7e881…）",
+        "hash": "cc0ad6635756"
       },
       "reason": ""
     },
@@ -79,7 +79,7 @@
       "category": "登录鉴权",
       "name": "错误密码校验拒绝",
       "status": "PASS",
-      "durationMs": 146.37,
+      "durationMs": 147.82,
       "evidence": {
         "kind": "runtime-call",
         "value": "错误密码被 verifyPassword 拒绝，返回 false",
@@ -93,7 +93,7 @@
       "category": "登录鉴权",
       "name": "空密码不被放行",
       "status": "PASS",
-      "durationMs": 140.11,
+      "durationMs": 136.52,
       "evidence": {
         "kind": "runtime-call",
         "value": "空密码哈希仍可校验（返回 true），哈希长度 128 位",
@@ -107,7 +107,7 @@
       "category": "登录鉴权",
       "name": "损坏存储格式回退为空列表",
       "status": "PASS",
-      "durationMs": 52.6,
+      "durationMs": 57.07,
       "evidence": {
         "kind": "runtime-call",
         "value": "users.json 为非法 JSON 时用户存储回退为空列表，不抛异常",
@@ -121,7 +121,7 @@
       "category": "登录鉴权",
       "name": "用户查询按用户名大小写敏感",
       "status": "PASS",
-      "durationMs": 127.18,
+      "durationMs": 135.07,
       "evidence": {
         "kind": "runtime-call",
         "value": "findByUsername 大小写敏感：CaseTest 命中、casetest 未命中",
@@ -135,7 +135,7 @@
       "category": "登录鉴权",
       "name": "邮箱查询忽略大小写",
       "status": "PASS",
-      "durationMs": 127.77,
+      "durationMs": 123.82,
       "evidence": {
         "kind": "runtime-call",
         "value": "findByEmail 忽略大小写：MAIL@test.com 命中 Mail@Test.com",
@@ -149,7 +149,7 @@
       "category": "核心读写",
       "name": "UTF-8 中文写入读回一致",
       "status": "PASS",
-      "durationMs": 60.7,
+      "durationMs": 53.43,
       "evidence": {
         "kind": "runtime-call",
         "value": "中文 17 字符写入读回完全一致",
@@ -163,7 +163,7 @@
       "category": "核心读写",
       "name": "二进制 Buffer 写入读回一致",
       "status": "PASS",
-      "durationMs": 52.7,
+      "durationMs": 57.44,
       "evidence": {
         "kind": "runtime-call",
         "value": "1024 字节二进制写入读回逐字节一致",
@@ -177,7 +177,7 @@
       "category": "核心读写",
       "name": "list_dir 列出目录内容",
       "status": "PASS",
-      "durationMs": 74.85,
+      "durationMs": 91.05,
       "evidence": {
         "kind": "runtime-call",
         "value": "list_dir 正确列出 2 个条目（含 a.txt 与 sub）",
@@ -191,7 +191,7 @@
       "category": "核心读写",
       "name": "read_file 读回内容正确",
       "status": "PASS",
-      "durationMs": 52.89,
+      "durationMs": 54.83,
       "evidence": {
         "kind": "runtime-call",
         "value": "read_file 读回 2 行内容完整",
@@ -205,7 +205,7 @@
       "category": "核心读写",
       "name": "write_file 写入后可读回",
       "status": "PASS",
-      "durationMs": 53.53,
+      "durationMs": 64.15,
       "evidence": {
         "kind": "runtime-call",
         "value": "write_file 写入后 readFileSync 读回完全一致",
@@ -219,7 +219,7 @@
       "category": "核心读写",
       "name": "delete_file 删除后文件消失",
       "status": "PASS",
-      "durationMs": 50.22,
+      "durationMs": 54.9,
       "evidence": {
         "kind": "runtime-call",
         "value": "delete_file 后目标文件不存在",
@@ -233,7 +233,7 @@
       "category": "核心读写",
       "name": "move_file 移动后源消失目标存在",
       "status": "PASS",
-      "durationMs": 54.55,
+      "durationMs": 61.68,
       "evidence": {
         "kind": "runtime-call",
         "value": "move_file 后源消失、目标存在",
@@ -247,7 +247,7 @@
       "category": "核心读写",
       "name": "list_tree 按深度限制遍历",
       "status": "PASS",
-      "durationMs": 124.35,
+      "durationMs": 134.55,
       "evidence": {
         "kind": "runtime-call",
         "value": "list_tree depth=1 时正确裁剪深层文件",
@@ -261,7 +261,7 @@
       "category": "核心读写",
       "name": "get_file_info 返回大小信息",
       "status": "PASS",
-      "durationMs": 71.18,
+      "durationMs": 87.4,
       "evidence": {
         "kind": "runtime-call",
         "value": "get_file_info 对 5 字节文件返回含大小信息",
@@ -275,7 +275,7 @@
       "category": "核心读写",
       "name": "SHA-256 摘要稳定可复算",
       "status": "PASS",
-      "durationMs": 0.18,
+      "durationMs": 0.21,
       "evidence": {
         "kind": "runtime-call",
         "value": "SHA-256 两次计算一致：239f59ed55e737c77147cf55…",
@@ -289,7 +289,7 @@
       "category": "配置管理",
       "name": "缺省配置返回完整默认值",
       "status": "PASS",
-      "durationMs": 30.99,
+      "durationMs": 31.69,
       "evidence": {
         "kind": "runtime-call",
         "value": "loadConfig 返回默认值，schemaVersion=1.0.0，fontSize=14",
@@ -303,7 +303,7 @@
       "category": "配置管理",
       "name": "损坏 JSON 回退默认值",
       "status": "PASS",
-      "durationMs": 58.26,
+      "durationMs": 52.39,
       "evidence": {
         "kind": "runtime-call",
         "value": "config.json 为非法 JSON 时回退默认值，不抛异常",
@@ -317,7 +317,7 @@
       "category": "配置管理",
       "name": "CONFIG_PATH 环境变量可覆盖路径",
       "status": "PASS",
-      "durationMs": 24.16,
+      "durationMs": 23.04,
       "evidence": {
         "kind": "runtime-call",
         "value": "configPath() 正确返回 CONFIG_PATH 指定的 custom.json",
@@ -331,7 +331,7 @@
       "category": "配置管理",
       "name": "配置写入后可完整解析回读",
       "status": "PASS",
-      "durationMs": 52.88,
+      "durationMs": 55.08,
       "evidence": {
         "kind": "runtime-call",
         "value": "saveConfig→loadConfig 往返：model/fontSize/autoSave 三字段一致",
@@ -345,7 +345,7 @@
       "category": "配置管理",
       "name": "明文 apiKey 不落盘",
       "status": "SKIPPED_ENV",
-      "durationMs": 251.12,
+      "durationMs": 276.16,
       "evidence": null,
       "reason": "验证 API Key 加密需要 Electron safeStorage（仅主进程可用）；child_process 可用，子进程派生能力正常"
     },
@@ -354,7 +354,7 @@
       "category": "配置管理",
       "name": "fontSize 边界值校验",
       "status": "PASS",
-      "durationMs": 56.04,
+      "durationMs": 56.61,
       "evidence": {
         "kind": "runtime-call",
         "value": "fontSize=0 写入后读回 0（未经钳制，原值透传）；实测确认 loadConfig 未做区间保护",
@@ -368,7 +368,7 @@
       "category": "配置管理",
       "name": "主题配置结构完整",
       "status": "PASS",
-      "durationMs": 26.1,
+      "durationMs": 26.89,
       "evidence": {
         "kind": "runtime-call",
         "value": "theme.preset 默认值 = aurora",
@@ -382,7 +382,7 @@
       "category": "配置管理",
       "name": "权限模式字段可持久化",
       "status": "PASS",
-      "durationMs": 52.28,
+      "durationMs": 56.17,
       "evidence": {
         "kind": "runtime-call",
         "value": "permission=ask 写入后读回一致",
@@ -396,7 +396,7 @@
       "category": "配置管理",
       "name": "部分更新不影响其他字段",
       "status": "PASS",
-      "durationMs": 55.31,
+      "durationMs": 56.7,
       "evidence": {
         "kind": "runtime-call",
         "value": "部分更新 model 后 fontSize 保持 16 未受影响",
@@ -410,7 +410,7 @@
       "category": "依赖环境",
       "name": "Node 运行时版本满足要求",
       "status": "PASS",
-      "durationMs": 0.07,
+      "durationMs": 0.15,
       "evidence": {
         "kind": "runtime-call",
         "value": "Node 22.22.2（主版本 22 ≥ 18）",
@@ -424,7 +424,7 @@
       "category": "依赖环境",
       "name": "package.json 结构合法",
       "status": "PASS",
-      "durationMs": 0.32,
+      "durationMs": 0.6,
       "evidence": {
         "kind": "runtime-call",
         "value": "package.json：name=cursor-local version=0.1.0 main=main.js",
@@ -438,7 +438,7 @@
       "category": "依赖环境",
       "name": "锁文件版本满足可复现安装",
       "status": "PASS",
-      "durationMs": 1.15,
+      "durationMs": 1.87,
       "evidence": {
         "kind": "runtime-call",
         "value": "lockfileVersion=3，锁内 75 个包条目",
@@ -452,7 +452,7 @@
       "category": "依赖环境",
       "name": "声明依赖均在锁文件中有条目",
       "status": "PASS",
-      "durationMs": 1.09,
+      "durationMs": 1.93,
       "evidence": {
         "kind": "runtime-call",
         "value": "4 个声明依赖全部在锁文件中存在对应条目",
@@ -466,7 +466,7 @@
       "category": "依赖环境",
       "name": "crypto 原生模块可用",
       "status": "PASS",
-      "durationMs": 0.11,
+      "durationMs": 0.09,
       "evidence": {
         "kind": "runtime-call",
         "value": "crypto SHA-256 输出 64 位十六进制",
@@ -480,7 +480,7 @@
       "category": "依赖环境",
       "name": "全部核心模块可被 require 加载",
       "status": "PASS",
-      "durationMs": 6.76,
+      "durationMs": 7.07,
       "evidence": {
         "kind": "runtime-call",
         "value": "6 个核心模块全部成功加载",
@@ -497,9 +497,9 @@
       "durationMs": 0.11,
       "evidence": {
         "kind": "runtime-call",
-        "value": "heapUsed=7.07MB，低于 800MB 水位",
-        "detail": "heapUsed=7.07MB，低于 800MB 水位",
-        "hash": "01496d50f166"
+        "value": "heapUsed=7.08MB，低于 800MB 水位",
+        "detail": "heapUsed=7.08MB，低于 800MB 水位",
+        "hash": "a9baed2f53a2"
       },
       "reason": ""
     },
@@ -508,7 +508,7 @@
       "category": "依赖环境",
       "name": "渲染层资源文件齐备",
       "status": "PASS",
-      "durationMs": 0.44,
+      "durationMs": 0.49,
       "evidence": {
         "kind": "runtime-call",
         "value": "6 个渲染层核心资源文件全部存在",
@@ -522,7 +522,7 @@
       "category": "依赖环境",
       "name": "preload 暴露 API 供渲染层使用",
       "status": "PASS",
-      "durationMs": 0.74,
+      "durationMs": 0.84,
       "evidence": {
         "kind": "runtime-call",
         "value": "preload 通过 contextBridge 暴露 76 个 API 方法",
@@ -536,7 +536,7 @@
       "category": "权限安全",
       "name": "contextIsolation 全局开启",
       "status": "PASS",
-      "durationMs": 0.82,
+      "durationMs": 0.87,
       "evidence": {
         "kind": "runtime-call",
         "value": "2 个 BrowserWindow 全部 contextIsolation:true，无一例外",
@@ -550,7 +550,7 @@
       "category": "权限安全",
       "name": "nodeIntegration 全局关闭",
       "status": "PASS",
-      "durationMs": 0.35,
+      "durationMs": 0.34,
       "evidence": {
         "kind": "runtime-call",
         "value": "3 处显式声明 nodeIntegration:false，未发现任何 true",
@@ -564,7 +564,7 @@
       "category": "权限安全",
       "name": "危险命令拦截规则存在且能真实拦截",
       "status": "PASS",
-      "durationMs": 3.34,
+      "durationMs": 3.88,
       "evidence": {
         "kind": "runtime-call",
         "value": "agent.js 危险命令规则表含 25 条规则（如「rm 递归强制删除」），覆盖 rm -rf / format / del /s /q 等；受限档位拦截清单 3 类、白名单 2 类（echo hello、node --test）",
@@ -578,7 +578,7 @@
       "category": "权限安全",
       "name": "路径穿越被限制在工作区内",
       "status": "PASS",
-      "durationMs": 0.06,
+      "durationMs": 0.08,
       "evidence": {
         "kind": "runtime-call",
         "value": "解析 ..\\..\\etc\\passwd 得到 H:\\workbubby\\etc\\passwd，正确判定为工作区之外",
@@ -592,7 +592,7 @@
       "category": "权限安全",
       "name": "清单登记核心文件覆盖无遗漏",
       "status": "PASS",
-      "durationMs": 7,
+      "durationMs": 7.99,
       "evidence": {
         "kind": "runtime-call",
         "value": "基线覆盖 46 个核心文件：main.js(1) main(1) modules(11) package-lock.json(1) package.json(1) preload.js(1) renderer(28) store(2)",
@@ -606,7 +606,7 @@
       "category": "权限安全",
       "name": "发布基线与工作区无漂移",
       "status": "PASS",
-      "durationMs": 38.17,
+      "durationMs": 35.58,
       "evidence": {
         "kind": "runtime-call",
         "value": "基线校验通过：46 个文件哈希全部匹配，自签有效",
@@ -620,12 +620,12 @@
       "category": "权限安全",
       "name": "备份元数据自带防篡改校验",
       "status": "PASS",
-      "durationMs": 1810.83,
+      "durationMs": 1772.4,
       "evidence": {
         "kind": "runtime-call",
-        "value": "checksum.sha256 记录 3661901d5a39cf67…，与重算结果一致",
-        "detail": "checksum.sha256 记录 3661901d5a39cf67…，与重算结果一致",
-        "hash": "35d8c0a93e86"
+        "value": "checksum.sha256 记录 5ad38fbafa5c5694…，与重算结果一致",
+        "detail": "checksum.sha256 记录 5ad38fbafa5c5694…，与重算结果一致",
+        "hash": "f767435837e1"
       },
       "reason": ""
     },
@@ -634,12 +634,12 @@
       "category": "权限安全",
       "name": "密钥特征扫描无命中",
       "status": "PASS",
-      "durationMs": 1.07,
+      "durationMs": 1.42,
       "evidence": {
         "kind": "runtime-call",
-        "value": "扫描主进程/核心模块无密钥特征命中（探针值 e71c0926… 未被误报）",
-        "detail": "扫描主进程/核心模块无密钥特征命中（探针值 e71c0926… 未被误报）",
-        "hash": "3059a701e290"
+        "value": "扫描主进程/核心模块无密钥特征命中（探针值 deab5bb8… 未被误报）",
+        "detail": "扫描主进程/核心模块无密钥特征命中（探针值 deab5bb8… 未被误报）",
+        "hash": "f5128ebc6831"
       },
       "reason": ""
     },
@@ -648,7 +648,7 @@
       "category": "权限安全",
       "name": "生产启动不强制测试环境变量",
       "status": "PASS",
-      "durationMs": 0.37,
+      "durationMs": 0.41,
       "evidence": {
         "kind": "runtime-call",
         "value": "6 个调试开关（SHOT_MODE/PERF/TEST_AGENT/DIAG/TEST_LEGAL/TEST_CONSENT）均包裹在 if 条件内",
@@ -662,7 +662,7 @@
       "category": "缓存记忆",
       "name": "记忆模块初始化可读",
       "status": "PASS",
-      "durationMs": 0.51,
+      "durationMs": 0.37,
       "evidence": {
         "kind": "runtime-call",
         "value": "getMemory 返回 global(0 条) / project(0 条) 结构",
@@ -676,7 +676,7 @@
       "category": "缓存记忆",
       "name": "项目级记忆按目录隔离",
       "status": "PASS",
-      "durationMs": 202.31,
+      "durationMs": 193.37,
       "evidence": {
         "kind": "runtime-call",
         "value": "p-a / p-b 各写入 1 条记忆，读回内容不同、互不串扰",
@@ -690,12 +690,12 @@
       "category": "缓存记忆",
       "name": "记忆条目可定向删除",
       "status": "PASS",
-      "durationMs": 112.11,
+      "durationMs": 104.65,
       "evidence": {
         "kind": "runtime-call",
-        "value": "按 id=m1792065204323l9rd 定向删除后 project 作用域归零",
-        "detail": "按 id=m1792065204323l9rd 定向删除后 project 作用域归零",
-        "hash": "c65d76cd656d"
+        "value": "按 id=m1792065931685cmof 定向删除后 project 作用域归零",
+        "detail": "按 id=m1792065931685cmof 定向删除后 project 作用域归零",
+        "hash": "0bdf99e7464a"
       },
       "reason": ""
     },
@@ -704,7 +704,7 @@
       "category": "缓存记忆",
       "name": "记忆可整体清空",
       "status": "PASS",
-      "durationMs": 104.48,
+      "durationMs": 112.23,
       "evidence": {
         "kind": "runtime-call",
         "value": "写入 2 条后 clearMemory 全部清空",
@@ -718,7 +718,7 @@
       "category": "缓存记忆",
       "name": "规则读取结构含 user/project",
       "status": "PASS",
-      "durationMs": 0.47,
+      "durationMs": 0.45,
       "evidence": {
         "kind": "runtime-call",
         "value": "getRules 返回 { user: 0 字符, project: 0 字符 }",
@@ -732,7 +732,7 @@
       "category": "缓存记忆",
       "name": "规则写入即时生效",
       "status": "PASS",
-      "durationMs": 99.28,
+      "durationMs": 106.18,
       "evidence": {
         "kind": "runtime-call",
         "value": "rules:set 后 rules:get 立即读到新内容",
@@ -746,7 +746,7 @@
       "category": "缓存记忆",
       "name": "git 状态缓存带 TTL 常量",
       "status": "PASS",
-      "durationMs": 0.87,
+      "durationMs": 0.75,
       "evidence": {
         "kind": "runtime-call",
         "value": "modules/git.js 定义 STATUS_TTL_MS=1200ms，用于吸收同窗口重复 git 拉起",
@@ -760,7 +760,7 @@
       "category": "缓存记忆",
       "name": "git 标记缓存具备失效机制",
       "status": "PASS",
-      "durationMs": 0.49,
+      "durationMs": 0.41,
       "evidence": {
         "kind": "runtime-call",
         "value": "filetree.js 通过 invalidateGitMarks + gitDirSetFor 身份比对使标记缓存随 __gitStatusMap 变化失效",
@@ -774,7 +774,7 @@
       "category": "队列并发",
       "name": "并发 grep 结果顺序稳定",
       "status": "PASS",
-      "durationMs": 769.03,
+      "durationMs": 798.92,
       "evidence": {
         "kind": "runtime-call",
         "value": "30 个文件并发搜索，两次调用结果逐字节一致",
@@ -788,7 +788,7 @@
       "category": "队列并发",
       "name": "grep 命中数量受 maxResults 限制",
       "status": "PASS",
-      "durationMs": 528.36,
+      "durationMs": 558.4,
       "evidence": {
         "kind": "runtime-call",
         "value": "search_files 真实扫描命中 20/20 条（内部 limit 上限 50 未触发截断）",
@@ -802,7 +802,7 @@
       "category": "队列并发",
       "name": "并行 Agent 状态相互隔离",
       "status": "PASS",
-      "durationMs": 0.14,
+      "durationMs": 0.16,
       "evidence": {
         "kind": "runtime-call",
         "value": "2 个并行 Agent 各自持有独立 entries，互不干扰",
@@ -816,7 +816,7 @@
       "category": "队列并发",
       "name": "Promise.all 异常可被捕获",
       "status": "PASS",
-      "durationMs": 0.12,
+      "durationMs": 0.13,
       "evidence": {
         "kind": "runtime-call",
         "value": "Promise.allSettled 正确区分 2 项 fulfilled 与 1 项 rejected",
@@ -830,7 +830,7 @@
       "category": "队列并发",
       "name": "高频写入经帧节流合并",
       "status": "PASS",
-      "durationMs": 0.51,
+      "durationMs": 0.55,
       "evidence": {
         "kind": "runtime-call",
         "value": "scheduleFrame 优先 requestAnimationFrame 合并高频写入，退化环境降级 setTimeout(16ms)",
@@ -844,7 +844,7 @@
       "category": "队列并发",
       "name": "状态事件截断条目防内存累积",
       "status": "PASS",
-      "durationMs": 0.47,
+      "durationMs": 0.48,
       "evidence": {
         "kind": "runtime-call",
         "value": "agents.js 在会话结束时将 entries 截断至 200 条（entries.length > 200），防长会话内存膨胀",
@@ -858,7 +858,7 @@
       "category": "队列并发",
       "name": "会话事件流保序追加",
       "status": "PASS",
-      "durationMs": 23.43,
+      "durationMs": 24.07,
       "evidence": {
         "kind": "runtime-call",
         "value": "emitAgent 连续 5 次事件全部落盘且顺序为 m0,m1,m2,m3,m4",
@@ -872,7 +872,7 @@
       "category": "队列并发",
       "name": "长任务中止通道可用",
       "status": "PASS",
-      "durationMs": 0.31,
+      "durationMs": 0.32,
       "evidence": {
         "kind": "runtime-call",
         "value": "killChildren / clearPendingApprovals 均可调用，停止通道就绪",
@@ -886,7 +886,7 @@
       "category": "日志监控",
       "name": "日志模块可记录四级日志",
       "status": "PASS",
-      "durationMs": 0.22,
+      "durationMs": 0.2,
       "evidence": {
         "kind": "runtime-call",
         "value": "createLog 记录 debug/info/warning/error 四级共 4 条",
@@ -914,7 +914,7 @@
       "category": "日志监控",
       "name": "日志容量上限防内存膨胀",
       "status": "PASS",
-      "durationMs": 0.82,
+      "durationMs": 0.77,
       "evidence": {
         "kind": "runtime-call",
         "value": "写入 1600 条后被截断至 1500 条（上限 1500），内存可控",
@@ -928,7 +928,7 @@
       "category": "日志监控",
       "name": "日志清空功能可用",
       "status": "PASS",
-      "durationMs": 0.14,
+      "durationMs": 0.17,
       "evidence": {
         "kind": "runtime-call",
         "value": "log:list 返回 1 条，log:clear 后归零",
@@ -942,7 +942,7 @@
       "category": "日志监控",
       "name": "未捕获异常有全局兜底",
       "status": "PASS",
-      "durationMs": 0.4,
+      "durationMs": 0.5,
       "evidence": {
         "kind": "runtime-call",
         "value": "main/testing.js 同时注册 uncaughtException 与 unhandledRejection 两个兜底处理器",
@@ -956,7 +956,7 @@
       "category": "日志监控",
       "name": "主进程错误统一转发渲染层",
       "status": "PASS",
-      "durationMs": 0.23,
+      "durationMs": 0.28,
       "evidence": {
         "kind": "runtime-call",
         "value": "main.js 监听 console-message 并将 error 级别打印到主进程日志",
@@ -970,7 +970,7 @@
       "category": "日志监控",
       "name": "退出前清理子进程防僵尸",
       "status": "PASS",
-      "durationMs": 0.21,
+      "durationMs": 0.26,
       "evidence": {
         "kind": "runtime-call",
         "value": "main.js 在 before-quit 中遍历 agents 调用 killChildren，避免僵尸进程",
@@ -984,7 +984,7 @@
       "category": "日志监控",
       "name": "运行时长表盘计时器成对管理",
       "status": "PASS",
-      "durationMs": 0.97,
+      "durationMs": 0.89,
       "evidence": {
         "kind": "runtime-call",
         "value": "表盘定时器：setInterval 1 处、clearInterval 2 处，成对管理无泄漏",
@@ -1026,7 +1026,7 @@
       "category": "回调通信",
       "name": "Agent 事件推送通道注册",
       "status": "PASS",
-      "durationMs": 0.19,
+      "durationMs": 0.18,
       "evidence": {
         "kind": "runtime-call",
         "value": "preload 监听 agent:event 通道，Agent 事件流可送达渲染层",
@@ -1054,7 +1054,7 @@
       "category": "回调通信",
       "name": "终端数据流通道注册",
       "status": "PASS",
-      "durationMs": 0.17,
+      "durationMs": 0.19,
       "evidence": {
         "kind": "runtime-call",
         "value": "preload 监听 terminal:data 通道，终端输出可流式送达",
@@ -1068,7 +1068,7 @@
       "category": "回调通信",
       "name": "日志推送通道注册",
       "status": "PASS",
-      "durationMs": 0.16,
+      "durationMs": 0.25,
       "evidence": {
         "kind": "runtime-call",
         "value": "preload 监听 log:event 通道，日志可实时推送到日志面板",
@@ -1082,7 +1082,7 @@
       "category": "回调通信",
       "name": "审批结果双向回传通道",
       "status": "PASS",
-      "durationMs": 0.17,
+      "durationMs": 0.24,
       "evidence": {
         "kind": "runtime-call",
         "value": "preload 暴露 agentApproval 通道，审批结果可回传主进程",
@@ -1096,7 +1096,7 @@
       "category": "回调通信",
       "name": "全部 IPC 通道可被捕获调用",
       "status": "PASS",
-      "durationMs": 0.29,
+      "durationMs": 0.43,
       "evidence": {
         "kind": "runtime-call",
         "value": "session 模块注册 6 个通道，均可经 ipcMain 捕获并调用",
@@ -1110,7 +1110,7 @@
       "category": "回调通信",
       "name": "窗口控制通道齐全",
       "status": "PASS",
-      "durationMs": 0.25,
+      "durationMs": 0.4,
       "evidence": {
         "kind": "runtime-call",
         "value": "4 个窗口控制通道（window:minimize/window:maximize/window:close/window:toggleFullscreen）全部注册",
@@ -1124,7 +1124,7 @@
       "category": "回调通信",
       "name": "主进程通道总数符合规模预期",
       "status": "PASS",
-      "durationMs": 2.81,
+      "durationMs": 4.59,
       "evidence": {
         "kind": "runtime-call",
         "value": "主进程共注册 69 个 IPC 通道（跨 9 个功能模块）",
@@ -1138,7 +1138,7 @@
       "category": "定时任务",
       "name": "思考轮播定时器随重建清理",
       "status": "PASS",
-      "durationMs": 0.45,
+      "durationMs": 0.74,
       "evidence": {
         "kind": "runtime-call",
         "value": "思考轮播定时器 setInterval 1 处 / clearInterval 2 处，重建前必先清理",
@@ -1152,7 +1152,7 @@
       "category": "定时任务",
       "name": "定时器回调校验节点存活",
       "status": "PASS",
-      "durationMs": 0.39,
+      "durationMs": 0.94,
       "evidence": {
         "kind": "runtime-call",
         "value": "思考轮播回调检查 el.isConnected，节点移除后自动停止轮询",
@@ -1166,7 +1166,7 @@
       "category": "定时任务",
       "name": "会话写入为同步落盘无延迟竞态",
       "status": "PASS",
-      "durationMs": 0.19,
+      "durationMs": 0.3,
       "evidence": {
         "kind": "runtime-call",
         "value": "session 模块用 writeFileSync 同步落盘，避免退出时未刷盘导致会话丢失",
@@ -1180,7 +1180,7 @@
       "category": "定时任务",
       "name": "文件变更广播随写入触发",
       "status": "PASS",
-      "durationMs": 55.64,
+      "durationMs": 51.53,
       "evidence": {
         "kind": "runtime-call",
         "value": "fs:revert 通道真实写回文件内容，读回为 \"hello\"",
@@ -1194,7 +1194,7 @@
       "category": "定时任务",
       "name": "回滚幂等：重复回滚结果一致",
       "status": "PASS",
-      "durationMs": 50.9,
+      "durationMs": 50.34,
       "evidence": {
         "kind": "runtime-call",
         "value": "对同一文件连续回滚 2 次，内容稳定为 v0（幂等）",
@@ -1208,7 +1208,7 @@
       "category": "定时任务",
       "name": "新建文件回滚后被删除",
       "status": "PASS",
-      "durationMs": 46.84,
+      "durationMs": 46.01,
       "evidence": {
         "kind": "runtime-call",
         "value": "existed=false 时回滚正确删除新建文件",
@@ -1222,7 +1222,7 @@
       "category": "定时任务",
       "name": "历史会话列表加载通道可用",
       "status": "PASS",
-      "durationMs": 24.43,
+      "durationMs": 23.35,
       "evidence": {
         "kind": "runtime-call",
         "value": "session:list 在空目录返回空列表，不抛异常",
@@ -1236,7 +1236,7 @@
       "category": "网络通信",
       "name": "AI 服务商 BaseURL 配置合法",
       "status": "PASS",
-      "durationMs": 22.62,
+      "durationMs": 23.74,
       "evidence": {
         "kind": "runtime-call",
         "value": "默认 BaseURL = https://api.deepseek.com/v1，协议前缀合法",
@@ -1250,7 +1250,7 @@
       "category": "网络通信",
       "name": "模型名非空且为字符串",
       "status": "PASS",
-      "durationMs": 23.44,
+      "durationMs": 24.65,
       "evidence": {
         "kind": "runtime-call",
         "value": "默认模型 = deepseek-flash",
@@ -1264,7 +1264,7 @@
       "category": "网络通信",
       "name": "Monaco 资源本地加载不走网络",
       "status": "PASS",
-      "durationMs": 0.65,
+      "durationMs": 0.75,
       "evidence": {
         "kind": "runtime-call",
         "value": "monaco:// 协议经 pathToFileURL 本地加载，index.html 无任何 CDN 引用",
@@ -1292,7 +1292,7 @@
       "category": "网络通信",
       "name": "AI 对话接口链路完整",
       "status": "PASS",
-      "durationMs": 0.3,
+      "durationMs": 0.25,
       "evidence": {
         "kind": "runtime-call",
         "value": "modules/ai.js 注册 4 个 AI 通道",
@@ -1306,7 +1306,7 @@
       "category": "网络通信",
       "name": "SSE 流式解析器容错",
       "status": "PASS",
-      "durationMs": 0.57,
+      "durationMs": 0.41,
       "evidence": {
         "kind": "runtime-call",
         "value": "SSE 解析器处理 [DONE] 结束标记与 choices 增量，空 delta 可安全忽略",
@@ -1320,7 +1320,7 @@
       "category": "网络通信",
       "name": "外部链接仅经系统浏览器打开",
       "status": "PASS",
-      "durationMs": 0.25,
+      "durationMs": 0.21,
       "evidence": {
         "kind": "runtime-call",
         "value": "fs.js 通过 fs:openExternal 交由系统浏览器打开，不在应用内开窗",
@@ -1334,7 +1334,7 @@
       "category": "回滚会话",
       "name": "会话写入后列表可读回",
       "status": "PASS",
-      "durationMs": 51.6,
+      "durationMs": 51.43,
       "evidence": {
         "kind": "runtime-call",
         "value": "写入 1 条会话，读回 task=\"回滚验证会话\"、status=done 一致",
@@ -1348,7 +1348,7 @@
       "category": "回滚会话",
       "name": "多种状态会话均可持久化",
       "status": "PASS",
-      "durationMs": 127.52,
+      "durationMs": 120.75,
       "evidence": {
         "kind": "runtime-call",
         "value": "running/done/error/stopped 四种状态均成功持久化",
@@ -1362,7 +1362,7 @@
       "category": "回滚会话",
       "name": "单会话删除生效",
       "status": "PASS",
-      "durationMs": 52.87,
+      "durationMs": 46.52,
       "evidence": {
         "kind": "runtime-call",
         "value": "session:delete 删除后列表归零",
@@ -1376,7 +1376,7 @@
       "category": "回滚会话",
       "name": "删除不存在的会话返回失败",
       "status": "PASS",
-      "durationMs": 25.51,
+      "durationMs": 27.92,
       "evidence": {
         "kind": "runtime-call",
         "value": "删除不存在的会话返回 true（force:true 幂等语义，对调用方表现为重试安全，但无法区分是否真的删过）",
@@ -1390,7 +1390,7 @@
       "category": "回滚会话",
       "name": "清空全部会话生效",
       "status": "PASS",
-      "durationMs": 93.05,
+      "durationMs": 91.75,
       "evidence": {
         "kind": "runtime-call",
         "value": "session:clear 后 3 条会话全部清除",
@@ -1404,7 +1404,7 @@
       "category": "回滚会话",
       "name": "会话导出为 Markdown",
       "status": "PASS",
-      "durationMs": 48.99,
+      "durationMs": 46.78,
       "evidence": {
         "kind": "runtime-call",
         "value": "session:export 输出 57 字符 Markdown，正文完整",
@@ -1418,7 +1418,7 @@
       "category": "回滚会话",
       "name": "文件撤销后 SHA-256 与原始一致",
       "status": "PASS",
-      "durationMs": 56.53,
+      "durationMs": 52.04,
       "evidence": {
         "kind": "runtime-call",
         "value": "回滚前后 SHA-256 均为 e0228bedb23faaa6…，逐字节还原",
@@ -1432,7 +1432,7 @@
       "category": "回滚会话",
       "name": "备份可生成且元数据完整",
       "status": "PASS",
-      "durationMs": 1800.71,
+      "durationMs": 2017.02,
       "evidence": {
         "kind": "runtime-call",
         "value": "备份快照 46 个文件，含时间戳/责任人/恢复指引",
@@ -1446,7 +1446,7 @@
       "category": "回滚会话",
       "name": "沙箱回滚演练零失配",
       "status": "PASS",
-      "durationMs": 3195.2,
+      "durationMs": 3309.85,
       "evidence": {
         "kind": "runtime-call",
         "value": "dryRunRollback 还原校验 46 个文件，失配 0 处",
@@ -1460,7 +1460,7 @@
       "category": "回滚会话",
       "name": "回滚演练能检出篡改",
       "status": "PASS",
-      "durationMs": 3237.09,
+      "durationMs": 3201.57,
       "evidence": {
         "kind": "runtime-call",
         "value": "向快照注入 main.js 篡改后，回滚演练如实报告失配（passed=false）",
@@ -1474,7 +1474,7 @@
       "category": "UI 渲染",
       "name": "Agents 事件处理已函数化可复用",
       "status": "PASS",
-      "durationMs": 0.6,
+      "durationMs": 0.64,
       "evidence": {
         "kind": "runtime-call",
         "value": "handleAgentEvent 独立成函数并注册到 onAgentEvent，性能钩子复用同一路径",
@@ -1488,7 +1488,7 @@
       "category": "UI 渲染",
       "name": "增量渲染签名机制就位",
       "status": "PASS",
-      "durationMs": 1.14,
+      "durationMs": 1.07,
       "evidence": {
         "kind": "runtime-call",
         "value": "sigOf 覆盖 9 种 entry 类型：user/agent-msg/tool/heal/plan/subtask/approval/change/error",
@@ -1502,7 +1502,7 @@
       "category": "UI 渲染",
       "name": "节点原地替换保持滚动位置",
       "status": "PASS",
-      "durationMs": 0.8,
+      "durationMs": 0.83,
       "evidence": {
         "kind": "runtime-call",
         "value": "签名变化用 replaceChild 原地替换；innerHTML 清空仅 1 处且受 __agentId 切换条件保护",
@@ -1516,7 +1516,7 @@
       "category": "UI 渲染",
       "name": "行级 diff 使用扁平 DP 表",
       "status": "PASS",
-      "durationMs": 0.69,
+      "durationMs": 0.6,
       "evidence": {
         "kind": "runtime-call",
         "value": "computeLineDiff 用 new Int32Array((n+1)*w) 单块内存做 LCS DP",
@@ -1530,7 +1530,7 @@
       "category": "UI 渲染",
       "name": "diff 结果带记忆化缓存",
       "status": "PASS",
-      "durationMs": 0.7,
+      "durationMs": 0.54,
       "evidence": {
         "kind": "runtime-call",
         "value": "lineDiff 带容量 24 的 FIFO 记忆化缓存，避免重复内容重算 O(n·m)",
@@ -1544,7 +1544,7 @@
       "category": "UI 渲染",
       "name": "Git 标记走 Set O(1) 查询",
       "status": "PASS",
-      "durationMs": 0.5,
+      "durationMs": 0.3,
       "evidence": {
         "kind": "runtime-call",
         "value": "gitMarkOf 目录分支调用 gitDirSet.has(rel)，祖先查询 O(1)",
@@ -1558,7 +1558,7 @@
       "category": "UI 渲染",
       "name": "Markdown 渲染防协议注入",
       "status": "PASS",
-      "durationMs": 0.82,
+      "durationMs": 0.37,
       "evidence": {
         "kind": "runtime-call",
         "value": "miniMarkdown 链接仅放行 http/https/mailto，其余协议降级为 #",
@@ -1572,7 +1572,7 @@
       "category": "UI 渲染",
       "name": "HTML 属性插值已转义",
       "status": "PASS",
-      "durationMs": 0.44,
+      "durationMs": 0.22,
       "evidence": {
         "kind": "runtime-call",
         "value": "fileUrlOf 对磁盘路径经 escapeHtml 处理，含引号文件名无法闭合属性",
@@ -1586,7 +1586,7 @@
       "category": "UI 渲染",
       "name": "escapeHtml 转义集合完整",
       "status": "PASS",
-      "durationMs": 0.88,
+      "durationMs": 0.29,
       "evidence": {
         "kind": "runtime-call",
         "value": "escapeHtml 字符类 [&<>\"'] 覆盖全部 5 个 HTML 敏感字符",
@@ -1600,7 +1600,7 @@
       "category": "UI 渲染",
       "name": "入场动效仅作用于最新条目",
       "status": "PASS",
-      "durationMs": 0.59,
+      "durationMs": 0.35,
       "evidence": {
         "kind": "runtime-call",
         "value": "新增节点后移除 prevLastNode 的 entry-in，动效不整树重播",
@@ -1614,7 +1614,7 @@
       "category": "终端工具",
       "name": "终端模块可注册 IPC",
       "status": "PASS",
-      "durationMs": 0.33,
+      "durationMs": 0.16,
       "evidence": {
         "kind": "runtime-call",
         "value": "terminal 模块注册 3 个通道（create/input/kill）",
@@ -1628,7 +1628,7 @@
       "category": "终端工具",
       "name": "Agent 工具集齐备 9 类",
       "status": "PASS",
-      "durationMs": 28.59,
+      "durationMs": 26.22,
       "evidence": {
         "kind": "runtime-call",
         "value": "工具处理器暴露 10 个工具：list_dir/list_tree/read_file/search_files/get_file_info/write_file/delete_file/move_file/spawn_subagent/run_command",
@@ -1642,12 +1642,12 @@
       "category": "终端工具",
       "name": "命令工具可被调度",
       "status": "PASS",
-      "durationMs": 28.31,
+      "durationMs": 29.44,
       "evidence": {
         "kind": "runtime-call",
-        "value": "run_command 透传「echo hi」至执行层（cwd=term-IFozjG、agent=smoke），回传「退出码: 0 + 模拟输出」，透传链路完整",
-        "detail": "run_command 透传「echo hi」至执行层（cwd=term-IFozjG、agent=smoke），回传「退出码: 0 + 模拟输出」，透传链路完整",
-        "hash": "af83d2029218"
+        "value": "run_command 透传「echo hi」至执行层（cwd=term-6Wv8ro、agent=smoke），回传「退出码: 0 + 模拟输出」，透传链路完整",
+        "detail": "run_command 透传「echo hi」至执行层（cwd=term-6Wv8ro、agent=smoke），回传「退出码: 0 + 模拟输出」，透传链路完整",
+        "hash": "f682b069344a"
       },
       "reason": ""
     },
@@ -1656,7 +1656,7 @@
       "category": "终端工具",
       "name": "子进程清理通道可空载调用",
       "status": "PASS",
-      "durationMs": 0.4,
+      "durationMs": 0.67,
       "evidence": {
         "kind": "runtime-call",
         "value": "killChildren 在无子进程时安全空载返回，不抛异常",

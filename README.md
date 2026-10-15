@@ -132,7 +132,7 @@ cursor-local/
 │       ├── smoke-suite.js      #   119 项全维烟测
 │       ├── static-compliance.js#   门禁 001-040 源码合规
 │       ├── perf-consistency.js #   门禁 041-069 性能与数据一致性
-│       ├── release-ops.js      #   门禁 070-090 发布防护
+│       ├── release-ops.js      #   门禁 070-091 发布防护
 │       ├── build-matrix.js     #   验收矩阵生成
 │       └── index.js            #   门禁编排入口
 ├── test/                  # 253 项单元测试
@@ -164,7 +164,7 @@ cursor-local/
 npm test                    # 253 项单元测试
 npm run test:coverage       # 核心模块真实行覆盖率
 npm run verify:smoke        # 119 项全维烟测
-npm run verify:gates        # 90 项质量门禁（含三态汇总与失败明细）
+npm run verify:gates        # 91 项质量门禁（含三态汇总与失败明细）
 npm run verify:matrix       # 由门禁真实结果渲染验收矩阵
 
 npm run release:baseline    # 生成 SHA-256 基线清单
@@ -182,8 +182,8 @@ npm run release:rollback    # 沙箱无损回滚演练
 | 单元测试 | **253 / 253 通过**（约 12s） |
 | 核心模块行覆盖率 | **98.69%**（分支 88.52%、函数 98.37%） |
 | 全维烟测 | **118 通过 / 0 失败 / 1 环境受限**（119 项） |
-| 质量门禁 | **90 通过 / 0 失败 / 0 环境受限**（90 项，通过率 100%） |
-| 验收矩阵 | **90 PASS / 0 FAIL** |
+| 质量门禁 | **91 通过 / 0 失败 / 0 环境受限**（91 项，通过率 100%） |
+| 验收矩阵 | **91 PASS / 0 FAIL** |
 | 发布基线 | **46 个核心文件** |
 
 核心模块覆盖率明细：

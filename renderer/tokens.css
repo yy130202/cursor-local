@@ -86,7 +86,10 @@
   /* ---------- 焦点：双层环 ----------
      内层用底色「抠」出间隙，外层强调色——任何底色上都 >= 3:1 可见，
      不依赖元素自身的背景色。 */
-  --focus-ring: 0 0 0 2px var(--bg-base), 0 0 0 4px var(--accent);
+  /* 焦点环：外置 outline + offset 抠缝。offset 露出的底色即「内层环」，
+     与 box-shadow 双层环视觉等效，但不会覆盖元素自身的 box-shadow。 */
+  --focus-ring: 2px solid var(--accent);
+  --focus-ring-offset: 2px;
 
   /* ---------- 字体栈 ---------- */
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei UI", "PingFang SC", sans-serif;

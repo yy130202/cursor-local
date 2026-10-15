@@ -339,13 +339,17 @@ function renderTabs() {
   const bar = document.getElementById('tabbar');
   bar.innerHTML = '';
   EditorState.tabs.forEach((t, idx) => {
+    const isActive = t.path === EditorState.activePath;
     const el = document.createElement('div');
-    el.className = 'tab' + (t.path === EditorState.activePath ? ' active' : '');
+    el.className = 'tab' + (isActive ? ' active' : '');
+    /* 无障碍：标签页语义 + 选中态；关闭按钮补 aria-label（原本只有 title，屏幕阅读器不保证朗读） */
+    el.setAttribute('role', 'tab');
+    el.setAttribute('aria-selected', isActive ? 'true' : 'false');
     el.draggable = true;
     el.innerHTML =
       '<span>' + CL.util.escapeHtml(t.name) + '</span>' +
-      (t.dirty ? '<span class="dirty">●</span>' : '') +
-      '<span class="close" title="关闭">×</span>';
+      (t.dirty ? '<span class="dirty" aria-label="未保存">●</span>' : '') +
+      '<span class="close" title="关闭" aria-label="关闭 ' + CL.util.escapeHtml(t.name) + '">×</span>';
     el.onclick = () => openFile(t.path);
     el.querySelector('.close').onclick = (ev) => closeTab(t.path, ev);
     el.oncontextmenu = (ev) => { ev.preventDefault(); showTabMenu(ev.clientX, ev.clientY, t.path); };

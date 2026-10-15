@@ -19,7 +19,7 @@ node --test test/config.test.js                      # 单个测试文件
 node --test --test-name-pattern="TTL" test/git.test.js   # 按用例名过滤
 
 npm run verify:smoke    # 119 项全维烟测（14 个维度）
-npm run verify:gates    # 90 项质量门禁，含三态汇总与失败明细
+npm run verify:gates    # 91 项质量门禁，含三态汇总与失败明细
 npm run verify:matrix   # 由门禁真实结果渲染验收矩阵（8 大维度）
 
 npm run release:baseline   # 生成 SHA-256 基线清单（45 个核心文件 + 自签摘要）
@@ -36,14 +36,14 @@ npm run release:rollback   # 沙箱无损回滚演练
 
 - 单元测试 **253 / 253 通过**
 - 全维烟测 **118 通过 / 0 失败 / 1 环境受限**（119 项）；`SMK-025` 需 Electron `safeStorage`，纯 Node 下必然 `SKIPPED_ENV`——这是环境限制，不是失败
-- 质量门禁 **90 通过 / 0 失败 / 0 环境受限**（90 项，约 17s，通过率 100%）
+- 质量门禁 **91 通过 / 0 失败 / 0 环境受限**（91 项，约 19s，通过率 100%）
 
 历史上两条「长期真实失败」**均已修复**（勿再当成已知问题）：
 
 - `GATE-016`：项目缺许可证声明 → 已补 MIT `LICENSE` + `package.json` 的 `license`/`author`
 - `GATE-037`：沙箱覆盖率 60.52% → 补全 `createToolHandlers` 的注入依赖后在 mkdtemp 沙箱内真实驱动 9 个工具处理器，升到 75.22%；同时**把基准 98% 修正为 70%**（98% 是 `npm run test:coverage` 的口径，与本门禁「单进程直接驱动导出、不加载测试也不 spawn」的口径不可比）。完整套件覆盖率仍由 `npm run test:coverage` 独立把关
 
-新增门禁后若总数不再是 90，需同步改 `scripts/gates/index.js` 中 `expected` 数组的长度（该文件硬编码了门禁数量，编号缺号会直接抛错）。注意 `GATE-090` 已存在但 `index.js` 的期望值仍写 89，属已知的校验偏松。
+新增门禁后需同步改 `scripts/gates/index.js` 中 `expected` 数组的长度（该文件硬编码了门禁数量，编号缺号会直接抛错）。此前 `GATE-090` 已存在而期望值仍写 89，属「新增门禁忘了改期望值」的校验偏松 —— 已随 `GATE-091` 一并修正到 91。
 
 ## 架构：主进程模块组装（关键）
 

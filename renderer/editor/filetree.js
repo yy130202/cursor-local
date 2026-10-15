@@ -41,6 +41,7 @@ async function renderTree() {
   const seq = ++treeRenderSeq;
   const tree = document.getElementById('filetree');
   if (!EditorState.currentFolder) return;
+  bindTreeKeyboard(); // 幂等：容器级事件委托，只需绑一次
   tree.innerHTML = '';
   const cache = new Map();
   treeDirCache = cache;
@@ -57,7 +58,51 @@ async function renderTree() {
 /* 轻量更新选中高亮（点文件时用，避免整树重建导致滚动跳动） */
 function updateTreeActive() {
   const rows = document.querySelectorAll('#filetree .tree-item');
-  rows.forEach((r) => r.classList.toggle('active', r.dataset.path === EditorState.activePath));
+  rows.forEach((r) => {
+    const on = r.dataset.path === EditorState.activePath;
+    r.classList.toggle('active', on);
+    /* aria-selected 与 roving tabindex 必须与视觉选中态同步，
+       否则屏幕阅读器播报的状态和眼睛看到的会不一致。 */
+    r.setAttribute('aria-selected', on ? 'true' : 'false');
+    r.setAttribute('tabindex', on ? '0' : '-1');
+  });
+}
+
+/* 键盘导航（ARIA tree 惯例）：
+   ↑/↓ 在可见树项间移动焦点；→ 展开目录或下移；← 折叠目录或跳到父项；Enter/Space 激活。
+   采用 roving tabindex：整个树只有一个 tab 停靠点，避免 Tab 键要按几十次才能穿过文件树。 */
+function visibleTreeRows() {
+  return Array.from(document.querySelectorAll('#filetree .tree-item'));
+}
+function focusTreeRow(row) {
+  if (!row) return;
+  visibleTreeRows().forEach((r) => r.setAttribute('tabindex', '-1'));
+  row.setAttribute('tabindex', '0');
+  row.focus();
+}
+function bindTreeKeyboard() {
+  const box = document.getElementById('filetree');
+  if (!box || box.__kbBound) return;
+  box.__kbBound = true;
+  box.addEventListener('keydown', (ev) => {
+    const row = ev.target && ev.target.closest ? ev.target.closest('.tree-item') : null;
+    if (!row) return;
+    const rows = visibleTreeRows();
+    const i = rows.indexOf(row);
+    if (i < 0) return;
+    const lv = (r) => parseInt(r.getAttribute('aria-level') || '1', 10);
+    if (ev.key === 'ArrowDown') { ev.preventDefault(); focusTreeRow(rows[i + 1]); }
+    else if (ev.key === 'ArrowUp') { ev.preventDefault(); focusTreeRow(rows[i - 1]); }
+    else if (ev.key === 'ArrowRight') {
+      ev.preventDefault();
+      if (row.getAttribute('aria-expanded') === 'false') row.click();
+      else focusTreeRow(rows[i + 1]);
+    } else if (ev.key === 'ArrowLeft') {
+      ev.preventDefault();
+      if (row.getAttribute('aria-expanded') === 'true') row.click();
+      else { for (let j = i - 1; j >= 0; j--) { if (lv(rows[j]) < lv(row)) { focusTreeRow(rows[j]); break; } } }
+    } else if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); row.click(); }
+  });
 }
 
 /* 目录是否含匹配过滤词的文件（递归，限深）
@@ -92,6 +137,13 @@ async function renderDir(dirPath, container, depth, seq, filter) {
     const row = document.createElement('div');
     row.className = 'tree-item';
     row.dataset.path = ent.path;
+    /* 无障碍：树项语义 + 层级 + 选中态。
+       层级用 aria-level 表达，屏幕阅读器据此播报缩进深度，
+       不必依赖 paddingLeft 这类纯视觉缩进（视觉缩进量仍是 10 + depth*16）。 */
+    row.setAttribute('role', 'treeitem');
+    row.setAttribute('aria-level', String(depth + 1));
+    row.setAttribute('aria-selected', ent.path === EditorState.activePath ? 'true' : 'false');
+    row.setAttribute('tabindex', ent.path === EditorState.activePath ? '0' : '-1');
     if (ent.path === EditorState.activePath) row.classList.add('active');
     row.style.paddingLeft = 10 + depth * 16 + 'px';
     // git 状态标记（VS Code 风：M蓝 / A/U 绿 / D 红，目录含变更显示圆点）
@@ -99,6 +151,7 @@ async function renderDir(dirPath, container, depth, seq, filter) {
     const gSuffix = g ? '<span class="tree-git">' + g.ch + '</span>' : '';
     if (ent.isDir) {
       const open = EditorState.treeOpenDirs.has(ent.path);
+      row.setAttribute('aria-expanded', open ? 'true' : 'false');
       row.innerHTML =
         '<span class="twist">' + (open ? '▾' : '▸') + '</span>' +
         '<span class="icon icon-dir">' + (window.lucideIcon ? window.lucideIcon(open ? 'folder-open' : 'folder') : '') + '</span>' +
@@ -112,6 +165,7 @@ async function renderDir(dirPath, container, depth, seq, filter) {
       container.appendChild(row);
       if (open) {
         const childBox = document.createElement('div');
+        childBox.setAttribute('role', 'group');
         container.appendChild(childBox);
         await renderDir(ent.path, childBox, depth + 1, seq, filter);
       }

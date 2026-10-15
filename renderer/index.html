@@ -19,22 +19,22 @@
     </div>
     <div class="top-search" id="top-search" title="全局搜索（Ctrl+Shift+F）">
       <span class="ts-ico"><i data-lucide="search"></i></span>
-      <input id="top-search-input" placeholder="搜索" spellcheck="false" readonly>
+      <input id="top-search-input" placeholder="搜索" spellcheck="false" readonly aria-label="搜索">
     </div>
     <div class="spacer"></div>
-    <button id="ai-toggle-btn" class="open-agents-btn" title="AI 搭子面板（Ctrl+Alt+B）"><i data-lucide="bot"></i><span>AI 搭子</span></button>
+    <button id="ai-toggle-btn" class="open-agents-btn" title="AI 搭子面板（Ctrl+Alt+B）" aria-label="AI 搭子面板（Ctrl+Alt+B）"><i data-lucide="bot"></i><span>AI 搭子</span></button>
     <div id="workdir-label"></div>
-    <button id="open-folder-btn" class="action icon-btn" title="打开文件夹"><i data-lucide="folder-open"></i></button>
-    <button id="git-btn" class="action icon-btn" title="源代码管理（Git）"><i data-lucide="git-branch"></i></button>
-    <button id="term-btn" class="action icon-btn" title="终端"><i data-lucide="square-terminal"></i></button>
-    <button id="theme-btn" class="action icon-btn" title="主题颜色" style="display:none"><i data-lucide="palette"></i></button>
-    <button id="log-btn" class="action icon-btn" title="日志"><i data-lucide="scroll-text"></i></button>
-    <button id="settings-btn" class="action icon-btn" title="设置" style="display:none"><i data-lucide="settings"></i></button>
+    <button id="open-folder-btn" class="action icon-btn" title="打开文件夹" aria-label="打开文件夹"><i data-lucide="folder-open"></i></button>
+    <button id="git-btn" class="action icon-btn" title="源代码管理（Git）" aria-label="源代码管理（Git）"><i data-lucide="git-branch"></i></button>
+    <button id="term-btn" class="action icon-btn" title="终端" aria-label="终端"><i data-lucide="square-terminal"></i></button>
+    <button id="theme-btn" class="action icon-btn" title="主题颜色" style="display:none" aria-label="主题颜色"><i data-lucide="palette"></i></button>
+    <button id="log-btn" class="action icon-btn" title="日志" aria-label="日志"><i data-lucide="scroll-text"></i></button>
+    <button id="settings-btn" class="action icon-btn" title="设置" style="display:none" aria-label="设置"><i data-lucide="settings"></i></button>
     <div id="user-area"></div>
     <div class="win-controls">
-      <button id="win-min" title="最小化"><i data-lucide="minus"></i></button>
-      <button id="win-max" title="最大化/还原"><i data-lucide="square"></i></button>
-      <button id="win-close" class="win-close" title="关闭"><i data-lucide="x"></i></button>
+      <button id="win-min" title="最小化" aria-label="最小化"><i data-lucide="minus"></i></button>
+      <button id="win-max" title="最大化/还原" aria-label="最大化/还原"><i data-lucide="square"></i></button>
+      <button id="win-close" class="win-close" title="关闭" aria-label="关闭"><i data-lucide="x"></i></button>
     </div>
   </header>
 
@@ -43,14 +43,14 @@
     <section id="editor-view" class="view active">
       <div id="filetree-panel">
         <div class="panel-title"><span>资源管理器</span></div>
-        <div class="tree-filter-wrap"><input id="tree-filter" class="tree-filter" placeholder="搜索文件…" spellcheck="false"></div>
-        <div id="filetree">
+        <div class="tree-filter-wrap"><input id="tree-filter" class="tree-filter" placeholder="搜索文件…" spellcheck="false" aria-label="搜索文件"></div>
+        <div id="filetree" role="tree" aria-label="文件树">
           <div id="filetree-empty">尚未打开文件夹<br><button class="action" onclick="openFolder()">打开文件夹</button><br><button class="action" id="tree-clone-btn" style="margin-top:8px">克隆仓库</button></div>
         </div>
         <div class="tree-resizer" id="tree-resizer" title="拖动调整宽度"></div>
       </div>
       <div id="editor-main">
-        <div id="tabbar"></div>
+        <div id="tabbar" role="tablist" aria-label="打开的编辑器标签页"></div>
         <div id="breadcrumb" class="breadcrumb"></div>
         <div id="editor-split">
           <div id="monaco-container"></div>
@@ -58,8 +58,8 @@
             <div class="fv-head">
               <span class="fv-title" id="fv-title">预览</span>
               <div class="fv-actions">
-                <button id="fv-open-ext" title="用系统默认程序打开"><i data-lucide="external-link"></i></button>
-                <button id="fv-close" title="关闭预览"><i data-lucide="x"></i></button>
+                <button id="fv-open-ext" title="用系统默认程序打开" aria-label="用系统默认程序打开"><i data-lucide="external-link"></i></button>
+                <button id="fv-close" title="关闭预览" aria-label="关闭预览"><i data-lucide="x"></i></button>
               </div>
             </div>
             <div class="fv-body" id="fv-body"></div>
@@ -68,8 +68,8 @@
             <div class="mdp-head">
               <span class="mdp-title"><i data-lucide="eye"></i>预览</span>
               <div class="mdp-actions">
-                <button id="mdp-fullscreen" title="全屏预览"><i data-lucide="maximize-2"></i></button>
-                <button id="mdp-close" title="收起预览"><i data-lucide="panel-right-close"></i></button>
+                <button id="mdp-fullscreen" title="全屏预览" aria-label="全屏预览"><i data-lucide="maximize-2"></i></button>
+                <button id="mdp-close" title="收起预览" aria-label="收起预览"><i data-lucide="panel-right-close"></i></button>
               </div>
             </div>
             <div class="mdp-body" id="mdp-body"></div>
@@ -85,21 +85,21 @@
       <div id="ai-panel-head">
         <span class="ai-brand"><i data-lucide="bot"></i><span>AI 搭子</span></span>
         <div class="spacer"></div>
-        <button id="ai-new-task" class="action icon-btn" title="新建任务（聚焦输入框）"><i data-lucide="square-check"></i></button>
-        <button id="ai-split-task" class="action icon-btn" title="把当前会话拆为子任务"><i data-lucide="git-fork"></i></button>
-        <button id="ai-export-md" class="action icon-btn" title="导出 Markdown 轨迹"><i data-lucide="download"></i></button>
-        <button id="ai-export-json" class="action icon-btn" title="导出 JSON 轨迹"><i data-lucide="braces"></i></button>
-        <button id="ai-theme-quick" class="action icon-btn" title="主题颜色"><i data-lucide="palette"></i></button>
-        <button id="ai-collapse" class="action icon-btn" title="折叠面板（Ctrl+Alt+B）"><i data-lucide="panel-right-close"></i></button>
+        <button id="ai-new-task" class="action icon-btn" title="新建任务（聚焦输入框）" aria-label="新建任务（聚焦输入框）"><i data-lucide="square-check"></i></button>
+        <button id="ai-split-task" class="action icon-btn" title="把当前会话拆为子任务" aria-label="把当前会话拆为子任务"><i data-lucide="git-fork"></i></button>
+        <button id="ai-export-md" class="action icon-btn" title="导出 Markdown 轨迹" aria-label="导出 Markdown 轨迹"><i data-lucide="download"></i></button>
+        <button id="ai-export-json" class="action icon-btn" title="导出 JSON 轨迹" aria-label="导出 JSON 轨迹"><i data-lucide="braces"></i></button>
+        <button id="ai-theme-quick" class="action icon-btn" title="主题颜色" aria-label="主题颜色"><i data-lucide="palette"></i></button>
+        <button id="ai-collapse" class="action icon-btn" title="折叠面板（Ctrl+Alt+B）" aria-label="折叠面板（Ctrl+Alt+B）"><i data-lucide="panel-right-close"></i></button>
       </div>
       <div id="ai-body">
       <div id="agents-sidebar">
-        <button id="new-task-btn" class="new-task-btn" title="新建任务（聚焦输入框）"><i data-lucide="square-check"></i><span>新建任务</span></button>
+        <button id="new-task-btn" class="new-task-btn" title="新建任务（聚焦输入框）" aria-label="新建任务（聚焦输入框）"><i data-lucide="square-check"></i><span>新建任务</span></button>
         <div class="panel-title"><span>会话</span><button id="new-agent-btn"><i data-lucide="plus"></i>新建</button></div>
-        <div id="agent-list"></div>
+        <div id="agent-list" role="list" aria-label="会话列表"></div>
         <div id="history-section" class="hidden">
-          <div class="history-title"><span>历史会话</span><button id="history-clear" class="history-clear" title="清空全部会话">清空</button></div>
-          <input id="history-filter" class="history-filter" placeholder="搜索会话…" spellcheck="false">
+          <div class="history-title"><span>历史会话</span><button id="history-clear" class="history-clear" title="清空全部会话" aria-label="清空全部会话">清空</button></div>
+          <input id="history-filter" class="history-filter" placeholder="搜索会话…" spellcheck="false" aria-label="搜索会话">
           <div id="history-list"></div>
         </div>
       </div>
@@ -115,7 +115,7 @@
           <span class="badge" id="agent-head-status"></span>
           <button id="agent-stop-btn" class="action" style="display:none"><i data-lucide="square"></i>停止</button>
         </div>
-        <div id="transcript"></div>
+        <div id="transcript" role="log" aria-live="polite" aria-label="AI 会话记录"></div>
         <div id="agents-empty">
           <div class="welcome-hero">
             <div class="welcome-icon"><i data-lucide="bot"></i></div>
@@ -136,10 +136,10 @@
           <textarea id="followup-input" rows="2" placeholder="描述任务，让 Agent 替你执行…（Enter 发送）"></textarea>
           <div class="composer-bar">
             <div class="composer-left">
-              <button class="mini-chip mode-chip" id="agents-mode-chip" title="选择工作模式"><i data-lucide="hammer"></i><span id="agents-mode-text">Craft</span><i data-lucide="chevron-down" class="chev"></i></button>
+              <button class="mini-chip mode-chip" id="agents-mode-chip" title="选择工作模式" aria-label="选择工作模式"><i data-lucide="hammer"></i><span id="agents-mode-text">Craft</span><i data-lucide="chevron-down" class="chev"></i></button>
               <span class="mini-chip" id="agents-model-chip" title="选择模型"><i data-lucide="cpu"></i><span id="agents-model-text">-</span></span>
             </div>
-            <button class="send-btn" id="followup-send" title="发送（Enter）"><i data-lucide="arrow-up"></i></button>
+            <button class="send-btn" id="followup-send" title="发送（Enter）" aria-label="发送（Enter）"><i data-lucide="arrow-up"></i></button>
           </div>
         </div>
       </div>
@@ -157,7 +157,7 @@
   </footer>
 
   <!-- 主题面板 -->
-  <div id="theme-panel" class="popover hidden">
+  <div id="theme-panel" class="popover hidden" role="dialog" aria-label="主题颜色">
     <div class="popover-title">主题颜色</div>
     <div class="theme-cards theme-grid" id="theme-cards-popover"></div>
     <div class="theme-custom">
@@ -167,7 +167,7 @@
   </div>
 
   <!-- 登录 / 注册 -->
-  <div id="consent-modal" class="modal hidden">
+  <div id="consent-modal" class="modal hidden" role="dialog" aria-modal="true" aria-label="欢迎使用与条款确认">
     <div class="modal-box consent-box">
       <div class="consent-head">
         <span class="consent-mark"><i data-lucide="shield-check"></i></span>
@@ -217,9 +217,9 @@
         <button id="tab-register">注册</button>
       </div>
       <form id="auth-form" autocomplete="off">
-        <label>用户名 / 邮箱<input id="auth-account" placeholder="用户名或邮箱"></label>
+        <label>用户名 / 邮箱<input id="auth-account" placeholder="用户名或邮箱" aria-label="用户名或邮箱"></label>
         <label id="auth-email-field" class="hidden">邮箱（选填）<input id="auth-email" placeholder="you@example.com"></label>
-        <label>密码<input id="auth-password" type="password" placeholder="密码"></label>
+        <label>密码<input id="auth-password" type="password" placeholder="密码" aria-label="密码"></label>
         <div id="auth-error" class="auth-error hidden"></div>
         <button type="submit" class="primary" id="auth-submit">登录</button>
       </form>
@@ -243,15 +243,15 @@
           <div class="sgroup">
             <div class="srow">
               <div class="srow-main"><div class="srow-label">Base URL</div><div class="srow-desc">OpenAI 兼容接口地址，修改后立即生效</div></div>
-              <input id="cfg-baseurl" placeholder="https://api.deepseek.com/v1">
+              <input id="cfg-baseurl" placeholder="https://api.deepseek.com/v1" aria-label="API Base URL">
             </div>
             <div class="srow">
               <div class="srow-main"><div class="srow-label">API Key</div><div class="srow-desc">加密存储在本机，不会上传</div></div>
-              <input id="cfg-apikey" type="password" placeholder="sk-...">
+              <input id="cfg-apikey" type="password" placeholder="sk-..." aria-label="API Key">
             </div>
             <div class="srow">
               <div class="srow-main"><div class="srow-label">模型 ID</div><div class="srow-desc">Agent 与对话使用的模型</div></div>
-              <input id="cfg-model" placeholder="deepseek-flash">
+              <input id="cfg-model" placeholder="deepseek-flash" aria-label="模型 ID">
             </div>
             <div class="srow">
               <div class="srow-main"><div class="srow-label">AI 代码补全</div><div class="srow-desc">输入时灰字补全，Tab 接受（Alt+\ 手动触发）</div></div>
@@ -338,7 +338,7 @@
           <div class="spage-title">记忆</div>
           <div class="sgroup">
             <div class="srow-label">全局记忆（跨项目共享的用户偏好，Agent 每次都会读取）</div>
-            <div class="mem-add-row"><input id="mem-add-input" placeholder="新增记忆，如：我习惯用简体中文注释，函数命名用 camelCase…" spellcheck="false"><button class="action" id="mem-add-btn">添加</button></div>
+            <div class="mem-add-row"><input id="mem-add-input" placeholder="新增记忆，如：我习惯用简体中文注释，函数命名用 camelCase…" spellcheck="false" aria-label="新增记忆，如：我习惯用简体中文注释，函数命名用 camelCase"><button class="action" id="mem-add-btn">添加</button></div>
             <div id="mem-global-list" class="mem-list"></div>
             <div class="srow-label" style="margin-top:14px">项目记忆（仅当前项目生效）</div>
             <div id="mem-project-list" class="mem-list"></div>

@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-10-15T11:51:24.117Z",
-  "commit": "3939a88c9f98e203569b44549df7c379512f6636",
+  "generatedAt": "2026-10-15T12:06:29.480Z",
+  "commit": "682e6a0ae7cc14f0254498f13b3df90137683c13",
   "tag": "v0.2-design-system",
   "configDigest": {
     "version": "0.1.0",
@@ -20,10 +20,10 @@
   },
   "metrics": {
     "artifactCount": 46,
-    "totalBytes": 684488
+    "totalBytes": 692260
   },
   "missing": [],
-  "setDigest": "dd84d35e36c1de471d742a64903359fcfab9935b1000e6b0f5b4949c4a28e2be",
+  "setDigest": "86b66e74f44060be2a4311f687b9081b344a9642331ddcd2597c00e57bed4fa6",
   "artifacts": [
     {
       "path": "main.js",
@@ -32,8 +32,8 @@
     },
     {
       "path": "main/testing.js",
-      "sha256": "0361953db29cab5d6e22c168c7de3b0c90e1e266ba075313ff25723968d71e3b",
-      "bytes": 36524
+      "sha256": "0b7227b1c224cc98ef21cd79efeb47c30fb89b98f9e5257e824ca547b45ff873",
+      "bytes": 39385
     },
     {
       "path": "modules/agent.js",
@@ -137,8 +137,8 @@
     },
     {
       "path": "renderer/editor.js",
-      "sha256": "088d4821d6f3f7bf40f4eaa915329475dc166d8110cb63bc168148b0ca9f1cd6",
-      "bytes": 20906
+      "sha256": "030b7ce75440127f3f66fd99ea74f927ef4663e790d7215231ef01c32231128e",
+      "bytes": 21254
     },
     {
       "path": "renderer/editor/breadcrumb.js",
@@ -147,8 +147,8 @@
     },
     {
       "path": "renderer/editor/filetree.js",
-      "sha256": "f1b37c34a02544236ae374dd7260572573dd3bbc3569302f50a42641e0f19a5a",
-      "bytes": 11787
+      "sha256": "f907af1ce38dc5db1ef1fcea38c4aa0902769a20a831d7824f92ec2a1cbbacfc",
+      "bytes": 14562
     },
     {
       "path": "renderer/editor/preview.js",
@@ -162,8 +162,8 @@
     },
     {
       "path": "renderer/index.html",
-      "sha256": "1175d65479806e862f12a9c14dc898c89d637a48dc4b1a129407c8716a0b9adc",
-      "bytes": 27669
+      "sha256": "a54ac5c924c9eb424d9a7f19b00756733a90c209faf8281f62bd4d7a8fa3cb5b",
+      "bytes": 29016
     },
     {
       "path": "renderer/inline.js",
@@ -227,8 +227,8 @@
     },
     {
       "path": "renderer/style.css",
-      "sha256": "09012a9e6a3d6519553bd152e64b502415df12a21ba764615e6fe6c476fdd0c1",
-      "bytes": 147407
+      "sha256": "02817c2057435539dde45b4b15f73e83429cae365af5e0cfdfd5c40a829e86aa",
+      "bytes": 147660
     },
     {
       "path": "renderer/terminal.js",
@@ -242,8 +242,8 @@
     },
     {
       "path": "renderer/tokens.css",
-      "sha256": "23e933945f238d8ea779c30cc65ac25c2a8ed1e217899ea1cf442412a03e4124",
-      "bytes": 9947
+      "sha256": "391019912c6eabd8f8bcf920251b82146b66ed197af3bc237c9ac2a2ee7c7c60",
+      "bytes": 10135
     },
     {
       "path": "store/billing.js",

@@ -1517,8 +1517,10 @@ body.aura-done #aura {
 /* ==================== 无障碍与细节打磨 ==================== */
 /* 文字选中色跟随主题 */
 ::selection { background: rgba(var(--accent-rgb), 0.32); }
-/* 键盘焦点态 */
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* 键盘焦点态（走 --focus-ring token）
+   此前是手写 "2px solid var(--accent)"，与 token 定义形式不一致，
+   导致 --focus-ring 变成定义了却没人用的死 token。 */
+:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-ring-offset); }
 /* 平滑滚动 */
 #filetree, #transcript, .git-list, .git-diff-body { scroll-behavior: smooth; }
 
@@ -1712,7 +1714,7 @@ body.aura-done #aura {
 .welcome-icon {
   width: 64px; height: 64px; margin: 0 auto var(--sp-4); border-radius: var(--radius-xl);
   display: grid; place-items: center;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  background: linear-gradient(135deg, var(--accent), var(--accent-2, var(--accent)));
   color: #fff; box-shadow: 0 12px 30px var(--glow);
   animation: orbFloat 8s ease-in-out infinite;
 }
@@ -2050,7 +2052,7 @@ svg.lucide { width: 15px; height: 15px; }
 /* 顶部流光带循环扫过 */
 .thinking::before {
   content: ''; position: absolute; top: 0; left: 0; height: 2px; width: 42%;
-  background: linear-gradient(90deg, transparent, var(--accent), var(--accent-2), transparent);
+  background: linear-gradient(90deg, transparent, var(--accent), var(--accent-2, var(--accent)), transparent);
   animation: thSweep 2.4s cubic-bezier(.4, 0, .2, 1) infinite;
 }
 @keyframes thSweep { 0% { transform: translateX(-105%); } 100% { transform: translateX(345%); } }
@@ -2059,7 +2061,7 @@ svg.lucide { width: 15px; height: 15px; }
 .th-orbit {
   position: relative; width: 20px; height: 20px; flex-shrink: 0; margin-top: var(--sp-half);
   border-radius: 50%;
-  background: conic-gradient(from 0deg, transparent 0deg, var(--accent) 80deg, var(--accent-2) 150deg, transparent 220deg, var(--accent) 300deg, transparent 360deg);
+  background: conic-gradient(from 0deg, transparent 0deg, var(--accent) 80deg, var(--accent-2, var(--accent)) 150deg, transparent 220deg, var(--accent) 300deg, transparent 360deg);
   -webkit-mask: radial-gradient(circle, transparent 0 5.5px, #000 6.5px);
   mask: radial-gradient(circle, transparent 0 5.5px, #000 6.5px);
   animation: thSpin 1.15s linear infinite;
@@ -2075,7 +2077,7 @@ svg.lucide { width: 15px; height: 15px; }
 .th-main { flex: 1; min-width: 0; }
 .th-label { font-size: var(--fs-base); color: var(--text); font-weight: 600; display: flex; align-items: baseline; }
 .th-shimmer {
-  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 45%, var(--accent) 90%);
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2, var(--accent)) 45%, var(--accent) 90%);
   background-size: 220% 100%;
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;

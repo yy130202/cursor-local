@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
-  "generatedAt": "2026-10-15T11:51:00.818Z",
+  "generatedAt": "2026-10-15T12:06:06.258Z",
   "project": "cursor-local",
   "version": "0.1.0",
-  "commit": "3939a88c9f98e203569b44549df7c379512f6636",
+  "commit": "682e6a0ae7cc14f0254498f13b3df90137683c13",
   "tag": "v0.2-design-system",
   "configDigest": {
     "version": "0.1.0",
@@ -28,7 +28,7 @@
   },
   "metrics": {
     "fileCount": 46,
-    "totalBytes": 684488
+    "totalBytes": 692260
   },
   "files": {
     "main.js": {
@@ -37,9 +37,9 @@
       "mtime": "2026-10-15T10:04:41.383Z"
     },
     "main/testing.js": {
-      "sha256": "0361953db29cab5d6e22c168c7de3b0c90e1e266ba075313ff25723968d71e3b",
-      "bytes": 36524,
-      "mtime": "2026-10-15T11:46:06.148Z"
+      "sha256": "0b7227b1c224cc98ef21cd79efeb47c30fb89b98f9e5257e824ca547b45ff873",
+      "bytes": 39385,
+      "mtime": "2026-10-15T11:57:51.999Z"
     },
     "modules/agent.js": {
       "sha256": "bb3e7343794cc658baaebc6bf79dc58e55c05586b9413df5bd80df01bd98b292",
@@ -142,9 +142,9 @@
       "mtime": "2026-10-06T03:07:20.535Z"
     },
     "renderer/editor.js": {
-      "sha256": "088d4821d6f3f7bf40f4eaa915329475dc166d8110cb63bc168148b0ca9f1cd6",
-      "bytes": 20906,
-      "mtime": "2026-10-06T03:14:27.984Z"
+      "sha256": "030b7ce75440127f3f66fd99ea74f927ef4663e790d7215231ef01c32231128e",
+      "bytes": 21254,
+      "mtime": "2026-10-15T11:55:54.639Z"
     },
     "renderer/editor/breadcrumb.js": {
       "sha256": "f8658247f2e76fc8d6c0897a384e025cebdbf391aea66bec1d27912208e88fa4",
@@ -152,9 +152,9 @@
       "mtime": "2026-10-06T03:14:14.464Z"
     },
     "renderer/editor/filetree.js": {
-      "sha256": "f1b37c34a02544236ae374dd7260572573dd3bbc3569302f50a42641e0f19a5a",
-      "bytes": 11787,
-      "mtime": "2026-10-15T11:05:04.556Z"
+      "sha256": "f907af1ce38dc5db1ef1fcea38c4aa0902769a20a831d7824f92ec2a1cbbacfc",
+      "bytes": 14562,
+      "mtime": "2026-10-15T11:56:16.005Z"
     },
     "renderer/editor/preview.js": {
       "sha256": "7abe645278f4459d9c2fa98fa408f386d9927972954353d45a73c0e5be981c89",
@@ -167,9 +167,9 @@
       "mtime": "2026-10-14T12:22:03.639Z"
     },
     "renderer/index.html": {
-      "sha256": "1175d65479806e862f12a9c14dc898c89d637a48dc4b1a129407c8716a0b9adc",
-      "bytes": 27669,
-      "mtime": "2026-10-15T10:48:11.245Z"
+      "sha256": "a54ac5c924c9eb424d9a7f19b00756733a90c209faf8281f62bd4d7a8fa3cb5b",
+      "bytes": 29016,
+      "mtime": "2026-10-15T11:55:32.914Z"
     },
     "renderer/inline.js": {
       "sha256": "67d3146b43f6aec6ed360535822b06239352f6bd65c08a1d038305b2659597c9",
@@ -232,9 +232,9 @@
       "mtime": "2026-10-15T10:04:41.705Z"
     },
     "renderer/style.css": {
-      "sha256": "09012a9e6a3d6519553bd152e64b502415df12a21ba764615e6fe6c476fdd0c1",
-      "bytes": 147407,
-      "mtime": "2026-10-15T11:50:06.252Z"
+      "sha256": "02817c2057435539dde45b4b15f73e83429cae365af5e0cfdfd5c40a829e86aa",
+      "bytes": 147660,
+      "mtime": "2026-10-15T12:02:17.499Z"
     },
     "renderer/terminal.js": {
       "sha256": "7bea8d7abec94c386f5f00339460212072e30d427f2b9d8a68067133fac8a72e",
@@ -247,9 +247,9 @@
       "mtime": "2026-10-15T10:51:11.271Z"
     },
     "renderer/tokens.css": {
-      "sha256": "23e933945f238d8ea779c30cc65ac25c2a8ed1e217899ea1cf442412a03e4124",
-      "bytes": 9947,
-      "mtime": "2026-10-15T11:49:14.843Z"
+      "sha256": "391019912c6eabd8f8bcf920251b82146b66ed197af3bc237c9ac2a2ee7c7c60",
+      "bytes": 10135,
+      "mtime": "2026-10-15T11:56:53.201Z"
     },
     "store/billing.js": {
       "sha256": "59aead208c0917df028d9e24d02878fe9bdaac376759cbf13c3032dbd6167cc2",
@@ -262,5 +262,5 @@
       "mtime": "2026-09-25T00:15:16.857Z"
     }
   },
-  "manifestDigest": "e2dfa2339d3c124c2fe88c4b8bd1ae4aa2de2777db0c161bd2759ee37c51a1be"
+  "manifestDigest": "b9a9b1f2d5cc3f398d2f9ba2dd2bae596524b19a0ede034273a6a27396eaf966"
 }
