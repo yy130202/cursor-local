@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
-  "generatedAt": "2026-10-15T12:06:06.258Z",
+  "generatedAt": "2026-10-15T12:10:04.533Z",
   "project": "cursor-local",
   "version": "0.1.0",
-  "commit": "682e6a0ae7cc14f0254498f13b3df90137683c13",
+  "commit": "38713b5267d64e7819eb3dde4f00dfc9a74b78cd",
   "tag": "v0.2-design-system",
   "configDigest": {
     "version": "0.1.0",

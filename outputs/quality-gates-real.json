@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-15T12:06:29.457Z",
-  "durationMs": 19214,
+  "generatedAt": "2026-10-15T12:10:28.828Z",
+  "durationMs": 20225,
   "total": 91,
   "passed": 91,
   "failed": 0,
@@ -16,12 +16,12 @@
         "kind": "static-scan",
         "value": {
           "files": 73,
-          "chars": 1083985,
+          "chars": 1084609,
           "dirty": 0,
           "exempted": 2
         },
-        "detail": "递归扫描 73 个源码文件（js/json/html/css/md），累计 1,083,985 字符，真实编码损坏 0 处；另有 2 处为讲解坏字符处理的有意示例（已豁免）: CLAUDE.md:58 文档示例, scripts/gates/static-compliance.js:418 文档示例",
-        "hash": "a5fc6875d8cf",
+        "detail": "递归扫描 73 个源码文件（js/json/html/css/md），累计 1,084,609 字符，真实编码损坏 0 处；另有 2 处为讲解坏字符处理的有意示例（已豁免）: CLAUDE.md:58 文档示例, scripts/gates/static-compliance.js:418 文档示例",
+        "hash": "5453dfb543f4",
         "metric": null,
         "unit": "char"
       },
@@ -406,7 +406,7 @@
           "binaries": 0,
           "images": 0
         },
-        "detail": "遍历仓库全部 76 个文件（已排除 node_modules 等目录）：.ttf/.otf/.woff/.eot/.exe/.dll/.so/.dylib/.msi/.jar 类字体与二进制 0 个；图片类资产 0 个",
+        "detail": "遍历仓库全部 77 个文件（已排除 node_modules 等目录）：.ttf/.otf/.woff/.eot/.exe/.dll/.so/.dylib/.msi/.jar 类字体与二进制 0 个；图片类资产 0 个",
         "hash": "93b8c13bbab7",
         "metric": null,
         "unit": "file"
@@ -501,10 +501,10 @@
           "pass": 253,
           "fail": 0,
           "total": 253,
-          "durationMs": 6731
+          "durationMs": 7423
         },
-        "detail": "node:test isolation:'none' 真实执行 253 个用例：通过 253，失败 0，耗时 6731ms。分文件：agent-tools.test.js:85 agent.test.js:52 agents-render.test.js:28 config.test.js:14 filetree-gitmark.test.js:13 fs-grep.test.js:10 git.test.js:13 release-guard.test.js:4 session.test.js:18 user-store.test.js:16",
-        "hash": "79f8e6b54e6e",
+        "detail": "node:test isolation:'none' 真实执行 253 个用例：通过 253，失败 0，耗时 7423ms。分文件：agent-tools.test.js:85 agent.test.js:52 agents-render.test.js:28 config.test.js:14 filetree-gitmark.test.js:13 fs-grep.test.js:10 git.test.js:13 release-guard.test.js:4 session.test.js:18 user-store.test.js:16",
+        "hash": "8c130f73b723",
         "metric": null,
         "unit": "test"
       },
@@ -709,8 +709,8 @@
       "evidence": {
         "kind": "metric",
         "value": {
-          "overall": 80.98,
-          "totalCovered": 298,
+          "overall": 72.83,
+          "totalCovered": 268,
           "totalLines": 368,
           "tools": 10,
           "perModule": [
@@ -730,15 +730,15 @@
             },
             {
               "file": "tools.js",
-              "functions": 17,
-              "coveredLines": 134,
+              "functions": 16,
+              "coveredLines": 104,
               "totalLines": 174,
-              "linePct": 77.01
+              "linePct": 59.77
             }
           ]
         },
-        "detail": "inspector 精确覆盖率汇总 298/368 行 = 80.98%（user-store.js 107/114行(93.86%,18个函数)；config.js 57/80行(71.25%,6个函数)；tools.js 134/174行(77.01%,17个函数)），已达沙箱驱动口径 70% 基准线；期间真实构造并执行 10 个工具处理器。注：本口径不加载测试文件、不 spawn 真实 shell，与 npm run test:coverage 的完整套件覆盖率不可直接比较",
-        "hash": "d7bfbf12aaae",
+        "detail": "inspector 精确覆盖率汇总 268/368 行 = 72.83%（user-store.js 107/114行(93.86%,18个函数)；config.js 57/80行(71.25%,6个函数)；tools.js 104/174行(59.77%,16个函数)），已达沙箱驱动口径 70% 基准线；期间真实构造并执行 10 个工具处理器。注：本口径不加载测试文件、不 spawn 真实 shell，与 npm run test:coverage 的完整套件覆盖率不可直接比较",
+        "hash": "985cce8b1a6b",
         "metric": null,
         "unit": "percent"
       },
@@ -807,12 +807,12 @@
       "evidence": {
         "kind": "metric",
         "value": {
-          "durationMs": 6731,
+          "durationMs": 7423,
           "total": 253,
-          "perSecond": 37.6
+          "perSecond": 34.1
         },
-        "detail": "真实执行 253 个用例耗时 6731ms（37.6 用例/秒），在 15000ms 预算内；测量方式为 node:test isolation:'none' 进程内执行，含模块加载与断言开销",
-        "hash": "aa869bfbee4a",
+        "detail": "真实执行 253 个用例耗时 7423ms（34.1 用例/秒），在 15000ms 预算内；测量方式为 node:test isolation:'none' 进程内执行，含模块加载与断言开销",
+        "hash": "120908697d35",
         "metric": null,
         "unit": "ms"
       },
@@ -1063,11 +1063,11 @@
       "evidence": {
         "kind": "metric",
         "value": {
-          "ms": 1.37,
+          "ms": 1.26,
           "bytes": 175379
         },
-        "detail": "hrtime 真实计时：读取 renderer/index.html(26058B) + tokens.css(7732B) + style.css(141589B) 同步耗时 1.37ms（门槛 <50ms，本地磁盘无网络往返）",
-        "hash": "6a25f36aa7e4",
+        "detail": "hrtime 真实计时：读取 renderer/index.html(26058B) + tokens.css(7732B) + style.css(141589B) 同步耗时 1.26ms（门槛 <50ms，本地磁盘无网络往返）",
+        "hash": "2e38e262ac67",
         "metric": null,
         "unit": "ms"
       },
@@ -1081,11 +1081,11 @@
       "evidence": {
         "kind": "metric",
         "value": {
-          "heapUsedMb": 23.33,
-          "rssMb": 102.09
+          "heapUsedMb": 13.04,
+          "rssMb": 76.99
         },
-        "detail": "门禁进程真实内存快照：heapUsed 23.33MB、rss 102.09MB，远低于 800MB 告警水位",
-        "hash": "9a2af2869abb",
+        "detail": "门禁进程真实内存快照：heapUsed 13.04MB、rss 76.99MB，远低于 800MB 告警水位",
+        "hash": "f36a7eb9f841",
         "metric": null,
         "unit": "MB"
       },
@@ -1295,10 +1295,10 @@
       "evidence": {
         "kind": "artifact",
         "value": {
-          "sha": "2a903a71fad24bd3"
+          "sha": "66ea6f052e33bfb9"
         },
-        "detail": "checksum.sha256 记录 2a903a71fad24bd3…；重算一致；将 operator 篡改为 attacker 后哈希立即失配，防篡改有效",
-        "hash": "8f8f6ecb2415",
+        "detail": "checksum.sha256 记录 66ea6f052e33bfb9…；重算一致；将 operator 篡改为 attacker 后哈希立即失配，防篡改有效",
+        "hash": "15324b5047f8",
         "metric": null,
         "unit": "byte"
       },
@@ -1349,11 +1349,11 @@
       "evidence": {
         "kind": "artifact",
         "value": {
-          "commit": "682e6a0ae7cc",
+          "commit": "38713b5267d6",
           "known": true
         },
-        "detail": "基线 commit 为合法 40 位 Git SHA（682e6a0ae7cc…），经格式校验且非历史编造占位值",
-        "hash": "678021fc5045",
+        "detail": "基线 commit 为合法 40 位 Git SHA（38713b5267d6…），经格式校验且非历史编造占位值",
+        "hash": "233376cc87bc",
         "metric": null,
         "unit": "char"
       },
@@ -1458,11 +1458,11 @@
         "kind": "artifact",
         "value": {
           "files": 46,
-          "createdAt": "2026-10-15T12:06:27.241Z",
+          "createdAt": "2026-10-15T12:10:26.589Z",
           "operator": "release-gate"
         },
-        "detail": "备份快照 46 个文件均带 64 位 sha256，元数据含时间戳 2026-10-15T12:06:27.241Z、责任人 release-gate、恢复指引与 checksum.sha256 校验值",
-        "hash": "a54216cf3fad",
+        "detail": "备份快照 46 个文件均带 64 位 sha256，元数据含时间戳 2026-10-15T12:10:26.589Z、责任人 release-gate、恢复指引与 checksum.sha256 校验值",
+        "hash": "be371bd7d3dc",
         "metric": null,
         "unit": "file"
       },
@@ -1640,7 +1640,7 @@
         "value": {
           "files": 4
         },
-        "detail": "发布报告齐全且内容非空、JSON 可正常解析: release-baseline.json(9266B) artifact-manifest.json(7783B) quality-gates-real.json(44765B) release-verification-matrix.html(43857B)",
+        "detail": "发布报告齐全且内容非空、JSON 可正常解析: release-baseline.json(9266B) artifact-manifest.json(7783B) quality-gates-real.json(44763B) release-verification-matrix.html(43856B)",
         "hash": "1c8519240712",
         "metric": null,
         "unit": "file"
@@ -1714,12 +1714,12 @@
         "kind": "invariant",
         "value": {
           "docs": 3,
-          "tables": 6,
+          "tables": 7,
           "bareAngle": 0,
           "tableIssues": 0
         },
-        "detail": "逐行解析 3 份文档（README.md、CLAUDE.md、交付总结.md）共 6 个 Markdown 表格：分隔行全部合法、各表列数与表头一致；剥离行内代码后无残留裸尖括号，文档在任何 HTML 渲染器下均不会丢字",
-        "hash": "72f9746bc762",
+        "detail": "逐行解析 3 份文档（README.md、CLAUDE.md、交付总结.md）共 7 个 Markdown 表格：分隔行全部合法、各表列数与表头一致；剥离行内代码后无残留裸尖括号，文档在任何 HTML 渲染器下均不会丢字",
+        "hash": "df665f9354b3",
         "metric": null,
         "unit": "file"
       },

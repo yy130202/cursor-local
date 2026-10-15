@@ -1,0 +1,60 @@
+# Cursor Local — 持续验证
+#
+# 【为什么跑在 windows-latest 而不是 ubuntu】
+#   本项目是 Windows 优先：终端走 `cmd.exe /q /k chcp 65001`、杀进程用 `taskkill /T /F`、
+#   路径含反斜杠、无边框透明窗口在 Windows 上有专门处理（SHOT_MODE 下强制非透明）。
+#   放到 Linux runner 上，这些平台分支根本不会被执行，绿灯就成了假象。
+#
+# 【为什么 CI 里不跑 npm run screenshot（6 条运行时断言）】
+#   它需要真实 Electron 窗口 + GUI 会话做像素级测量：点击热区 ≥24×24、面板折叠宽度、
+#   亮色主题亮度采样、文件树方向键焦点移动。这些依赖 GUI 会话，不适合放进每次 push。
+#   它是本地 / 发布前的验收步骤，命令本身仍是可重复的一键调用：npm run screenshot
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 单元测试（253 项）
+        run: npm test
+
+      - name: 质量门禁（91 项，含三态汇总）
+        run: npm run verify:gates
+
+      - name: 全维烟测（119 项）
+        run: npm run verify:smoke
+
+      - name: 验收矩阵（8 大维度）
+        run: npm run verify:matrix
+
+      - name: 发布前全量预演（基线 → 备份 → 回滚演练 → 上线后校验）
+        run: npm run release:dryrun
+
+      - name: 上传验证产物
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-outputs
+          path: outputs/
+          retention-days: 7

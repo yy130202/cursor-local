@@ -217,6 +217,22 @@ npm run verify:gates                   # 2. 重新校验，确认失败项归零
 判断标准：**基线失败项只应在「刚改完代码、尚未固化」的窗口期出现**。
 若在稳定状态下仍报基线不一致，说明有未预期的文件被修改，需要排查。
 
+### 持续集成
+
+`.github/workflows/verify.yml` 在 push（main）与 PR 时自动执行，依赖走 npm 缓存：
+
+| 步骤 | 内容 |
+| --- | --- |
+| `npm test` | 253 项单元测试 |
+| `npm run verify:gates` | 91 项质量门禁（含三态汇总） |
+| `npm run verify:smoke` | 119 项全维烟测 |
+| `npm run verify:matrix` | 8 维度验收矩阵 |
+| `npm run release:dryrun` | 基线 → 备份 → 回滚演练 → 上线后校验 |
+
+跑在 **windows-latest 而非 ubuntu**：本项目终端走 `cmd.exe /q /k chcp 65001`、杀进程用 `taskkill /T /F`、路径含反斜杠、无边框透明窗口有 Windows 专属处理 —— 放到 Linux runner 上这些平台分支根本不会被执行，绿灯会是假象。
+
+**不在 CI 里跑 `npm run screenshot`**：它需要真实 Electron 窗口与 GUI 会话做像素级测量（点击热区 ≥24×24、面板折叠宽度、亮色主题亮度采样、文件树方向键焦点移动）。这类断言属于本地与发布前的验收环节，命令本身仍是一键可重复调用。
+
 ### 验收矩阵
 
 `outputs/release-verification-matrix.html` 由门禁真实结果自动渲染，
