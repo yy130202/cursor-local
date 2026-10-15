@@ -52,7 +52,7 @@ test('runAgent builds authenticated stream requests and completes a text-only re
   assert.equal(body.stream, true);
   assert.equal(body.model, 'test-model');
   assert.equal(body.tool_choice, 'auto');
-  assert.equal(body.tools.length, 10); // 9 个基础工具 + spawn_subagent（新增工具时同步更新）
+  assert.equal(body.tools.length, 11); // 9 个基础工具 + spawn_subagent + apply_patch（新增工具时同步更新）
   assert.equal(body.messages[1].content, agent.task);
   assert.equal(agent.messages[2].role, 'assistant');
   assert.equal(agent.messages[2].content, '完成');

@@ -55,7 +55,7 @@ main.js（组装点）
  ├─ modules/log.js       内存日志环形缓冲 + log:event 推送 — registerLog
  ├─ modules/fs.js        文件读写/搜索/压缩包列表/系统程序打开 — registerFs
  ├─ modules/agent.js     ★ Agent 引擎：工具循环 + SSE 流式 + 沙箱 + 审批 + LLM 调用
- │   └─ modules/agent/tools.js   10 个工具的表驱动实现
+ │   └─ modules/agent/tools.js   11 个工具的表驱动实现
  ├─ modules/session.js   会话持久化 + 文件回滚 revertFile + 轨迹导出 exportTrajectory（注入 agents，优先读内存中未落盘的会话）
  ├─ modules/git.js       git status/diff/stage/commit/branch/push/log（1200ms TTL 缓存）
  ├─ modules/terminal.js  终端 shell 双向流（xterm.js 前端侧）
@@ -72,7 +72,7 @@ main.js（组装点）
 
 ## Agent 引擎（modules/agent.js）
 
-- **工具集（10 个）**：`list_dir` / `list_tree` / `read_file` / `write_file` / `delete_file` / `move_file` / `search_files` / `get_file_info` / `run_command` / `spawn_subagent`（创建子 agent 并等待其完成）
+- **工具集（11 个）**：`list_dir` / `list_tree` / `read_file` / `write_file` / `apply_patch`（多文件 unified diff，只动指定几行，上下文不匹配则明确报错而不落盘） / `delete_file` / `move_file` / `search_files` / `get_file_info` / `run_command` / `spawn_subagent`（创建子 agent 并等待其完成）
 - **加/改工具时测试要同步**：`test/agent.test.js` 有断言直接比对 `body.tools.length`，工具数变化必须一起改（漏改只在 `--test-isolation=none` 的跑法下才暴露，见「测试约定」）
 - **加工具改两处**：`AGENT_TOOLS`（给模型的 schema 数组）+ `modules/agent/tools.js` 的处理器表。分发器 `executeTool()` 是表驱动的，**永远不需要改动**。
 - **循环**：`runAgent` → `agentLoop`（最多 30 轮）。流式走 `chatCompletionStream` 手写 SSE 解析；`reasoning_content` 单独走 `reasoning_delta` 事件用于「思考框」。`MOCK_LLM=1` 时走 `chatCompletion` 返回固定脚本（含刻意触发的越界写入与 `rm -rf` 以验证沙箱）。

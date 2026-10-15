@@ -348,6 +348,11 @@ function argsSummary(name, args) {
   if (!args) return '';
   if (name === 'run_command') return args.command || '';
   if (name === 'write_file') return args.path || '';
+  if (name === 'apply_patch') {
+    // 补丁正文可能很长，直接 JSON 化会把工具卡标题撑爆；摘要出涉及的文件数即可
+    const n = ((args.patch || '').match(/^\+\+\+ /gm) || []).length;
+    return n ? n + ' 个文件' : '补丁';
+  }
   return JSON.stringify(args).slice(0, 120);
 }
 
@@ -399,6 +404,7 @@ function toolIconName(name) {
     list_dir: 'folder-search',
     read_file: 'file-search',
     write_file: 'file-pen',
+    apply_patch: 'file-diff',
     run_command: 'square-terminal'
   }[name] || 'wrench';
 }

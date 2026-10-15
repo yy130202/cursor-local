@@ -1301,6 +1301,17 @@ async function runStaticComplianceGates() {
       }
       const span = top.ranges[0].endOffset - top.ranges[0].startOffset;
       const src = fs.readFileSync(entry.url.replace(/^file:\/\/\//, '/').replace(/^\/([A-Za-z]:)/, '$1'), 'utf8');
+      /*
+       * 基线必须覆盖文件主体，否则落在统计范围之外的代码永远不计入 ——
+       * 覆盖率会静默偏低且毫无报错。真实踩过：tools.js 新增 apply_patch 时，
+       * 四个模块级辅助函数被声明在最外层函数之后，它们的 endOffset 更大，
+       * 于是 top 选中了末尾的小函数，tools.js 覆盖率从 62% 假跌到 9.7%。
+       * 与其给出一个偏低但看着「无害」的数字，不如直接失败并指明修法。
+       */
+      must(span >= src.length * 0.9,
+        `${path.basename(entry.url)} 的覆盖率基线仅覆盖 ${span}/${src.length} 字节：`
+        + '文件末尾存在模块级函数声明，会让统计范围被截断、覆盖率系统性偏低。'
+        + '请把模块级辅助函数移到最外层函数之前。');
       const lines = new Set();
       for (const off of covered) lines.add(src.slice(0, off).split('\n').length);
       const totalLines = src.split('\n').length;
@@ -1439,6 +1450,17 @@ async function runStaticComplianceGates() {
           try { await handlers.list_tree(mkCtx({ args: { path: 'no-such-dir' } })); } catch { /* 读目录失败分支 */ }
           try { await handlers.list_dir(mkCtx({ args: { path: 'no-such-dir' } })); } catch { /* 读目录失败分支 */ }
           await handlers.write_file(mkCtx({ args: { path: 'cov-probe.txt', content: 'changed' } }));
+          /* apply_patch：真实驱动「解析 → 定位 → 校验 → 写入」全链路，并逐一走失败分支。
+             新增工具若不在这里驱动，tools.js 覆盖率会立刻掉下来 —— 这正是本门禁的作用。 */
+          const mkPatch = (p) => mkCtx({ args: { patch: p } });
+          await handlers.apply_patch(mkPatch('--- a/cov-probe.txt\n+++ b/cov-probe.txt\n@@ -1,1 +1,1 @@\n-changed\n+patched'));
+          await handlers.apply_patch(mkPatch('*** Update File: cov-probe.txt\n@@ -1,1 +1,1 @@\n-patched\n+shortcut')); // 简写头分支
+          await handlers.apply_patch(mkPatch('--- /dev/null\n+++ b/cov-new.txt\n@@ -0,0 +1,1 @@\n+fresh'));               // 新建文件分支
+          await handlers.apply_patch(mkPatch('--- a/cov-probe.txt\n+++ b/cov-probe.txt\n@@ -1,1 +1,1 @@\n-nonexistent-context\n+never'));     // 上下文不匹配
+          await handlers.apply_patch(mkPatch('--- a/sub/absent.txt\n+++ b/sub/absent.txt\n@@ -1,1 +1,1 @@\n-x\n+y'));             // 文件不存在却带删除行
+          await handlers.apply_patch(mkPatch('not a diff'));                                                  // 无法解析
+          await handlers.apply_patch(mkCtx({ args: {} }));                                                    // 缺 patch 参数
+          await handlers.apply_patch(mkCtx({ args: { patch: '--- a/cov-a.txt\n+++ b/cov-a.txt\n@@ -1,1 +1,1 @@\n-a\n+A' }, guard: async () => { throw new Error('沙箱拦截'); } })); // guard 抛错分支
         } catch { /* 驱动异常不阻断覆盖率采集，数值仍真实反映已执行部分 */ }
 
         const { result } = await post('Profiler.takePreciseCoverage');

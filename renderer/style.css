@@ -376,6 +376,7 @@ main { flex: 1; display: flex; min-height: 0; position: relative; z-index: 1; }
 .tool-card .tag svg.lucide { width: 12px; height: 12px; }
 .tag.read_file, .tag.list_dir { background: #0a6391; }
 .tag.write_file { background: #946f24; }
+.tag.apply_patch { background: #0e7490; }
 .tag.run_command { background: #7a3e9d; }
 .tool-card .args { color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
 .tool-card pre {

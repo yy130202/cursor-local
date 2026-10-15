@@ -408,3 +408,99 @@ test('run_command supplies its fallback command when no command argument is prov
   assert.equal(h.spawned[0][0], 'echo no-command');
   assert.match(await promise, /退出码: 0/);
 });
+
+/* ==========================================================================
+   apply_patch：多文件 unified diff
+   为什么单独测：write_file 是整文件覆盖，apply_patch 是「只动指定几行」——
+   两者的失败模式完全不同（前者怕覆盖未读到的改动，后者怕上下文匹配错位置），
+   不能靠 write_file 的测试覆盖。
+   ========================================================================== */
+
+test('apply_patch replaces only the matched lines and preserves the rest', async () => {
+  const h = createAgentHarness();
+  const agent = h.makeAgent();
+  const file = path.join(h.cwd, 'a.js');
+  h.fs.addFile(file, ['const a = 1;', 'function oldName() {', '  return a;', '}', ''].join('\n'));
+  const patch = [
+    '--- a/a.js',
+    '+++ b/a.js',
+    '@@ -1,4 +1,4 @@',
+    ' const a = 1;',
+    '-function oldName() {',
+    '+function newName() {',
+    '   return a;',
+    ' }',
+  ].join('\n');
+  const out = await h.api.executeTool(agent, 'apply_patch', { patch });
+  assert.match(out, /\[OK\]/);
+  assert.match(out, /\+1 -1/);
+  const after = h.fs.peek(file);
+  assert.match(after, /newName/);
+  assert.doesNotMatch(after, /oldName/);
+  assert.match(after, /const a = 1;/); // 未提及的行必须原样保留
+  assert.equal(agent.changes.length, 1);
+  assert.equal(agent.changes[0].before !== null, true);
+});
+
+test('apply_patch applies several file sections in one call', async () => {
+  const h = createAgentHarness();
+  const agent = h.makeAgent();
+  const f1 = path.join(h.cwd, 'x.txt');
+  const f2 = path.join(h.cwd, 'y.txt');
+  h.fs.addFile(f1, 'one\ntwo\n');
+  h.fs.addFile(f2, 'alpha\nbeta\n');
+  const patch = [
+    '--- a/x.txt', '+++ b/x.txt', '@@ -1,2 +1,2 @@', '-one', '+ONE', ' two',
+    '--- a/y.txt', '+++ b/y.txt', '@@ -1,2 +1,2 @@', ' alpha', '-beta', '+BETA',
+  ].join('\n');
+  const out = await h.api.executeTool(agent, 'apply_patch', { patch });
+  assert.match(out, /2\/2 个文件/);
+  assert.equal(h.fs.peek(f1), 'ONE\ntwo\n');
+  assert.equal(h.fs.peek(f2), 'alpha\nBETA\n');
+  assert.equal(agent.changes.length, 2);
+});
+
+test('apply_patch creates a new file from a /dev/null section', async () => {
+  const h = createAgentHarness();
+  const agent = h.makeAgent();
+  const patch = ['--- /dev/null', '+++ b/new.txt', '@@ -0,0 +1,2 @@', '+line1', '+line2'].join('\n');
+  const out = await h.api.executeTool(agent, 'apply_patch', { patch });
+  assert.match(out, /\[OK\]/);
+  assert.equal(h.fs.peek(path.join(h.cwd, 'new.txt')), 'line1\nline2\n');
+  assert.equal(agent.changes[0].before, null); // 新建文件的可追溯来源：before 为 null
+});
+
+test('apply_patch reports a mismatch and leaves the file untouched', async () => {
+  const h = createAgentHarness();
+  const agent = h.makeAgent();
+  const file = path.join(h.cwd, 'a.txt');
+  h.fs.addFile(file, 'actual content\n');
+  const patch = ['--- a/a.txt', '+++ b/a.txt', '@@ -1,1 +1,1 @@', '-expected content', '+new content'].join('\n');
+  const out = await h.api.executeTool(agent, 'apply_patch', { patch });
+  assert.match(out, /部分失败/);
+  assert.match(out, /上下文未匹配/);
+  assert.equal(h.fs.peek(file), 'actual content\n'); // 上下文不匹配时绝不落盘
+  assert.equal(agent.changes, undefined); // 上下文不匹配时不产生任何变更记录（changes 是按需创建的）
+});
+
+test('apply_patch tolerates a wrong declared line number by searching the file', async () => {
+  const h = createAgentHarness();
+  const agent = h.makeAgent();
+  const file = path.join(h.cwd, 'a.txt');
+  h.fs.addFile(file, 'l1\nl2\ntarget\nl4\nl5\n');
+  // 声明 @@ -1,2 但内容实际在第 2~3 行：模型给的行号经常带偏移，必须能兜住
+  const patch = ['--- a/a.txt', '+++ b/a.txt', '@@ -1,2 +1,2 @@', ' l2', '-target', '+TARGET'].join('\n');
+  const out = await h.api.executeTool(agent, 'apply_patch', { patch });
+  assert.match(out, /\[OK\]/);
+  assert.equal(h.fs.peek(file), 'l1\nl2\nTARGET\nl4\nl5\n');
+});
+
+test('apply_patch explains the expected format when the patch is unusable', async () => {
+  const h = createAgentHarness();
+  const agent = h.makeAgent();
+  const bad = await h.api.executeTool(agent, 'apply_patch', { patch: '这不是一个 diff' });
+  assert.match(bad, /ERROR/);
+  assert.match(bad, /unified diff/);
+  const empty = await h.api.executeTool(agent, 'apply_patch', {});
+  assert.match(empty, /ERROR/);
+});

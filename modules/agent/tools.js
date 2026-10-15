@@ -26,6 +26,122 @@ function createToolHandlers(deps) {
     resolveAgentPath, assertRealInsideWorkspace, emitAgent,
     checkDangerousCommand, checkCatastrophic } = deps;
 
+  /* ==========================================================================
+     unified diff 解析与应用（apply_patch 的支撑逻辑）
+     --------------------------------------------------------------------------
+     【为什么要有它】
+     write_file 只能整文件覆盖：模型想改一个函数名，也得先 read_file 读全文、
+     再回写整份内容 —— 既浪费 token，又会在「文件已被他人/上一轮改动」时
+     静默覆盖掉那些它没看到的修改。unified diff 只描述「改哪几行」，
+     未提及的部分原样保留，这才是重构场景该有的写入方式。
+     ========================================================================== */
+
+  /** 去掉 a/ b/ ./ 前缀（git diff 的惯用写法） */
+  function stripDiffAbbrev(p) {
+    return p.replace(/^[ab]\//, '').replace(/^\.\//, '');
+  }
+
+  /**
+   * 解析 unified diff，返回 [{ path, hunks: [{ oldStart, oldCount, lines }] }]
+   * lines 里每项保留原始前缀：' ' 上下文 / '-' 删除 / '+' 新增
+   * 支持标准格式（--- / +++ / @@）与简写头（*** Update File:）
+   */
+  function parseUnifiedDiff(text) {
+    const rows = String(text).split('\n');
+    const files = [];
+    let cur = null;
+    let hunk = null;
+    for (let i = 0; i < rows.length; i++) {
+      const L = rows[i];
+      if (L.startsWith('--- ') && (rows[i + 1] || '').startsWith('+++ ')) {
+        const oldPath = L.slice(4).trim();
+        const newPath = rows[i + 1].slice(4).trim();
+        const raw = newPath === '/dev/null' ? oldPath : newPath;
+        cur = { path: stripDiffAbbrev(raw), hunks: [] };
+        files.push(cur);
+        hunk = null;
+        i++;
+        continue;
+      }
+      const shortcut = L.match(/^\*\*\* Update File:\s*(.+)$/);
+      if (shortcut) {
+        cur = { path: shortcut[1].trim(), hunks: [] };
+        files.push(cur);
+        hunk = null;
+        continue;
+      }
+      const hm = L.match(/^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/);
+      if (hm && cur) {
+        hunk = {
+          oldStart: parseInt(hm[1], 10),
+          oldCount: hm[2] === undefined ? 1 : parseInt(hm[2], 10),
+          lines: [],
+        };
+        cur.hunks.push(hunk);
+        continue;
+      }
+      if (hunk && (/^[ +\-]/.test(L) || L === '')) {
+        // diff 里的空行等价于「空的上下文行」（有些工具会省略行首空格）
+        hunk.lines.push(L === '' ? ' ' : L);
+      }
+    }
+    return files.filter((f) => f.hunks.length > 0);
+  }
+
+  /** 在 lines 中从 from 开始查找与 pat 完全一致的连续块，返回起始下标或 -1 */
+  function findLineBlock(lines, pat, from) {
+    if (pat.length === 0) return Math.min(Math.max(0, from), lines.length);
+    for (let i = Math.max(0, from); i + pat.length <= lines.length; i++) {
+      let same = true;
+      for (let j = 0; j < pat.length; j++) {
+        if (lines[i + j] !== pat[j]) { same = false; break; }
+      }
+      if (same) return i;
+    }
+    return -1;
+  }
+
+  /**
+   * 应用 hunks。
+   * before 为 null 表示目标文件不存在（纯新增）。
+   * 定位策略：先按 hunk 声明的行号猜一次，失败则全文件搜索 ——
+   * 因为模型给的行号常常带偏移，硬按行号写会在「差一行」时整段失败。
+   * 返回 { ok, content?, added, removed, reason? }
+   */
+  function applyHunks(before, hunks) {
+    if (before === null) {
+      const out = [];
+      for (const h of hunks) {
+        if (h.oldCount !== 0) {
+          return { ok: false, reason: '文件不存在，但补丁含上下文/删除行（新增文件应使用 @@ -0,0 +1,N @@）' };
+        }
+        for (const l of h.lines) if (l[0] === '+') out.push(l.slice(1));
+      }
+      return { ok: true, content: out.join('\n') + '\n', added: out.length, removed: 0 };
+    }
+
+    const work = before.split('\n');
+    let delta = 0;
+    let added = 0;
+    let removed = 0;
+    for (const h of hunks) {
+      const oldBlock = h.lines.filter((l) => l[0] === ' ' || l[0] === '-').map((l) => l.slice(1));
+      const newBlock = h.lines.filter((l) => l[0] === ' ' || l[0] === '+').map((l) => l.slice(1));
+      let at = findLineBlock(work, oldBlock, h.oldStart - 1 + delta);
+      if (at < 0) at = findLineBlock(work, oldBlock, 0); // 行号偏移兜底：全文件搜一次
+      if (at < 0) {
+        const preview = oldBlock.slice(0, 2).join(' / ').slice(0, 60);
+        return { ok: false, reason: `第 ${h.oldStart} 行附近的上下文未匹配，文件可能已被改动（期望：${preview}）` };
+      }
+      work.splice(at, oldBlock.length, ...newBlock);
+      delta += newBlock.length - oldBlock.length;
+      added += h.lines.filter((l) => l[0] === '+').length;
+      removed += h.lines.filter((l) => l[0] === '-').length;
+    }
+    return { ok: true, content: work.join('\n'), added, removed };
+  }
+
+
   /** 通知渲染进程：文件已变更 */
   function notify(pathname) {
     const w = win();
@@ -130,6 +246,47 @@ function createToolHandlers(deps) {
       log('info', '移动 ' + from + ' → ' + to);
       notify(from);
       return '[OK] 已移动 ' + from + ' → ' + to;
+    },
+
+    async apply_patch({ agent, args, resolve, guard, log }) {
+      /*
+       * 多文件补丁：一次调用精确改动若干处上下文，而不是整文件覆盖。
+       * 与 write_file 的分工 —— 局部修改走 apply_patch（省 token、不动未提及的内容、
+       * 上下文不匹配时明确报错而非硬写），整文件新建/替换才用 write_file。
+       * 逐文件独立校验：某个文件失败不影响其余文件落盘，且失败原因会回到模型手里，
+       * 由它决定是重新 read_file 再生成补丁，还是改用 write_file。
+       */
+      const text = String(args.patch || args.diff || '');
+      if (!text.trim()) return 'ERROR: apply_patch 需要提供 patch（unified diff 文本）';
+      const files = parseUnifiedDiff(text);
+      if (!files.length) {
+        return 'ERROR: 未能从 patch 解析出文件段。请使用 unified diff 格式：\n'
+          + '--- a/路径\n+++ b/路径\n@@ -起始行,行数 +起始行,行数 @@\n 上下文行\n-被删除行\n+新增行';
+      }
+      const report = [];
+      let applied = 0;
+      let failed = 0;
+      for (const f of files) {
+        try {
+          const target = resolve(f.path);
+          await guard(target);
+          let before = null;
+          try { before = await fsp.readFile(target, 'utf8'); } catch { /* 新建文件 */ }
+          const r = applyHunks(before, f.hunks);
+          if (!r.ok) { failed++; report.push('✗ ' + f.path + '：' + r.reason); continue; }
+          await fsp.mkdir(path.dirname(target), { recursive: true });
+          await fsp.writeFile(target, r.content, 'utf8');
+          recordChange(agent, target, before, r.content, before !== null);
+          notify(target);
+          applied++;
+          report.push('✓ ' + f.path + '  +' + r.added + ' -' + r.removed);
+        } catch (e) {
+          failed++;
+          report.push('✗ ' + f.path + '：' + (e && e.message ? e.message : String(e)));
+        }
+      }
+      log(failed ? 'warning' : 'info', 'apply_patch: ' + applied + ' 个文件成功、' + failed + ' 个失败');
+      return '[' + (failed ? '部分失败' : 'OK') + '] 补丁应用结果（' + applied + '/' + files.length + ' 个文件）：\n' + report.join('\n');
     },
 
     /* ---------- 子任务（并行/串行拆解，DSH 的子 Agent 思路） ---------- */

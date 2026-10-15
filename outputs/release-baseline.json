@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
-  "generatedAt": "2026-10-15T12:10:04.533Z",
+  "generatedAt": "2026-10-15T12:32:23.528Z",
   "project": "cursor-local",
   "version": "0.1.0",
-  "commit": "38713b5267d64e7819eb3dde4f00dfc9a74b78cd",
+  "commit": "7dbe36c6b7be479f1d91ac12e7790885e26a4ba7",
   "tag": "v0.2-design-system",
   "configDigest": {
     "version": "0.1.0",
@@ -28,7 +28,7 @@
   },
   "metrics": {
     "fileCount": 46,
-    "totalBytes": 692260
+    "totalBytes": 700787
   },
   "files": {
     "main.js": {
@@ -42,14 +42,14 @@
       "mtime": "2026-10-15T11:57:51.999Z"
     },
     "modules/agent.js": {
-      "sha256": "bb3e7343794cc658baaebc6bf79dc58e55c05586b9413df5bd80df01bd98b292",
-      "bytes": 39949,
-      "mtime": "2026-10-15T10:04:41.416Z"
+      "sha256": "060775baf2ab7c33817246e2f1e511a3856c8816af52ccd1630f11980d7f7976",
+      "bytes": 40842,
+      "mtime": "2026-10-15T12:13:59.899Z"
     },
     "modules/agent/tools.js": {
-      "sha256": "0980cd2f5c37350c68427bb27078cff8b14f16e27e9da6e1c40a4ec3ef278635",
-      "bytes": 7820,
-      "mtime": "2026-10-15T10:04:41.431Z"
+      "sha256": "502dd967e6aa5ee26616d6b8c2dca37cf6151b58075ba68023752404606c0eb2",
+      "bytes": 15113,
+      "mtime": "2026-10-15T12:29:59.475Z"
     },
     "modules/ai.js": {
       "sha256": "b7b3208f4feeca73fa3d1b32ca48c9fb4a41a22e918536ab350028402450a68c",
@@ -112,9 +112,9 @@
       "mtime": "2026-10-15T10:04:41.546Z"
     },
     "renderer/agents.js": {
-      "sha256": "3666a4b24357332d52da2987255e6c5a731af9a0d5db4684584f29529a23f985",
-      "bytes": 52054,
-      "mtime": "2026-10-15T10:04:41.561Z"
+      "sha256": "0f2df27ad7a3ce27bf69551c362090118ded296e5eb5a5ee046142baa25094b1",
+      "bytes": 52352,
+      "mtime": "2026-10-15T12:15:47.005Z"
     },
     "renderer/ai-panel.js": {
       "sha256": "3bbecb0c87135d0bf3af1046c42b5f19fd5e03a08e7d82a9a6134269e2027106",
@@ -232,9 +232,9 @@
       "mtime": "2026-10-15T10:04:41.705Z"
     },
     "renderer/style.css": {
-      "sha256": "02817c2057435539dde45b4b15f73e83429cae365af5e0cfdfd5c40a829e86aa",
-      "bytes": 147660,
-      "mtime": "2026-10-15T12:02:17.499Z"
+      "sha256": "23721b76224f844988f4817c51c1d0d1970cef8799271fad48777efb3c97111d",
+      "bytes": 147703,
+      "mtime": "2026-10-15T12:15:39.043Z"
     },
     "renderer/terminal.js": {
       "sha256": "7bea8d7abec94c386f5f00339460212072e30d427f2b9d8a68067133fac8a72e",
@@ -262,5 +262,5 @@
       "mtime": "2026-09-25T00:15:16.857Z"
     }
   },
-  "manifestDigest": "b9a9b1f2d5cc3f398d2f9ba2dd2bae596524b19a0ede034273a6a27396eaf966"
+  "manifestDigest": "4c246bd88e1ae9e6040927804fb29e3fe5448b814ec0c9d4b7f7651bb2f026ce"
 }

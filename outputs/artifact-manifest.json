@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-10-15T12:10:28.845Z",
-  "commit": "38713b5267d64e7819eb3dde4f00dfc9a74b78cd",
+  "generatedAt": "2026-10-15T12:32:43.567Z",
+  "commit": "7dbe36c6b7be479f1d91ac12e7790885e26a4ba7",
   "tag": "v0.2-design-system",
   "configDigest": {
     "version": "0.1.0",
@@ -20,10 +20,10 @@
   },
   "metrics": {
     "artifactCount": 46,
-    "totalBytes": 692260
+    "totalBytes": 700787
   },
   "missing": [],
-  "setDigest": "86b66e74f44060be2a4311f687b9081b344a9642331ddcd2597c00e57bed4fa6",
+  "setDigest": "6ef1b852ebce86eb98a1041bb30fc7d7f7f7fa407aae7d30f8873f812357c2f6",
   "artifacts": [
     {
       "path": "main.js",
@@ -37,13 +37,13 @@
     },
     {
       "path": "modules/agent.js",
-      "sha256": "bb3e7343794cc658baaebc6bf79dc58e55c05586b9413df5bd80df01bd98b292",
-      "bytes": 39949
+      "sha256": "060775baf2ab7c33817246e2f1e511a3856c8816af52ccd1630f11980d7f7976",
+      "bytes": 40842
     },
     {
       "path": "modules/agent/tools.js",
-      "sha256": "0980cd2f5c37350c68427bb27078cff8b14f16e27e9da6e1c40a4ec3ef278635",
-      "bytes": 7820
+      "sha256": "502dd967e6aa5ee26616d6b8c2dca37cf6151b58075ba68023752404606c0eb2",
+      "bytes": 15113
     },
     {
       "path": "modules/ai.js",
@@ -107,8 +107,8 @@
     },
     {
       "path": "renderer/agents.js",
-      "sha256": "3666a4b24357332d52da2987255e6c5a731af9a0d5db4684584f29529a23f985",
-      "bytes": 52054
+      "sha256": "0f2df27ad7a3ce27bf69551c362090118ded296e5eb5a5ee046142baa25094b1",
+      "bytes": 52352
     },
     {
       "path": "renderer/ai-panel.js",
@@ -227,8 +227,8 @@
     },
     {
       "path": "renderer/style.css",
-      "sha256": "02817c2057435539dde45b4b15f73e83429cae365af5e0cfdfd5c40a829e86aa",
-      "bytes": 147660
+      "sha256": "23721b76224f844988f4817c51c1d0d1970cef8799271fad48777efb3c97111d",
+      "bytes": 147703
     },
     {
       "path": "renderer/terminal.js",
