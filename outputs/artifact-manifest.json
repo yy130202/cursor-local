@@ -1,8 +1,8 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-10-15T11:33:24.683Z",
-  "commit": "4e76326c49f6ab4fb8bc205c11e24aed546946fb",
-  "tag": "baseline-ai-buddy",
+  "generatedAt": "2026-10-15T11:51:24.117Z",
+  "commit": "3939a88c9f98e203569b44549df7c379512f6636",
+  "tag": "v0.2-design-system",
   "configDigest": {
     "version": "0.1.0",
     "lockSha256": "65b1b4a06a9283886155af27de4b80e529b952401af4fc3f382e0b05a5d77548",
@@ -20,10 +20,10 @@
   },
   "metrics": {
     "artifactCount": 46,
-    "totalBytes": 671271
+    "totalBytes": 684488
   },
   "missing": [],
-  "setDigest": "350c82dbc4d5a5e74c8210b6a17eea1c35e9d1794f8deeab1f22423f3a0954e5",
+  "setDigest": "dd84d35e36c1de471d742a64903359fcfab9935b1000e6b0f5b4949c4a28e2be",
   "artifacts": [
     {
       "path": "main.js",
@@ -32,8 +32,8 @@
     },
     {
       "path": "main/testing.js",
-      "sha256": "53b0421630817b12b4009e056111c0fbcca1d64d1fb7e39b44408e4a4cae9765",
-      "bytes": 33082
+      "sha256": "0361953db29cab5d6e22c168c7de3b0c90e1e266ba075313ff25723968d71e3b",
+      "bytes": 36524
     },
     {
       "path": "modules/agent.js",
@@ -227,8 +227,8 @@
     },
     {
       "path": "renderer/style.css",
-      "sha256": "589de8e8b8d8b9f4720eda37717512911e7d9484c1c155d26b97c641665836f3",
-      "bytes": 139185
+      "sha256": "09012a9e6a3d6519553bd152e64b502415df12a21ba764615e6fe6c476fdd0c1",
+      "bytes": 147407
     },
     {
       "path": "renderer/terminal.js",
@@ -242,8 +242,8 @@
     },
     {
       "path": "renderer/tokens.css",
-      "sha256": "76bfb065a516031e84720d8fca6bbd746a0e0e8917d5bb0b403bece42a35e578",
-      "bytes": 8394
+      "sha256": "23e933945f238d8ea779c30cc65ac25c2a8ed1e217899ea1cf442412a03e4124",
+      "bytes": 9947
     },
     {
       "path": "store/billing.js",

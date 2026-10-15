@@ -1,10 +1,10 @@
 {
   "schemaVersion": "2.0.0",
-  "generatedAt": "2026-10-15T11:12:00.681Z",
+  "generatedAt": "2026-10-15T11:51:00.818Z",
   "project": "cursor-local",
   "version": "0.1.0",
-  "commit": "7d52ae2049b5dbdfe54e2e659098f8039b69a113",
-  "tag": "baseline-ai-buddy",
+  "commit": "3939a88c9f98e203569b44549df7c379512f6636",
+  "tag": "v0.2-design-system",
   "configDigest": {
     "version": "0.1.0",
     "lockSha256": "65b1b4a06a9283886155af27de4b80e529b952401af4fc3f382e0b05a5d77548",
@@ -28,7 +28,7 @@
   },
   "metrics": {
     "fileCount": 46,
-    "totalBytes": 671271
+    "totalBytes": 684488
   },
   "files": {
     "main.js": {
@@ -37,9 +37,9 @@
       "mtime": "2026-10-15T10:04:41.383Z"
     },
     "main/testing.js": {
-      "sha256": "53b0421630817b12b4009e056111c0fbcca1d64d1fb7e39b44408e4a4cae9765",
-      "bytes": 33082,
-      "mtime": "2026-10-15T11:08:22.194Z"
+      "sha256": "0361953db29cab5d6e22c168c7de3b0c90e1e266ba075313ff25723968d71e3b",
+      "bytes": 36524,
+      "mtime": "2026-10-15T11:46:06.148Z"
     },
     "modules/agent.js": {
       "sha256": "bb3e7343794cc658baaebc6bf79dc58e55c05586b9413df5bd80df01bd98b292",
@@ -232,9 +232,9 @@
       "mtime": "2026-10-15T10:04:41.705Z"
     },
     "renderer/style.css": {
-      "sha256": "589de8e8b8d8b9f4720eda37717512911e7d9484c1c155d26b97c641665836f3",
-      "bytes": 139185,
-      "mtime": "2026-10-15T11:01:14.868Z"
+      "sha256": "09012a9e6a3d6519553bd152e64b502415df12a21ba764615e6fe6c476fdd0c1",
+      "bytes": 147407,
+      "mtime": "2026-10-15T11:50:06.252Z"
     },
     "renderer/terminal.js": {
       "sha256": "7bea8d7abec94c386f5f00339460212072e30d427f2b9d8a68067133fac8a72e",
@@ -247,9 +247,9 @@
       "mtime": "2026-10-15T10:51:11.271Z"
     },
     "renderer/tokens.css": {
-      "sha256": "76bfb065a516031e84720d8fca6bbd746a0e0e8917d5bb0b403bece42a35e578",
-      "bytes": 8394,
-      "mtime": "2026-10-15T10:47:02.477Z"
+      "sha256": "23e933945f238d8ea779c30cc65ac25c2a8ed1e217899ea1cf442412a03e4124",
+      "bytes": 9947,
+      "mtime": "2026-10-15T11:49:14.843Z"
     },
     "store/billing.js": {
       "sha256": "59aead208c0917df028d9e24d02878fe9bdaac376759cbf13c3032dbd6167cc2",
@@ -262,5 +262,5 @@
       "mtime": "2026-09-25T00:15:16.857Z"
     }
   },
-  "manifestDigest": "ba7906b8fa69b4b778f1a25f7b3decd75ec214c54aa9af4278264e65d29941da"
+  "manifestDigest": "e2dfa2339d3c124c2fe88c4b8bd1ae4aa2de2777db0c161bd2759ee37c51a1be"
 }

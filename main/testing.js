@@ -255,6 +255,61 @@ function createTesting({ winRef, agents, rootDir, config, agentApi, sessionApi, 
     }
     await captureTo(path.join(shotDir, '02-ai-panel.png'));
 
+    /* 诊断：全量可交互元素的点击热区（WCAG 2.2 SC 2.5.8 要求 ≥24×24 CSS px）。
+     * 存在意义：间距收敛把 134 处奇数 padding 向下归位（3px→2px、5px→4px、7px→6px…），
+     * 若某元素原本恰好靠奇数 padding 凑够 24px 高，归位后会跌破下限。
+     * 这是「紧凑」与「可达」之间的真实张力，必须有像素级守门人。 */
+    const tapProbe = await winRef().webContents.executeJavaScript(`(() => {
+      const SEL = 'button, [role="button"], input:not([type="hidden"]), select, summary, a[href], [tabindex]:not([tabindex="-1"])';
+      const bad = [];
+      let checked = 0, coveredByAncestor = 0;
+      // 有些控件的真实点击目标由外层容器承担（如 .top-search 包住 readonly input），
+      // 此时应以外层可点击容器的尺寸判定，否则会误报。
+      const clickableAncestor = (el) => {
+        let p = el.parentElement;
+        while (p && p !== document.body) {
+          if (getComputedStyle(p).cursor === 'pointer') return p;
+          p = p.parentElement;
+        }
+        return null;
+      };
+      document.querySelectorAll(SEL).forEach((el) => {
+        if (el.closest('.monaco-editor')) return;   // Monaco 内部隐藏输入框（1x1），非 UI 目标
+        const cs = getComputedStyle(el);
+        if (cs.visibility === 'hidden' || cs.display === 'none' || cs.opacity === '0') return;
+        const r = el.getBoundingClientRect();
+        if (r.width < 1 || r.height < 1) return;
+        checked++;
+        if (r.width < 24 || r.height < 24) {
+          const anc = clickableAncestor(el);
+          const ar = anc ? anc.getBoundingClientRect() : null;
+          const covered = !!(ar && ar.width >= 24 && ar.height >= 24);
+          if (covered) { coveredByAncestor++; return; }
+          const cls = (typeof el.className === 'string' && el.className.trim()) ? '.' + el.className.trim().split(/\\s+/).slice(0, 2).join('.') : '';
+          bad.push({
+            sel: el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') + cls,
+            w: Math.round(r.width), h: Math.round(r.height),
+            anc: anc ? anc.tagName.toLowerCase() : '(无)',
+            txt: (el.textContent || '').trim().slice(0, 18)
+          });
+        }
+      });
+      return JSON.stringify({ checked, count: bad.length, coveredByAncestor, items: bad }, null, 1);
+    })()`);
+    const tp = JSON.parse(tapProbe);
+    /* 回归断言：所有可交互元素的点击热区必须 ≥24×24 CSS px（WCAG 2.2 SC 2.5.8）。
+     * 存在意义：间距收敛会把「半格的奇数版本」（3/5/7/9px）向下归位到 2px 网格，
+     * 若某元素原本恰好靠奇数 padding 凑够 24px，归位后就会跌破下限。
+     * 这是「紧凑」与「可达」之间的真实张力，必须有像素级守门人，
+     * 而不是靠改完后看一眼截图。 */
+    if (tp.count > 0) {
+      console.log(`[assert FAIL] 有 ${tp.count} 个可交互元素热区 < 24×24（WCAG 2.2 SC 2.5.8）：`);
+      tp.items.slice(0, 30).forEach((x) => console.log(`    ${x.w}x${x.h}  ${x.sel}  祖先=${x.anc}  "${x.txt}"`));
+      process.exitCode = 1;
+    } else {
+      console.log(`[assert OK] 点击热区达标：已检查 ${tp.checked} 个可交互元素，均 ≥24×24（另有 ${tp.coveredByAncestor} 个由可点击祖先承担热区）`);
+    }
+
     // 新功能断言：命令面板 / 全局搜索 / AI 补全开关
     const feat = await winRef().webContents.executeJavaScript(`(async () => {
       const r = { palette: typeof window.openPalette, search: typeof window.openGlobalSearch, toggle: !!document.getElementById('cfg-ai-complete'), monaco: typeof monaco };
