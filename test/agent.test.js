@@ -778,3 +778,26 @@ test('中途成功一轮后自愈预算恢复（允许「失败→成功→再�
   await h.api.runAgent(agent);
   assert.equal(agent.log.filter((e) => e.kind === 'heal').length, 2, '中间成功一轮后应恢复自愈预算');
 });
+
+test('项目约定文件被注入 system prompt 且超长内容会截断', async () => {
+  const h = createAgentHarness();
+  h.fs.addFile(path.join(h.cwd, 'CODEBUDDY.md'), '# 项目约定\n本仓库必须用简体中文注释');
+  h.fs.addFile(path.join(h.cwd, 'AGENTS.md'), 'X'.repeat(20000)); // 远超单文件 12000 上限
+  const agent = h.makeAgent();
+  await h.api.runAgent(agent);
+  const sys = JSON.parse(h.requests[0][1].body).messages[0].content;
+  assert.match(sys, /【项目约定 · CODEBUDDY\.md】/);
+  assert.match(sys, /本仓库必须用简体中文注释/);
+  assert.match(sys, /【项目约定 · AGENTS\.md】/);
+  assert.match(sys, /已截断/, '超出上限的约定文件必须显式标注截断，而不是静默丢弃后半段');
+  assert.ok(sys.length < 22000, `system prompt 应被预算限制住，实际 ${sys.length} 字符`);
+});
+
+test('项目没有约定文件时不影响任务执行', async () => {
+  const h = createAgentHarness();
+  const agent = h.makeAgent();
+  await h.api.runAgent(agent);
+  const sys = JSON.parse(h.requests[0][1].body).messages[0].content;
+  assert.doesNotMatch(sys, /【项目约定/);
+  assert.equal(agent.status, 'done');
+});

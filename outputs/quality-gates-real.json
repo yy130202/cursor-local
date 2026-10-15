@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-15T12:32:43.552Z",
-  "durationMs": 17028,
+  "generatedAt": "2026-10-15T12:46:31.193Z",
+  "durationMs": 16851,
   "total": 91,
   "passed": 91,
   "failed": 0,
@@ -16,12 +16,12 @@
         "kind": "static-scan",
         "value": {
           "files": 73,
-          "chars": 1097506,
+          "chars": 1107249,
           "dirty": 0,
           "exempted": 2
         },
-        "detail": "递归扫描 73 个源码文件（js/json/html/css/md），累计 1,097,506 字符，真实编码损坏 0 处；另有 2 处为讲解坏字符处理的有意示例（已豁免）: CLAUDE.md:58 文档示例, scripts/gates/static-compliance.js:418 文档示例",
-        "hash": "61e0a3002ee1",
+        "detail": "递归扫描 73 个源码文件（js/json/html/css/md），累计 1,107,249 字符，真实编码损坏 0 处；另有 2 处为讲解坏字符处理的有意示例（已豁免）: CLAUDE.md:58 文档示例, scripts/gates/static-compliance.js:418 文档示例",
+        "hash": "6d0750f6811a",
         "metric": null,
         "unit": "char"
       },
@@ -36,12 +36,12 @@
         "kind": "static-scan",
         "value": {
           "files": 26,
-          "bytes": 349768,
+          "bytes": 355056,
           "escapeSeqs": 9,
           "realNul": 0
         },
-        "detail": "扫描 renderer/ 下 26 个 js/html 文件共 349,768 字节：真实 0x00 字节 0 个，合法 \\u0000 转义序列 9 处（miniMarkdown 代码块占位符），",
-        "hash": "4e753f356358",
+        "detail": "扫描 renderer/ 下 26 个 js/html 文件共 355,056 字节：真实 0x00 字节 0 个，合法 \\u0000 转义序列 9 处（miniMarkdown 代码块占位符），",
+        "hash": "d92f33d01f31",
         "metric": null,
         "unit": "byte"
       },
@@ -247,12 +247,12 @@
       "evidence": {
         "kind": "static-scan",
         "value": {
-          "assignments": 86,
+          "assignments": 85,
           "attrSites": 10,
           "unsafe": 0
         },
-        "detail": "扫描 64 个 js/html 文件共 86 处 innerHTML 赋值，其中 10 处存在属性值内插值，均经 escapeHtml/encodeURIComponent 处理或取值来自源码内字面量常量，未转义属性插值 0 处",
-        "hash": "db0461768a80",
+        "detail": "扫描 64 个 js/html 文件共 85 处 innerHTML 赋值，其中 10 处存在属性值内插值，均经 escapeHtml/encodeURIComponent 处理或取值来自源码内字面量常量，未转义属性插值 0 处",
+        "hash": "d40a3483d191",
         "metric": null,
         "unit": "site"
       },
@@ -286,10 +286,10 @@
         "value": {
           "allowed": 2,
           "rejected": 5,
-          "line": 999
+          "line": 1000
         },
-        "detail": "renderer/agents.js 第 999 行以 /^(https?|mailto)$/i 判定 scheme，白名单 http/https/mailto 共 3 项（源码中 https? 为 http|https 简写，已展开校验）；对 javascript:alert(1)、data:text/html,<script>、file:///C:/Windows/win.ini、vbscript:msgbox、chrome://settings 等 5 个危险协议做负向验证，全部被拒（非白名单回落到 '#'）",
-        "hash": "58779eaacdec",
+        "detail": "renderer/agents.js 第 1000 行以 /^(https?|mailto)$/i 判定 scheme，白名单 http/https/mailto 共 3 项（源码中 https? 为 http|https 简写，已展开校验）；对 javascript:alert(1)、data:text/html,<script>、file:///C:/Windows/win.ini、vbscript:msgbox、chrome://settings 等 5 个危险协议做负向验证，全部被拒（非白名单回落到 '#'）",
+        "hash": "6a7d27005f70",
         "metric": null,
         "unit": "protocol"
       },
@@ -483,7 +483,7 @@
           "hosts": 29,
           "telemetry": 0
         },
-        "detail": "审计 42 个运行时代码文件，定位 4 处网络调用点（main/testing.js:506、modules/agent.js:441、modules/agent.js:454、modules/ai.js:8），全部经 cfg.baseUrl 指向用户自配置的 AI 接口；源码中 29 个外部主机名（api.deepseek.com,github.com,www.npc.gov.cn,opensource.org,openai.com,docs.github.com）；遥测/埋点特征词命中 0 处，无硬编码外发端点",
+        "detail": "审计 42 个运行时代码文件，定位 4 处网络调用点（main/testing.js:535、modules/agent.js:442、modules/agent.js:455、modules/ai.js:8），全部经 cfg.baseUrl 指向用户自配置的 AI 接口；源码中 29 个外部主机名（api.deepseek.com,github.com,www.npc.gov.cn,opensource.org,openai.com,docs.github.com）；遥测/埋点特征词命中 0 处，无硬编码外发端点",
         "hash": "d9ce62343aff",
         "metric": null,
         "unit": "site"
@@ -498,13 +498,13 @@
       "evidence": {
         "kind": "runtime-call",
         "value": {
-          "pass": 259,
+          "pass": 261,
           "fail": 0,
-          "total": 259,
-          "durationMs": 5835
+          "total": 261,
+          "durationMs": 5603
         },
-        "detail": "node:test isolation:'none' 真实执行 259 个用例：通过 259，失败 0，耗时 5835ms。分文件：agent-tools.test.js:91 agent.test.js:52 agents-render.test.js:28 config.test.js:14 filetree-gitmark.test.js:13 fs-grep.test.js:10 git.test.js:13 release-guard.test.js:4 session.test.js:18 user-store.test.js:16",
-        "hash": "34bff4a1b439",
+        "detail": "node:test isolation:'none' 真实执行 261 个用例：通过 261，失败 0，耗时 5603ms。分文件：agent-tools.test.js:91 agent.test.js:54 agents-render.test.js:28 config.test.js:14 filetree-gitmark.test.js:13 fs-grep.test.js:10 git.test.js:13 release-guard.test.js:4 session.test.js:18 user-store.test.js:16",
+        "hash": "9d9ccf841401",
         "metric": null,
         "unit": "test"
       },
@@ -519,12 +519,12 @@
         "kind": "static-scan",
         "value": {
           "files": 10,
-          "bytes": 127227,
-          "cases": 214,
+          "bytes": 128183,
+          "cases": 216,
           "errors": 0
         },
-        "detail": "对 test/ 下 10 个测试文件（127,227 字节）逐一执行 vm.Script 编译校验，语法错误 0 个；共声明 214 处 test/it/describe 调用",
-        "hash": "5400719d82a7",
+        "detail": "对 test/ 下 10 个测试文件（128,183 字节）逐一执行 vm.Script 编译校验，语法错误 0 个；共声明 216 处 test/it/describe 调用",
+        "hash": "8c5ca58cb621",
         "metric": null,
         "unit": "file"
       },
@@ -539,11 +539,11 @@
         "kind": "fixture",
         "value": {
           "testFiles": 2,
-          "cases": 101,
-          "modBytes": 40842
+          "cases": 103,
+          "modBytes": 42732
         },
-        "detail": "modules/agent.js（40,842 字节）被 2 个测试文件覆盖：agent-tools.test.js(1 处引用)、agent.test.js(1 处引用)，相关用例约 101 个",
-        "hash": "869afa06a421",
+        "detail": "modules/agent.js（42,732 字节）被 2 个测试文件覆盖：agent-tools.test.js(1 处引用)、agent.test.js(1 处引用)，相关用例约 103 个",
+        "hash": "4d1fa49fcb20",
         "metric": null,
         "unit": "file"
       },
@@ -757,18 +757,18 @@
             "空字符串": 71,
             "null": 65,
             "undefined": 22,
-            "零值": 213,
+            "零值": 220,
             "负数": 34,
             "NaN": 0,
             "Infinity": 0,
             "大数常量": 0,
             "深层路径": 111,
-            "特殊字符": 5039
+            "特殊字符": 5061
           },
           "emptyCases": 21
         },
-        "detail": "统计 10 个测试文件的边界值断言：覆盖 7/10 类（空字符串×71 null×65 undefined×22 零值×213 负数×34 深层路径×111 特殊字符×5039），其中直接以空值命名的用例 21 个（如 guard rejects creation through an external symlink even when several parents are missing / list_dir handles an empty directory and limits output to 300 entries / read_file distinguishes empty content and truncates oversized content）",
-        "hash": "c1e1b9882849",
+        "detail": "统计 10 个测试文件的边界值断言：覆盖 7/10 类（空字符串×71 null×65 undefined×22 零值×220 负数×34 深层路径×111 特殊字符×5061），其中直接以空值命名的用例 21 个（如 guard rejects creation through an external symlink even when several parents are missing / list_dir handles an empty directory and limits output to 300 entries / read_file distinguishes empty content and truncates oversized content）",
+        "hash": "066cd36c69cf",
         "metric": null,
         "unit": "case"
       },
@@ -807,12 +807,12 @@
       "evidence": {
         "kind": "metric",
         "value": {
-          "durationMs": 5835,
-          "total": 259,
-          "perSecond": 44.4
+          "durationMs": 5603,
+          "total": 261,
+          "perSecond": 46.6
         },
-        "detail": "真实执行 259 个用例耗时 5835ms（44.4 用例/秒），在 15000ms 预算内；测量方式为 node:test isolation:'none' 进程内执行，含模块加载与断言开销",
-        "hash": "e39b93e332e1",
+        "detail": "真实执行 261 个用例耗时 5603ms（46.6 用例/秒），在 15000ms 预算内；测量方式为 node:test isolation:'none' 进程内执行，含模块加载与断言开销",
+        "hash": "8f1d1d7b763b",
         "metric": null,
         "unit": "ms"
       },
@@ -1063,11 +1063,11 @@
       "evidence": {
         "kind": "metric",
         "value": {
-          "ms": 1.07,
-          "bytes": 175422
+          "ms": 1.27,
+          "bytes": 175633
         },
-        "detail": "hrtime 真实计时：读取 renderer/index.html(26058B) + tokens.css(7732B) + style.css(141632B) 同步耗时 1.07ms（门槛 <50ms，本地磁盘无网络往返）",
-        "hash": "96f8fadf9ea8",
+        "detail": "hrtime 真实计时：读取 renderer/index.html(26058B) + tokens.css(7732B) + style.css(141843B) 同步耗时 1.27ms（门槛 <50ms，本地磁盘无网络往返）",
+        "hash": "893158c3f124",
         "metric": null,
         "unit": "ms"
       },
@@ -1081,11 +1081,11 @@
       "evidence": {
         "kind": "metric",
         "value": {
-          "heapUsedMb": 13.95,
-          "rssMb": 78.12
+          "heapUsedMb": 14.88,
+          "rssMb": 79.25
         },
-        "detail": "门禁进程真实内存快照：heapUsed 13.95MB、rss 78.12MB，远低于 800MB 告警水位",
-        "hash": "0c561152ac9a",
+        "detail": "门禁进程真实内存快照：heapUsed 14.88MB、rss 79.25MB，远低于 800MB 告警水位",
+        "hash": "6d1bef254afe",
         "metric": null,
         "unit": "MB"
       },
@@ -1295,10 +1295,10 @@
       "evidence": {
         "kind": "artifact",
         "value": {
-          "sha": "a963262c596c0027"
+          "sha": "7a37d6617cfc62ce"
         },
-        "detail": "checksum.sha256 记录 a963262c596c0027…；重算一致；将 operator 篡改为 attacker 后哈希立即失配，防篡改有效",
-        "hash": "da738c386b6b",
+        "detail": "checksum.sha256 记录 7a37d6617cfc62ce…；重算一致；将 operator 篡改为 attacker 后哈希立即失配，防篡改有效",
+        "hash": "80dd62c305a3",
         "metric": null,
         "unit": "byte"
       },
@@ -1332,10 +1332,10 @@
         "value": {
           "total": 46,
           "matched": 46,
-          "digest": "4c246bd88e1ae9e6"
+          "digest": "253da822c8c539b9"
         },
-        "detail": "重算 JSON.stringify(files) 的 SHA-256 与 manifestDigest 一致（4c246bd88e1ae9e6…）；并逐个重算磁盘文件哈希：46 个全部匹配",
-        "hash": "3eb15e97215e",
+        "detail": "重算 JSON.stringify(files) 的 SHA-256 与 manifestDigest 一致（253da822c8c539b9…）；并逐个重算磁盘文件哈希：46 个全部匹配",
+        "hash": "2c0a2277949c",
         "metric": null,
         "unit": "file"
       },
@@ -1349,11 +1349,11 @@
       "evidence": {
         "kind": "artifact",
         "value": {
-          "commit": "7dbe36c6b7be",
+          "commit": "e58ce36c032a",
           "known": true
         },
-        "detail": "基线 commit 为合法 40 位 Git SHA（7dbe36c6b7be…），经格式校验且非历史编造占位值",
-        "hash": "5b0566a7e949",
+        "detail": "基线 commit 为合法 40 位 Git SHA（e58ce36c032a…），经格式校验且非历史编造占位值",
+        "hash": "5eaaf2a961dd",
         "metric": null,
         "unit": "char"
       },
@@ -1367,10 +1367,10 @@
       "evidence": {
         "kind": "file-hash",
         "value": {
-          "digest": "4c246bd88e1ae9e6040927804fb29e3fe5448b814ec0c9d4b7f7651bb2f026ce"
+          "digest": "253da822c8c539b93e8382f8991509cde19d78f44fb7991321ab331f715486bf"
         },
-        "detail": "重算 JSON.stringify(files) 的 SHA-256 与清单记录一致（4c246bd88e1ae9e6040927804fb29e3fe5448b814ec0c9d4b7f7651bb2f026ce）",
-        "hash": "3f1c5dae27db",
+        "detail": "重算 JSON.stringify(files) 的 SHA-256 与清单记录一致（253da822c8c539b93e8382f8991509cde19d78f44fb7991321ab331f715486bf）",
+        "hash": "307173bffadf",
         "metric": null,
         "unit": "byte"
       },
@@ -1404,10 +1404,10 @@
         "value": {
           "artifacts": 46,
           "matched": 46,
-          "setDigest": "6ef1b852ebce86eb98a1041bb30fc7d7f7f7fa407aae7d30f8873f812357c2f6"
+          "setDigest": "4eaeb39b5de265e16c7ca076c462c17de6b36e136a7bf595ee99e97965c4c099"
         },
-        "detail": "产物清单登记 46 个交付文件，逐个重算 digest 全部匹配；清单集摘要 6ef1b852ebce86eb…",
-        "hash": "8e949af244c9",
+        "detail": "产物清单登记 46 个交付文件，逐个重算 digest 全部匹配；清单集摘要 4eaeb39b5de265e1…",
+        "hash": "5ae7d5f0fb4f",
         "metric": null,
         "unit": "file"
       },
@@ -1458,11 +1458,11 @@
         "kind": "artifact",
         "value": {
           "files": 46,
-          "createdAt": "2026-10-15T12:32:41.581Z",
+          "createdAt": "2026-10-15T12:46:29.434Z",
           "operator": "release-gate"
         },
-        "detail": "备份快照 46 个文件均带 64 位 sha256，元数据含时间戳 2026-10-15T12:32:41.581Z、责任人 release-gate、恢复指引与 checksum.sha256 校验值",
-        "hash": "3e77ac5b73d9",
+        "detail": "备份快照 46 个文件均带 64 位 sha256，元数据含时间戳 2026-10-15T12:46:29.434Z、责任人 release-gate、恢复指引与 checksum.sha256 校验值",
+        "hash": "0abd22d6e57f",
         "metric": null,
         "unit": "file"
       },
@@ -1640,7 +1640,7 @@
         "value": {
           "files": 4
         },
-        "detail": "发布报告齐全且内容非空、JSON 可正常解析: release-baseline.json(9267B) artifact-manifest.json(7784B) quality-gates-real.json(44767B) release-verification-matrix.html(43858B)",
+        "detail": "发布报告齐全且内容非空、JSON 可正常解析: release-baseline.json(9268B) artifact-manifest.json(7785B) quality-gates-real.json(44769B) release-verification-matrix.html(43859B)",
         "hash": "1c8519240712",
         "metric": null,
         "unit": "file"
@@ -1735,12 +1735,12 @@
         "value": {
           "files": 2,
           "definitions": 128,
-          "references": 2053,
+          "references": 2058,
           "runtimeInjected": 11,
           "unresolved": 0
         },
-        "detail": "扫描 renderer/tokens.css、renderer/style.css：128 个变量定义、2053 处 var() 引用，除 11 个由 theme.js 运行时注入的强调色变量外全部可解析",
-        "hash": "e0fa4af6b66a",
+        "detail": "扫描 renderer/tokens.css、renderer/style.css：128 个变量定义、2058 处 var() 引用，除 11 个由 theme.js 运行时注入的强调色变量外全部可解析",
+        "hash": "83e3f20663b7",
         "metric": null,
         "unit": "file"
       },

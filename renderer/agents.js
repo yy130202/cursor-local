@@ -29,7 +29,8 @@ async function sendFollowup() {
   const input = document.getElementById('followup-input');
   const raw = input.value.trim();
   if (!raw) { input.focus(); return; }
-  const { task, context } = window.extractMentions ? window.extractMentions(raw) : { task: raw, context: '' };
+  // extractMentions 是异步的（@diff 读 git 状态、@folder 列目录），必须 await
+  const { task, context } = window.extractMentions ? await window.extractMentions(raw) : { task: raw, context: '' };
   const fullTask = (context + task).trim();
   const sel = agentsState.agents.get(agentsState.selectedId);
   const canFollow = sel && !sel.readonly && !sel.id.startsWith('hist-') && sel.status !== 'running';

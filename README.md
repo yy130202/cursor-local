@@ -13,7 +13,7 @@
 - 多标签页（打开/切换/关闭、拖拽排序、未保存 ● 标记、Ctrl+S 保存）
 - Monaco 语法高亮编辑器（自动识别 JS/TS/Python/HTML/CSS/JSON/Markdown 等）
 - Git 集成：文件树状态标记、gutter 变更标记、侧栏提交面板、并排 diff 对比
-- 全局搜索（分块并发 grep）、命令面板、@ 文件引用、Markdown 实时预览（含表格）
+- 全局搜索（分块并发 grep）、命令面板、@ 引用（文件 / 目录 / `@diff` / `@selection` / `@current`）、Markdown 实时预览（含表格）
 - 非文本文件查看器：图片 / 音频 / 视频 / 压缩包内容列表
 
 ### AI 搭子面板（右侧分栏）
@@ -22,6 +22,8 @@
 - 变更卡片可一键「撤销改动」，逐字节还原原始文件
 - 会话列表按父子关系缩进，子任务一眼可见
 - 历史会话按时间分组，支持搜索、导出 Markdown、删除
+- **上下文引用**：`@文件`、`@目录/`（注入目录结构），以及三个内置引用 —— `@diff`（当前未提交改动清单）/ `@selection`（编辑器里选中的代码）/ `@current`（当前打开的文件）
+- **记忆与规则**：全局 / 项目两级记忆加 `rules.md`；启动任务时**自动读取项目根目录的 `CLAUDE.md` / `CODEBUDDY.md` / `AGENTS.md` / `.cursorrules`**（单文件上限 12KB、总上限 24KB，超出会显式标注截断）
 
 **内置 11 个工具**：`list_dir` 查目录、`list_tree` 目录树、`read_file` 读文件、`write_file` 写文件、`apply_patch` 应用多文件补丁、`delete_file` 删除、`move_file` 移动、`search_files` 内容搜索、`get_file_info` 文件信息、`run_command` 执行终端命令、`spawn_subagent` 拆子任务（创建子 Agent 并等待其完成，支持任务拆解与并行）。
 
@@ -112,7 +114,7 @@ cursor-local/
 │   ├── terminal.js        #   终端面板（xterm 前端）
 │   ├── palette.js         #   命令面板
 │   ├── keymap.js          #   快捷键注册与录制
-│   ├── mention.js         #   @ 文件引用注入
+│   ├── mention.js         #   @ 引用注入（文件 / 目录 / @diff / @selection / @current）
 │   ├── menubar.js         #   菜单栏
 │   ├── theme.js           #   主题（预设 / 自定义 / 亮暗切换）
 │   ├── island.js          #   状态胶囊
@@ -135,7 +137,7 @@ cursor-local/
 │       ├── release-ops.js      #   门禁 070-091 发布防护
 │       ├── build-matrix.js     #   验收矩阵生成
 │       └── index.js            #   门禁编排入口
-├── test/                  # 253 项单元测试
+├── test/                  # 261 项单元测试
 │   ├── helpers/           #   测试地基（harness / agent-harness）
 │   └── *.test.js          #   agent、agent-tools、git、fs-grep、session…
 └── outputs/               # 验证产物（基线清单、门禁结果、验收矩阵）
@@ -161,7 +163,7 @@ cursor-local/
 ### 常用命令
 
 ```bash
-npm test                    # 253 项单元测试
+npm test                    # 261 项单元测试
 npm run test:coverage       # 核心模块真实行覆盖率
 npm run verify:smoke        # 119 项全维烟测
 npm run verify:gates        # 91 项质量门禁（含三态汇总与失败明细）
@@ -179,7 +181,7 @@ npm run release:rollback    # 沙箱无损回滚演练
 
 | 验证项 | 结果 |
 | --- | --- |
-| 单元测试 | **253 / 253 通过**（约 12s） |
+| 单元测试 | **261 / 261 通过**（约 12s） |
 | 核心模块行覆盖率 | **98.69%**（分支 88.52%、函数 98.37%） |
 | 全维烟测 | **118 通过 / 0 失败 / 1 环境受限**（119 项） |
 | 质量门禁 | **91 通过 / 0 失败 / 0 环境受限**（91 项，通过率 100%） |
@@ -223,7 +225,7 @@ npm run verify:gates                   # 2. 重新校验，确认失败项归零
 
 | 步骤 | 内容 |
 | --- | --- |
-| `npm test` | 253 项单元测试 |
+| `npm test` | 261 项单元测试 |
 | `npm run verify:gates` | 91 项质量门禁（含三态汇总） |
 | `npm run verify:smoke` | 119 项全维烟测 |
 | `npm run verify:matrix` | 8 维度验收矩阵 |

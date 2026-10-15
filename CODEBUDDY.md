@@ -14,7 +14,7 @@ Cursor Local —— **AI 搭子式的本地编程工作台**。Electron 33 + Mon
 npm install          # 首次安装依赖
 npm start            # 启动应用（等价于双击 start.bat）
 
-npm test             # 253 项单元测试（node:test，无第三方框架）
+npm test             # 261 项单元测试（node:test，无第三方框架）
 node --test test/config.test.js                      # 单个测试文件
 node --test --test-name-pattern="TTL" test/git.test.js   # 按用例名过滤
 
@@ -34,7 +34,7 @@ npm run release:rollback   # 沙箱无损回滚演练
 
 ### 当前基线状态（改动后对照，勿盲目相信 README 数字）
 
-- 单元测试 **253 / 253 通过**
+- 单元测试 **261 / 261 通过**
 - 全维烟测 **118 通过 / 0 失败 / 1 环境受限**（119 项）；`SMK-025` 需 Electron `safeStorage`，纯 Node 下必然 `SKIPPED_ENV`——这是环境限制，不是失败
 - 质量门禁 **91 通过 / 0 失败 / 0 环境受限**（91 项，约 19s，通过率 100%）
 
@@ -195,6 +195,10 @@ scripts/
 - **会话 transcript**：`userData/sessions/*.json`（`SESSIONS_PATH` 可覆盖）
 - **用户账号**：`userData/users.json` 与 `userData/session.json`
 - **记忆 / 规则**：`~/.cursor-local/memory.json`、`rules.md`；项目级在 `{cwd}/.cursor-local/`
+- **项目约定文件自动注入**：`runAgent` 构建 system prompt 时会读取项目根目录的 `CLAUDE.md` / `CODEBUDDY.md` / `AGENTS.md` / `.cursorrules`（单文件 12KB、总 24KB 上限，超出会显式标注截断）。
+  **必须用 `fsSync.readFileSync` 而非 `await fsp.readFile`** —— `runAgent` 的启动阶段是时序敏感的（多个并发/停止用例依赖精确的微任务顺序），在那里插入异步跳点会打挂既有用例，实测一次打挂 3 个。
+- **`@` 引用**：`renderer/mention.js` 的 `window.extractMentions` 是**异步**的（`@diff` 读 git 状态、`@目录/` 要列目录），调用方必须 `await`；漏了不会报错，只会让 task 悄悄变成 `"[object Promise]"`。内置引用 `@diff` / `@selection` / `@current` 只在发送时取实时状态，不指向具体路径。
+- **工具清单同步**：`AGENT_TOOLS`、`system prompt` 里的工具描述、`renderer/agents.js` 的 `toolIconName`、`style.css` 的 `.tag.<工具名>` 配色，这四处都要随新工具一起改（漏掉 system prompt 那处不会报错，只是模型不知道有这个工具）。
 - **验证产物**：`outputs/quality-gates-real.json`、`outputs/smoke-results-real.json`、`outputs/release-verification-matrix.html`
 
 ## 已知的未完成 / 占位（避免误以为是 bug）

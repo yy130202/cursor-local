@@ -215,6 +215,35 @@ function createTesting({ winRef, agents, rootDir, config, agentApi, sessionApi, 
     } else {
       console.log('[assert OK] 无障碍：树项 ' + a11y.rows + ' 项语义完整、' + a11y.expanded + ' 个目录含展开态、' + a11y.labeled + ' 处 aria-label、方向键导航可用');
     }
+
+    /* @ 引用扩展断言（@diff / @selection / @current / @目录）。
+       extractMentions 已从同步改为异步（@diff 要读 git 状态、@folder 要列目录），
+       而「改了签名忘了 await」这类缺陷不会报错 —— 只会让 task 悄悄变成 "[object Promise]"。
+       所以这里既验内容，也验它确实是个 Promise。 */
+    const mention = JSON.parse(await winRef().webContents.executeJavaScript(`(async () => {
+      const r = {};
+      const a = await window.extractMentions('@diff 看一下当前改动');
+      r.diffTask = a.task;
+      r.diffCtx = a.context.indexOf('【当前改动】') >= 0;
+      r.selCtx = (await window.extractMentions('@selection 解释这段')).context.indexOf('【选中代码】') >= 0;
+      r.curCtx = (await window.extractMentions('@current 优化它')).context.indexOf('【当前文件】') >= 0;
+      r.dirCtx = (await window.extractMentions('@renderer/ 这里')).context.indexOf('【目录') >= 0;
+      r.async = window.extractMentions.constructor.name === 'AsyncFunction';
+      return JSON.stringify(r);
+    })()`));
+    const mentionBad = [];
+    if (mention.diffTask !== '看一下当前改动') mentionBad.push('@diff 未被剥离（task = ' + mention.diffTask + '）');
+    if (!mention.diffCtx) mentionBad.push('@diff 未注入 git 改动');
+    if (!mention.selCtx) mentionBad.push('@selection 未注入选中代码');
+    if (!mention.curCtx) mentionBad.push('@current 未注入当前文件');
+    if (!mention.dirCtx) mentionBad.push('@目录 未注入目录结构');
+    if (!mention.async) mentionBad.push('extractMentions 不是异步函数，调用方无处 await');
+    if (mentionBad.length) {
+      console.log('[assert FAIL] @ 引用扩展：' + mentionBad.join('；'));
+      process.exitCode = 1;
+    } else {
+      console.log('[assert OK] @ 引用扩展：@diff / @selection / @current / @目录 四类引用均正确注入上下文');
+    }
     // 选区颜色诊断：从主题服务读取实际选区颜色值
     const deco = await winRef().webContents.executeJavaScript(`(async () => {
       const ed = EditorState.editor;

@@ -1919,6 +1919,12 @@ svg.lucide { width: 15px; height: 15px; }
 }
 .mention-search:focus { outline: none; border-color: var(--accent); }
 .mention-list { overflow-y: auto; padding: var(--sp-half) 0 var(--sp-1h); }
+/* @ 面板的分组标题（内置引用 / 文件与目录） */
+.mention-group {
+  padding: var(--sp-1) var(--sp-2h) var(--sp-half);
+  font-size: var(--fs-2xs); color: var(--text-dim);
+  letter-spacing: .08em; text-transform: uppercase;
+}
 .mention-item {
   display: flex; align-items: center; gap: var(--sp-1h); padding: var(--sp-1) var(--sp-2h);
   cursor: pointer; font-size: var(--fs-sm); color: var(--text);

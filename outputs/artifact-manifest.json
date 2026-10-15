@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-10-15T12:32:43.567Z",
-  "commit": "7dbe36c6b7be479f1d91ac12e7790885e26a4ba7",
+  "generatedAt": "2026-10-15T12:46:31.208Z",
+  "commit": "e58ce36c032a68be69572e3a841de6c9280ed0b1",
   "tag": "v0.2-design-system",
   "configDigest": {
     "version": "0.1.0",
@@ -20,10 +20,10 @@
   },
   "metrics": {
     "artifactCount": 46,
-    "totalBytes": 700787
+    "totalBytes": 710197
   },
   "missing": [],
-  "setDigest": "6ef1b852ebce86eb98a1041bb30fc7d7f7f7fa407aae7d30f8873f812357c2f6",
+  "setDigest": "4eaeb39b5de265e16c7ca076c462c17de6b36e136a7bf595ee99e97965c4c099",
   "artifacts": [
     {
       "path": "main.js",
@@ -32,13 +32,13 @@
     },
     {
       "path": "main/testing.js",
-      "sha256": "0b7227b1c224cc98ef21cd79efeb47c30fb89b98f9e5257e824ca547b45ff873",
-      "bytes": 39385
+      "sha256": "e2b31584fe448540b96acfdb6cf62cb3ba4ff07c09e22ee2988fe69af326b00d",
+      "bytes": 41370
     },
     {
       "path": "modules/agent.js",
-      "sha256": "060775baf2ab7c33817246e2f1e511a3856c8816af52ccd1630f11980d7f7976",
-      "bytes": 40842
+      "sha256": "ef735793851d518b1f13508c3e34b47d8e5e292b7d0d026ecdf9ad7f3d252b4a",
+      "bytes": 42732
     },
     {
       "path": "modules/agent/tools.js",
@@ -107,8 +107,8 @@
     },
     {
       "path": "renderer/agents.js",
-      "sha256": "0f2df27ad7a3ce27bf69551c362090118ded296e5eb5a5ee046142baa25094b1",
-      "bytes": 52352
+      "sha256": "f5e4d8a86d10a2785aa476bfcead08c16e574e4e2bf407dcaa0a582ad5909146",
+      "bytes": 52454
     },
     {
       "path": "renderer/ai-panel.js",
@@ -197,8 +197,8 @@
     },
     {
       "path": "renderer/mention.js",
-      "sha256": "51c6b3d4e01e1f03035c9e43681b74622c290f23784ab82f744761c0cccb70d5",
-      "bytes": 5126
+      "sha256": "9dda874106d48d7ef4842caae1be56033b9918cded60ff501fd9f0cdcca2658f",
+      "bytes": 10312
     },
     {
       "path": "renderer/menubar.js",
@@ -227,8 +227,8 @@
     },
     {
       "path": "renderer/style.css",
-      "sha256": "23721b76224f844988f4817c51c1d0d1970cef8799271fad48777efb3c97111d",
-      "bytes": 147703
+      "sha256": "03eace8cf188524ad7831d5dfd694d18abe69ca7215accbcaaf30af037fff8e2",
+      "bytes": 147950
     },
     {
       "path": "renderer/terminal.js",

@@ -1,6 +1,7 @@
 /* Cursor Local - Agent 引擎模块（工具循环 / 沙箱 / 权限 / LLM 调用） */
 const path = require('path');
-const fsp = require('fs').promises;
+const fsSync = require('fs');
+const fsp = fsSync.promises;
 const { spawn } = require('child_process');
 const { createToolHandlers } = require('./agent/tools');
 
@@ -524,7 +525,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
     const sys = [
       '你是运行在本地桌面应用「Cursor Local」中的编码 Agent。',
       `当前工作目录：${agent.cwd}`,
-      '你可以使用工具：list_dir 查看目录、list_tree 查看目录树、read_file 读文件、write_file 写文件（覆盖式，需完整内容）、delete_file 删除文件、move_file 移动/重命名、search_files 搜索代码、get_file_info 查看文件信息、run_command 执行终端命令。',
+      '你可以使用工具：list_dir 查看目录、list_tree 查看目录树、read_file 读文件、write_file 写文件（覆盖式，需完整内容）、apply_patch 应用 unified diff 精确改动若干行（局部修改优先用它，比 write_file 省 token，且不会覆盖文件里未被提及的内容）、delete_file 删除文件、move_file 移动/重命名、search_files 搜索代码、get_file_info 查看文件信息、run_command 执行终端命令、spawn_subagent 拆分子任务。',
       '权限说明：' + (perm === 'full'
         ? '当前为「完全访问」模式——可读写任意路径、执行任意命令（磁盘格式化/关机等毁灭性操作仍会被拦截）。'
         : perm === 'manual'
@@ -547,6 +548,31 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
         if (rules.project && rules.project.trim()) sys.push('【项目规则】\n' + rules.project.trim());
       } catch { /* ignore */ }
     }
+    /* 注入项目自带的约定文件。
+       存在意义：项目里往往已经写好了给 AI 看的架构说明与约定（本仓库就有 CODEBUDDY.md，
+       内容相当完整），但此前从不被读取 —— AI 每次都从零猜这个仓库怎么组织、踩过哪些坑。
+       两处刻意的取舍：
+       1) 必须限长。约定文件动辄上万字，全量塞进 system prompt 会挤掉真实对话的上下文预算。
+       2) 用同步读而非 await fsp.readFile。runAgent 的启动阶段是时序敏感的（多个并发与
+          停止相关的用例依赖精确的微任务顺序），在这里插入一个异步跳点会让它们失败 ——
+          实测打断 3 个既有用例。文件很小、一次任务只读一次，同步代价可忽略。 */
+    try {
+      const DOC_NAMES = ['CLAUDE.md', 'CODEBUDDY.md', 'AGENTS.md', '.cursorrules'];
+      const PER_FILE = 12000;
+      const TOTAL_BUDGET = 24000;
+      let used = 0;
+      for (const name of DOC_NAMES) {
+        if (used >= TOTAL_BUDGET) break;
+        let text = '';
+        try { text = fsSync.readFileSync(path.join(agent.cwd || rootDir, name), 'utf8'); } catch { continue; }
+        if (!text.trim()) continue;
+        const room = Math.min(PER_FILE, TOTAL_BUDGET - used);
+        const clipped = text.length > room;
+        sys.push('【项目约定 · ' + name + '】\n' + text.slice(0, room)
+          + (clipped ? '\n…（内容过长已截断，需要完整内容时用 read_file 读取）' : ''));
+        used += Math.min(text.length, room);
+      }
+    } catch { /* 约定文件读取失败不应影响任务本身 */ }
     const sysText = sys.join('\n');
     agent.messages = [
       { role: 'system', content: sysText },
