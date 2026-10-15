@@ -75,8 +75,19 @@ function createTesting({ winRef, agents, rootDir, config, agentApi, sessionApi, 
   function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
   async function captureTo(file) {
+  /* 先让渲染进程真正产出新画面，再截图。
+     只用 invalidate() + 固定延迟并不可靠：主进程/渲染进程负载一变
+     （例如终端接入 PTY 之后），合成就会滞后，截出来还是上一屏 ——
+     表现为「02 与 01 的字节数完全相同」或「01 截到锁屏画面」，
+     而且全程不报任何错，只会让人怀疑是布局代码出了问题。
+     双 rAF 是标准做法：第一帧确保样式与布局已应用，第二帧确保合成完成。 */
+  try {
+    await winRef().webContents.executeJavaScript(
+      'new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r(true))))'
+    );
+  } catch { /* 页面可能正在导航或已关闭，退回到固定延迟 */ }
   winRef().webContents.invalidate();
-  await sleep(600);
+  await sleep(350);
   const img = await winRef().webContents.capturePage();
   const png = img.toPNG();
   fs.writeFileSync(file, png);

@@ -147,10 +147,9 @@
       if (e.ctrlKey && !e.shiftKey && !e.altKey && isV) {
         e.preventDefault();
         navigator.clipboard.readText().then((txt) => {
-          if (!txt) return;
-          const flat = txt.replace(/\r?\n/g, ' ');
-          inputBuf += flat;
-          term.write(flat);
+          if (!txt || !termId) return;
+          /* 换行折成空格：多行文本直接透传会被 shell 当成多条命令逐行执行 */
+          window.api.terminalInput(termId, txt.replace(/\r?\n/g, ' '));
         }).catch(() => { /* 剪贴板不可用则忽略 */ });
         return false;
       }
@@ -196,7 +195,7 @@
           menu.remove();
           const a = n.dataset.a;
           if (a === 'copy' && term.hasSelection()) navigator.clipboard.writeText(term.getSelection()).then(() => flashStatus('已复制')).catch(() => {});
-          else if (a === 'paste') navigator.clipboard.readText().then((txt) => { if (txt) { const flat = txt.replace(/\r?\n/g, ' '); inputBuf += flat; term.write(flat); } }).catch(() => {});
+          else if (a === 'paste') navigator.clipboard.readText().then((txt) => { if (txt && termId) window.api.terminalInput(termId, txt.replace(/\r?\n/g, ' ')); }).catch(() => {});
           else if (a === 'clear') term.clear();
         };
       });
@@ -206,49 +205,19 @@
     });
     const cwd = resolveCwd();
     document.getElementById('term-cwd').textContent = cwd || '当前目录';
-    // 行缓冲回显：管道模式 cmd 无控制台回显，由前端模拟（打字可见、退格、回车执行）
-    let inputBuf = '';
-    const handleKey = (c) => {
-      if (c === '\r') {
-        term.write('\r\n');
-        let cmd = inputBuf;
-        // Windows cmd 兼容：`./xxx` 是类 Unix 写法，cmd 下自动转 `.\xxx`
-        if (isWindows && /^\.\//.test(cmd)) {
-          const fixed = cmd.replace(/^\.\//, '.\\');
-          term.write('\x1b[90m[已自动适配 Windows] ' + fixed + '\x1b[0m\r\n');
-          cmd = fixed;
-        }
-        window.api.terminalInput(termId, cmd + '\r\n');
-        inputBuf = '';
-        return;
-      }
-      if (c === '\x7f' || c === '\b') {
-        const arr = Array.from(inputBuf);
-        if (!arr.length) return;
-        const removed = arr.pop();
-        inputBuf = arr.join('');
-        term.write('\b \b');
-        if (removed.charCodeAt(0) > 0x2e80) term.write('\b'); // 全角字符占两列
-        return;
-      }
-      if (c === '\x03') { // Ctrl+C
-        term.write('^C\r\n');
-        window.api.terminalInput(termId, '\r\n');
-        inputBuf = '';
-        return;
-      }
-      if (c < ' ') return; // 其余控制字符忽略
-      inputBuf += c;
-      term.write(c); // 回显
-    };
-    term.onData((data) => {
-      if (!termId) return;
-      if (data.startsWith('\x1b')) return; // 方向键等转义序列忽略
-      for (const c of data) handleKey(c);
-    });
     container.addEventListener('click', () => { if (term) term.focus(); });
-    termId = await window.api.terminalCreate(cwd);
-    term.write('\x1b[1;36mCursor Local 终端\x1b[0m（输入命令回车执行，exit 退出）\r\n');
+    /* PTY 模式下输入直接透传给 shell —— 不再由前端模拟行编辑。
+       改造前这里有一整套自制行缓冲（自己回显、自己处理退格与 Ctrl+C、
+       并忽略全部 \x1b 转义序列），那是管道模式的妥协：管道里没有 TTY，
+       shell 既不回显也不做行编辑，前端只能自己凑。接上 PTY 后必须整体去掉，
+       否则会双重回显，而且方向键、Tab 补全、Ctrl+C、以及 claude / vim 这类
+       全屏 TUI 全都无法工作。 */
+    termId = await window.api.terminalCreate(cwd, term.cols, term.rows);
+    /* 尺寸必须与 PTY 同步：否则 CLI 的换行位置与全屏界面会错乱 */
+    term.onResize(({ cols, rows }) => { if (termId) window.api.terminalResize(termId, cols, rows); });
+    term.onData((data) => { if (termId) window.api.terminalInput(termId, data); });
+    try { fitAddon.fit(); } catch { /* ignore */ }
+    term.write('\x1b[1;36mCursor Local 终端\x1b[0m（exit 退出；Windows 下相对路径写 .\\ 而非 ./）\r\n');
     term.focus();
   }
 

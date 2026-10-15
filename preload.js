@@ -76,8 +76,9 @@ contextBridge.exposeInMainWorld('api', {
   gitLog: (cwd) => ipcRenderer.invoke('git:log', cwd),
   gitInit: (cwd) => ipcRenderer.invoke('git:init', cwd),
   // 终端
-  terminalCreate: (cwd) => ipcRenderer.invoke('terminal:create', cwd),
+  terminalCreate: (cwd, cols, rows) => ipcRenderer.invoke('terminal:create', { cwd, cols, rows }),
   terminalInput: (id, data) => ipcRenderer.invoke('terminal:input', { id, data }),
+  terminalResize: (id, cols, rows) => ipcRenderer.invoke('terminal:resize', { id, cols, rows }),
   terminalKill: (id) => ipcRenderer.invoke('terminal:kill', id),
   onTerminalData: (cb) => ipcRenderer.on('terminal:data', (_e, d) => cb(d)),
   onTerminalExit: (cb) => ipcRenderer.on('terminal:exit', (_e, d) => cb(d)),

@@ -195,4 +195,6 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => app.quit());
 app.on('before-quit', () => {
   for (const a of agents.values()) { clearPendingApprovals(a); killChildren(a); }
+  /* PTY 是主进程持有的原生句柄：不显式回收会让 Electron 退不干净（进程残留 + 后续流程超时） */
+  try { terminalMod.killAll(); } catch { /* 退出路径尽力而为，不阻断 */ }
 });

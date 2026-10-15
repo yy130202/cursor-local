@@ -1,24 +1,25 @@
 {
   "schemaVersion": "2.0.0",
-  "generatedAt": "2026-10-15T12:46:11.202Z",
+  "generatedAt": "2026-10-15T13:28:40.253Z",
   "project": "cursor-local",
   "version": "0.1.0",
-  "commit": "e58ce36c032a68be69572e3a841de6c9280ed0b1",
+  "commit": "17c523cc41a4432880eaee5f75d7a6fde922c60a",
   "tag": "v0.2-design-system",
   "configDigest": {
     "version": "0.1.0",
-    "lockSha256": "65b1b4a06a9283886155af27de4b80e529b952401af4fc3f382e0b05a5d77548",
+    "lockSha256": "0b1f97bb0a4cc2e300061b66e7cfaa9f7531dd0019d961d391d40991d8ce0303",
     "configSchema": "1.0.0",
     "deps": [
       "@xterm/addon-fit",
       "@xterm/xterm",
       "lucide",
-      "monaco-editor"
+      "monaco-editor",
+      "node-pty"
     ],
     "devDeps": [
       "electron"
     ],
-    "digest": "57edf4b990d29888647b33a593ed2de578442bf9d63df93ca857fda8251e2005"
+    "digest": "f8a4fe549278a19ba633beb93805ca419b77688260c586e7d0df69fe3a1ced14"
   },
   "environment": {
     "node": "v22.22.2",
@@ -28,18 +29,18 @@
   },
   "metrics": {
     "fileCount": 46,
-    "totalBytes": 710197
+    "totalBytes": 716255
   },
   "files": {
     "main.js": {
-      "sha256": "ebd22c9f5fd6eebdd257c20b1b1f1e98471002c6cec13152d06e2463f8d7f973",
-      "bytes": 8620,
-      "mtime": "2026-10-15T10:04:41.383Z"
+      "sha256": "49a99c628e4d73faa3071d154eecf400498d507dcdbdd8109f45cdd269dd77d8",
+      "bytes": 8839,
+      "mtime": "2026-10-15T13:20:57.167Z"
     },
     "main/testing.js": {
-      "sha256": "e2b31584fe448540b96acfdb6cf62cb3ba4ff07c09e22ee2988fe69af326b00d",
-      "bytes": 41370,
-      "mtime": "2026-10-15T12:40:05.131Z"
+      "sha256": "27d9c16f3790b98f9a2716432442d05e637bb2cdb31bcec36c203b50451a81ae",
+      "bytes": 42145,
+      "mtime": "2026-10-15T13:23:31.390Z"
     },
     "modules/agent.js": {
       "sha256": "ef735793851d518b1f13508c3e34b47d8e5e292b7d0d026ecdf9ad7f3d252b4a",
@@ -92,24 +93,24 @@
       "mtime": "2026-10-15T10:04:41.462Z"
     },
     "modules/terminal.js": {
-      "sha256": "b16fe347cb8a4190ea365604cc4775d7eab869e76bf2aa250517bcd36faaeb40",
-      "bytes": 2341,
-      "mtime": "2026-09-29T13:03:48.215Z"
+      "sha256": "7ae524c10cbcd480514fefad42b9383b91120c809e2c30720584a787f1776441",
+      "bytes": 6741,
+      "mtime": "2026-10-15T13:20:57.138Z"
     },
     "package-lock.json": {
-      "sha256": "65b1b4a06a9283886155af27de4b80e529b952401af4fc3f382e0b05a5d77548",
-      "bytes": 32139,
-      "mtime": "2026-09-26T00:13:55.846Z"
+      "sha256": "0b1f97bb0a4cc2e300061b66e7cfaa9f7531dd0019d961d391d40991d8ce0303",
+      "bytes": 32877,
+      "mtime": "2026-10-15T12:57:47.660Z"
     },
     "package.json": {
-      "sha256": "951ea27eeaa05cf763b48184af6ae53b878b571b6cfce8fc31c5e7ba719a0686",
-      "bytes": 1864,
-      "mtime": "2026-10-14T13:34:31.277Z"
+      "sha256": "4a7fcda51a1da36f0a626d3530eac2b0ba2ed122b954c2afc85114f4ded31bf9",
+      "bytes": 1890,
+      "mtime": "2026-10-15T12:57:47.637Z"
     },
     "preload.js": {
-      "sha256": "8fa47771bbdb3f9005e9e29e1de51a56656170f6b55cf7b3eb2b72336aadd8ac",
-      "bytes": 6490,
-      "mtime": "2026-10-15T10:04:41.546Z"
+      "sha256": "ad7a1b9787495b85c4d4e9201573817cfc7030cf7c3a0cecb507acb4c1fd9e7b",
+      "bytes": 6616,
+      "mtime": "2026-10-15T13:02:42.535Z"
     },
     "renderer/agents.js": {
       "sha256": "f5e4d8a86d10a2785aa476bfcead08c16e574e4e2bf407dcaa0a582ad5909146",
@@ -237,9 +238,9 @@
       "mtime": "2026-10-15T12:39:57.338Z"
     },
     "renderer/terminal.js": {
-      "sha256": "7bea8d7abec94c386f5f00339460212072e30d427f2b9d8a68067133fac8a72e",
-      "bytes": 11885,
-      "mtime": "2026-10-06T03:07:22.413Z"
+      "sha256": "490084e3cd7723a8c1f920d5547dfa5e6749fdaeceb16a2e8d9e48f005f5cfd9",
+      "bytes": 11659,
+      "mtime": "2026-10-15T13:21:58.359Z"
     },
     "renderer/theme.js": {
       "sha256": "41157395a1dd3bf30ae3773f6e7944e57ce28f03623eb2d8fcd2ca2b49cf4852",
@@ -262,5 +263,5 @@
       "mtime": "2026-09-25T00:15:16.857Z"
     }
   },
-  "manifestDigest": "253da822c8c539b93e8382f8991509cde19d78f44fb7991321ab331f715486bf"
+  "manifestDigest": "d86608672b0f0c9da3145207960f3d5cbd16ec1fd75fb2506eacb0a087425e13"
 }

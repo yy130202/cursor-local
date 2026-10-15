@@ -158,6 +158,15 @@ scripts/
 - **`ELECTRON_RUN_AS_NODE` 必须清除**：`start.bat` 与两个验证脚本都显式 `delete env.ELECTRON_RUN_AS_NODE`。否则 Electron 退化为纯 Node（`ipcMain undefined`），应用起不来。
 - **Monaco worker 靠自定义协议**：`file://` 的 opaque origin 会禁 `importScripts`，故 `main.js` 注册 `monaco://` scheme（`protocol.registerSchemesAsPrivileged` + `protocol.handle`），映射到 `node_modules/monaco-editor/min/vs/`。`renderer/index.html` 的 CSP 已放行 `monaco:`（`script-src` / `worker-src` / `connect-src`），**改 CSP 时别删**。
 - **`nodeIntegration:false` + `contextIsolation:true` + `sandbox:false`**：sandbox 必须关（preload 要 `require('path')`）。不要退回 nodeIntegration。
+- **终端必须用真实 PTY，不能用管道**：`modules/terminal.js` 走 `node-pty`（Windows 下 ConPTY）。
+  管道模式下子进程的 `process.stdin.isTTY === false`，于是 `claude` / `codex` 这类 CLI 会切到非交互
+  `--print` 模式并报「Input must be provided either through stdin or as a prompt argument」，
+  `python` REPL / `vim` / `ssh` / `git rebase -i` 同样不可用。
+  改终端时务必注意这三条（都真实踩过）：
+  1. **不要把 `require('node-pty')` 放在模块顶层** —— 顶层 require 会让 Electron 在窗口创建阶段加载这个原生 `.node`，直接干扰窗口初始化：`SHOT_MODE` 下窗口内容区变成 1433px（应为 1440）、截图 0 字节、AI 面板展开宽度只有 1px。必须延迟到「首次真正创建终端时」（`getPty()`）。
+  2. **PTY 必须在退出时显式回收** —— `main.js` 的 `before-quit` 调 `terminalMod.killAll()`。PTY 是主进程持有的原生句柄，不杀会让 Electron 退不干净，表现为进程残留 + 后续自动化流程卡死到超时。
+  3. **前端不能再自己做行编辑** —— 改造前 `renderer/terminal.js` 有一整套行缓冲（自己回显、自己处理退格与 Ctrl+C、并忽略全部 `\x1b` 转义序列），那是管道模式的妥协。接上 PTY 后必须整体删掉、改为 `term.onData` 直通 `terminalInput`，否则双重回显，且方向键 / Tab 补全 / Ctrl+C / 全屏 TUI 全部失效。
+- **`captureTo` 必须先等渲染稳定再截图**：只 `invalidate()` + 固定延迟并不可靠 —— 主进程负载一变（例如接入 PTY 之后），合成就会滞后，截出来还是上一屏。症状是「02 与 01 的字节数完全相同」或「01 截到锁屏画面」，**全程不报任何错**，极易被误判成布局代码出了问题（本次为此排查了很久）。修法：截图前先让渲染进程跑两次 `requestAnimationFrame`。
 - **Windows 特定**：终端用 `cmd.exe /q /k chcp 65001` 修中文乱码；子进程输出含 `\uFFFD` 时回退 GBK 解码（`decodeOut`）；杀进程树用 `taskkill /pid X /T /F`。
 - **无边框透明窗口**：`frame:false` + `transparent`，标题栏自绘（`win-min/max/close` IPC）。`SHOT_MODE` 下强制非透明——Windows 上透明窗口截图会得到 0 字节。
 

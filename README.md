@@ -14,6 +14,7 @@
 - Monaco 语法高亮编辑器（自动识别 JS/TS/Python/HTML/CSS/JSON/Markdown 等）
 - Git 集成：文件树状态标记、gutter 变更标记、侧栏提交面板、并排 diff 对比
 - 全局搜索（分块并发 grep）、命令面板、@ 引用（文件 / 目录 / `@diff` / `@selection` / `@current`）、Markdown 实时预览（含表格）
+- **集成终端（真实 PTY）**：走 `node-pty` + ConPTY，支持交互式程序 —— `claude` / `codex`、`python` REPL、`vim`、`ssh`、`git rebase -i` 都能正常工作；窗口尺寸与 PTY 实时同步
 - 非文本文件查看器：图片 / 音频 / 视频 / 压缩包内容列表
 
 ### AI 搭子面板（右侧分栏）
@@ -91,7 +92,7 @@ cursor-local/
 │   ├── log.js             #   日志模块（debug/info/warning/error，上限 1500 条）
 │   ├── memory.js          #   记忆与规则（global / project 两级作用域）
 │   ├── session.js         #   会话持久化、轨迹导出（exportTrajectory）、文件回滚
-│   └── terminal.js        #   终端实例管理（xterm 双向流）
+│   └── terminal.js        #   终端实例管理（node-pty / ConPTY 真实终端）
 ├── store/
 │   ├── user-store.js      #   用户存储：scrypt 加盐哈希、配置加密
 │   └── billing.js         #   计费结构占位（BILLING_ENABLED=false，未启用）
