@@ -21,23 +21,36 @@ function currentTreeFilter() {
   return el ? el.value.trim().toLowerCase() : '';
 }
 async function readDirCached(dirPath) {
-  if (!treeDirCache) return window.api.readDir(dirPath);
-  if (!treeDirCache.has(dirPath)) {
-    treeDirCache.set(dirPath, await window.api.readDir(dirPath));
+  /*
+   * 先取本地引用再用，不能直接读模块级 treeDirCache：
+   * 下面的 await 会让出执行权，期间若另一轮 renderTree 开始/结束，
+   * treeDirCache 会被换成新 Map 或被清成 null，回来时再 .get() 就抛
+   * 「Cannot read properties of null」并中断整棵树的渲染
+   * （表现为目录树静默变空 —— 启动自动打开上次目录与手动打开新目录重叠时必现）。
+   */
+  const cache = treeDirCache;
+  if (!cache) return window.api.readDir(dirPath);
+  if (!cache.has(dirPath)) {
+    const data = await window.api.readDir(dirPath);
+    cache.set(dirPath, data);
+    return data;
   }
-  return treeDirCache.get(dirPath);
+  return cache.get(dirPath);
 }
 async function renderTree() {
   const seq = ++treeRenderSeq;
   const tree = document.getElementById('filetree');
   if (!EditorState.currentFolder) return;
   tree.innerHTML = '';
-  treeDirCache = new Map();
+  const cache = new Map();
+  treeDirCache = cache;
   const filter = currentTreeFilter();
   try {
     await renderDir(EditorState.currentFolder, tree, 0, seq, filter);
   } finally {
-    treeDirCache = null;
+    /* 只清自己那份缓存：若期间已有更新的一轮渲染接管，
+       置 null 会把后来者正在用的缓存打掉（同样导致渲染中断）。 */
+    if (treeDirCache === cache) treeDirCache = null;
   }
 }
 

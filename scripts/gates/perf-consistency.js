@@ -377,14 +377,15 @@ async function runPerfConsistencyGates() {
   items.push(makeItem('GATE-054', '性能指标', '渲染层入口资源加载耗时实测 < 50ms', () => {
     const { ms, out } = timeMs(() => {
       const html = fs.readFileSync(path.join(ROOT, 'renderer', 'index.html'), 'utf8');
+      const tokens = fs.readFileSync(path.join(ROOT, 'renderer', 'tokens.css'), 'utf8');
       const css = fs.readFileSync(path.join(ROOT, 'renderer', 'style.css'), 'utf8');
-      return { html: html.length, css: css.length };
+      return { html: html.length, tokens: tokens.length, css: css.length };
     });
     must(ms < 50, `入口资源加载耗时 ${ms}ms，超过 50ms 门槛`);
     return metric(EvidenceKind.METRIC,
-      { ms, bytes: out.html + out.css },
-      `hrtime 真实计时：读取 renderer/index.html(${out.html}B) + style.css(${out.css}B) 同步耗时 ${ms}ms`
-      + `（门槛 <50ms，本地磁盘无网络往返）`, 'ms');
+      { ms, bytes: out.html + out.tokens + out.css },
+      `hrtime 真实计时：读取 renderer/index.html(${out.html}B) + tokens.css(${out.tokens}B)`
+      + ` + style.css(${out.css}B) 同步耗时 ${ms}ms（门槛 <50ms，本地磁盘无网络往返）`, 'ms');
   }));
 
   /* ---- GATE-055：内存水位 ---- */

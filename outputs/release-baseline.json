@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
-  "generatedAt": "2026-10-15T10:01:10.666Z",
+  "generatedAt": "2026-10-15T11:12:00.681Z",
   "project": "cursor-local",
   "version": "0.1.0",
-  "commit": "fff95c940b2509c6c624c10c846a758c0f016c1a",
+  "commit": "7d52ae2049b5dbdfe54e2e659098f8039b69a113",
   "tag": "baseline-ai-buddy",
   "configDigest": {
     "version": "0.1.0",
@@ -27,29 +27,29 @@
     "arch": "x64"
   },
   "metrics": {
-    "fileCount": 45,
-    "totalBytes": 646491
+    "fileCount": 46,
+    "totalBytes": 671271
   },
   "files": {
     "main.js": {
       "sha256": "ebd22c9f5fd6eebdd257c20b1b1f1e98471002c6cec13152d06e2463f8d7f973",
       "bytes": 8620,
-      "mtime": "2026-10-14T22:31:23.470Z"
+      "mtime": "2026-10-15T10:04:41.383Z"
     },
     "main/testing.js": {
-      "sha256": "c7348e1c704afe17defc659c5a53fbd47b7b0198d2f37d153f0d9330bada47f3",
-      "bytes": 28807,
-      "mtime": "2026-10-15T09:52:40.218Z"
+      "sha256": "53b0421630817b12b4009e056111c0fbcca1d64d1fb7e39b44408e4a4cae9765",
+      "bytes": 33082,
+      "mtime": "2026-10-15T11:08:22.194Z"
     },
     "modules/agent.js": {
       "sha256": "bb3e7343794cc658baaebc6bf79dc58e55c05586b9413df5bd80df01bd98b292",
       "bytes": 39949,
-      "mtime": "2026-10-15T09:35:50.602Z"
+      "mtime": "2026-10-15T10:04:41.416Z"
     },
     "modules/agent/tools.js": {
       "sha256": "0980cd2f5c37350c68427bb27078cff8b14f16e27e9da6e1c40a4ec3ef278635",
       "bytes": 7820,
-      "mtime": "2026-10-14T22:52:08.376Z"
+      "mtime": "2026-10-15T10:04:41.431Z"
     },
     "modules/ai.js": {
       "sha256": "b7b3208f4feeca73fa3d1b32ca48c9fb4a41a22e918536ab350028402450a68c",
@@ -64,7 +64,7 @@
     "modules/config.js": {
       "sha256": "8b753ed3f3f57a6fcdf6fb697228ac0f4e4aaa93a3bf15b697e931c92a9f6e59",
       "bytes": 2539,
-      "mtime": "2026-10-14T23:31:24.982Z"
+      "mtime": "2026-10-15T10:04:41.448Z"
     },
     "modules/fs.js": {
       "sha256": "a8417dc3315fcccceff85e2caaed2008648951320c781e19ddf7dbde03cb45a8",
@@ -89,7 +89,7 @@
     "modules/session.js": {
       "sha256": "4076b0f818724c5b620cd05d88bb06d843aa54cdbb34f545ade5e00189ea9241",
       "bytes": 7710,
-      "mtime": "2026-10-14T22:31:06.384Z"
+      "mtime": "2026-10-15T10:04:41.462Z"
     },
     "modules/terminal.js": {
       "sha256": "b16fe347cb8a4190ea365604cc4775d7eab869e76bf2aa250517bcd36faaeb40",
@@ -109,17 +109,17 @@
     "preload.js": {
       "sha256": "8fa47771bbdb3f9005e9e29e1de51a56656170f6b55cf7b3eb2b72336aadd8ac",
       "bytes": 6490,
-      "mtime": "2026-10-14T22:53:18.883Z"
+      "mtime": "2026-10-15T10:04:41.546Z"
     },
     "renderer/agents.js": {
       "sha256": "3666a4b24357332d52da2987255e6c5a731af9a0d5db4684584f29529a23f985",
       "bytes": 52054,
-      "mtime": "2026-10-15T09:41:41.823Z"
+      "mtime": "2026-10-15T10:04:41.561Z"
     },
     "renderer/ai-panel.js": {
-      "sha256": "53503dd85acc302679b464bb9186d5952d6900b416c245ecda55064d13d87fdf",
-      "bytes": 7955,
-      "mtime": "2026-10-15T09:44:59.084Z"
+      "sha256": "3bbecb0c87135d0bf3af1046c42b5f19fd5e03a08e7d82a9a6134269e2027106",
+      "bytes": 9642,
+      "mtime": "2026-10-15T11:01:15.542Z"
     },
     "renderer/auth.js": {
       "sha256": "56fe26d1129bcb19de77a337ac6be69dea18432559d6d4f6556e2a8b946c4f7c",
@@ -152,9 +152,9 @@
       "mtime": "2026-10-06T03:14:14.464Z"
     },
     "renderer/editor/filetree.js": {
-      "sha256": "997bd6d6189cd0de85894c47b668c7db8e36d3fa268782f189d65eaf0a62bc4d",
-      "bytes": 11060,
-      "mtime": "2026-10-14T12:22:03.584Z"
+      "sha256": "f1b37c34a02544236ae374dd7260572573dd3bbc3569302f50a42641e0f19a5a",
+      "bytes": 11787,
+      "mtime": "2026-10-15T11:05:04.556Z"
     },
     "renderer/editor/preview.js": {
       "sha256": "7abe645278f4459d9c2fa98fa408f386d9927972954353d45a73c0e5be981c89",
@@ -167,9 +167,9 @@
       "mtime": "2026-10-14T12:22:03.639Z"
     },
     "renderer/index.html": {
-      "sha256": "79db5648bd6fda972fa354ad21f75c2911c6b6a633462f640950fff1b87efe37",
-      "bytes": 27533,
-      "mtime": "2026-10-15T09:49:13.298Z"
+      "sha256": "1175d65479806e862f12a9c14dc898c89d637a48dc4b1a129407c8716a0b9adc",
+      "bytes": 27669,
+      "mtime": "2026-10-15T10:48:11.245Z"
     },
     "renderer/inline.js": {
       "sha256": "67d3146b43f6aec6ed360535822b06239352f6bd65c08a1d038305b2659597c9",
@@ -179,12 +179,12 @@
     "renderer/island.js": {
       "sha256": "152ab78473df0a500d5b821993cbf9f8acb5923fd9efbfda5bab1bacc87b6371",
       "bytes": 1060,
-      "mtime": "2026-10-14T22:21:27.783Z"
+      "mtime": "2026-10-15T10:04:41.594Z"
     },
     "renderer/keymap.js": {
       "sha256": "8bf53ef43723ce8c4c644a577ad621830035ba28f90ab2c24d221fdf1d6d6844",
       "bytes": 8768,
-      "mtime": "2026-10-14T22:23:06.069Z"
+      "mtime": "2026-10-15T10:04:41.611Z"
     },
     "renderer/legal.html": {
       "sha256": "c948240c666ca3d320cbee8d6337528b14a9ba67189e8120d257cb2805ce88ae",
@@ -204,7 +204,7 @@
     "renderer/mention.js": {
       "sha256": "51c6b3d4e01e1f03035c9e43681b74622c290f23784ab82f744761c0cccb70d5",
       "bytes": 5126,
-      "mtime": "2026-10-14T22:21:27.779Z"
+      "mtime": "2026-10-15T10:04:41.629Z"
     },
     "renderer/menubar.js": {
       "sha256": "5e0e162d4416873e435d5a2d60fc9973653758ef0629e3dbaa14fcf60a9843d6",
@@ -214,27 +214,27 @@
     "renderer/model.js": {
       "sha256": "b0d6749d4cf3d9f4dc026cfda610798bf6be645a76a99efcefefe6d624d5453e",
       "bytes": 3580,
-      "mtime": "2026-10-14T22:21:27.766Z"
+      "mtime": "2026-10-15T10:04:41.647Z"
     },
     "renderer/modes.js": {
       "sha256": "4ed550757a4e32ff6ba4a35ffa56727893f0dfc4325f9aeff05614d79e3bbf28",
       "bytes": 2341,
-      "mtime": "2026-10-14T22:21:27.752Z"
+      "mtime": "2026-10-15T10:04:41.670Z"
     },
     "renderer/palette.js": {
       "sha256": "cfed5a0c84ee7f5252d78f9acc907c8d04731787cdc62649ede638e99527af46",
       "bytes": 8270,
-      "mtime": "2026-10-14T22:21:27.793Z"
+      "mtime": "2026-10-15T10:04:41.688Z"
     },
     "renderer/renderer.js": {
       "sha256": "02b552f798f03d65259590260cee6baa1b713d0e8fe4a9b221f5007457769b09",
       "bytes": 19066,
-      "mtime": "2026-10-15T09:45:09.119Z"
+      "mtime": "2026-10-15T10:04:41.705Z"
     },
     "renderer/style.css": {
-      "sha256": "2b38e2f9ea1f2faaa5a0e6b21816899da2903b98af7927b9ab05e9f09e8a7ffa",
-      "bytes": 133211,
-      "mtime": "2026-10-15T09:49:12.460Z"
+      "sha256": "589de8e8b8d8b9f4720eda37717512911e7d9484c1c155d26b97c641665836f3",
+      "bytes": 139185,
+      "mtime": "2026-10-15T11:01:14.868Z"
     },
     "renderer/terminal.js": {
       "sha256": "7bea8d7abec94c386f5f00339460212072e30d427f2b9d8a68067133fac8a72e",
@@ -242,9 +242,14 @@
       "mtime": "2026-10-06T03:07:22.413Z"
     },
     "renderer/theme.js": {
-      "sha256": "fee92e7f95a8abca8fe9fc0503e1e8312a38a3cd1bad9368561ddd958683298e",
-      "bytes": 10569,
-      "mtime": "2026-10-14T22:21:27.772Z"
+      "sha256": "41157395a1dd3bf30ae3773f6e7944e57ce28f03623eb2d8fcd2ca2b49cf4852",
+      "bytes": 14156,
+      "mtime": "2026-10-15T10:51:11.271Z"
+    },
+    "renderer/tokens.css": {
+      "sha256": "76bfb065a516031e84720d8fca6bbd746a0e0e8917d5bb0b403bece42a35e578",
+      "bytes": 8394,
+      "mtime": "2026-10-15T10:47:02.477Z"
     },
     "store/billing.js": {
       "sha256": "59aead208c0917df028d9e24d02878fe9bdaac376759cbf13c3032dbd6167cc2",
@@ -257,5 +262,5 @@
       "mtime": "2026-09-25T00:15:16.857Z"
     }
   },
-  "manifestDigest": "93b7f2877e2a8443cb5f59d31888dfdb3671819c88e1903ce43d9663a9f6eeb5"
+  "manifestDigest": "ba7906b8fa69b4b778f1a25f7b3decd75ec214c54aa9af4278264e65d29941da"
 }

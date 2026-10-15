@@ -1,0 +1,220 @@
+/* ==========================================================================
+   Cursor Local — 设计系统 v2.0 · Token 层（唯一值来源）
+   --------------------------------------------------------------------------
+   规则：
+     1. 所有视觉值只在这里定义一次。其他 CSS 只允许引用 token，不写字面量。
+     2. 深色是默认（:root），浅色是覆盖（:root[data-theme="light"]）。
+     3. 表面层用「实色」而非叠加 alpha——半透明叠半透明的结果取决于叠了几层，
+        同一个 surface-2 在不同容器深浅不一，既无法截图比对也无法算对比度。
+     4. 文字 token 的取值基准是「该 token 可能出现的最亮背景」，
+        不是默认背景。只按默认底校验会让 hover / 浮层上跌破 4.5:1。
+
+   实测对比度（WCAG 2.x 相对亮度公式，脚本计算）：
+     深色：text-1 13.8 / text-2 8.5 / text-3 5.4（基准 surface-5）
+     浅色：text-1 14.7 / text-2 10.8 / text-3 6.5（基准 surface-4）
+   ========================================================================== */
+
+:root {
+  /* ---------- 间距：4px 基准网格 ---------- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+
+  /* ---------- 圆角：收敛为 5 档 ----------
+     原实现里 6/7/8px 三种并存且肉眼不可分；>=20px 从未冲突，故单列 --radius-xl。 */
+  --radius-xs: 4px;    /* 徽标 / 耗时标签 */
+  --radius-sm: 6px;    /* 按钮 / 输入框 / 树选中 */
+  --radius-md: 10px;   /* 卡片 */
+  --radius-lg: 14px;   /* 面板 / 大容器 */
+  --radius-xl: 20px;   /* 对话框 / 命令面板 */
+  --radius-full: 999px;
+
+  /* ---------- 字号：收敛为 8 档 ----------
+     原实现 8.5/10/10.5/11/11.5/12/12.5/13 共 8 个近似值，
+     其中 12.5 与 13、11 与 11.5 实际不可分辨。 */
+  --fs-2xs: 10px;   /* 仅用于字距放大后的微型标签 */
+  --fs-xs: 11px;    /* 状态栏 / 徽标 / 元信息 */
+  --fs-sm: 12px;    /* 树项 / 标签页 / 面板标签 */
+  --fs-base: 13px;  /* 正文 / 表单（默认） */
+  --fs-md: 14px;    /* 区块标题 / 代码 */
+  --fs-lg: 16px;    /* 面板标题 */
+  --fs-xl: 20px;    /* 对话框标题 */
+  --fs-2xl: 28px;   /* 空状态主标题 */
+  --lh-tight: 1.3;
+  --lh-normal: 1.55;
+  --lh-relaxed: 1.75;
+
+  /* ---------- 控件尺寸 ----------
+     WCAG 2.2 SC 2.5.8 (AA) 要求可点击目标 >= 24x24 CSS px。
+     策略：字形保持小尺寸（保住开发者要的密度），靠 padding 把热区撑到 24px。
+     密度与可用性不必二选一。 */
+  --ctl-h-sm: 24px;
+  --ctl-h-md: 28px;
+  --ctl-h-lg: 32px;
+  --icon-sm: 14px;
+  --icon-md: 16px;
+  --icon-lg: 18px;
+
+  /* ---------- 动效 ---------- */
+  --dur-1: 120ms;   /* hover / 按下等即时反馈 */
+  --dur-2: 180ms;   /* 展开 / 折叠 / 开关 */
+  --dur-3: 280ms;   /* 浮层进入 */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ---------- 焦点：双层环 ----------
+     内层用底色「抠」出间隙，外层强调色——任何底色上都 >= 3:1 可见，
+     不依赖元素自身的背景色。 */
+  --focus-ring: 0 0 0 2px var(--bg-base), 0 0 0 4px var(--accent);
+
+  /* ---------- 字体栈 ---------- */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei UI", "PingFang SC", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Cascadia Mono", monospace;
+
+  /* ---------- 布局尺寸（响应式在文件末尾逐级收窄）---------- */
+  --tree-w: 240px;    /* 文件树列宽 */
+  --panel-w: 520px;   /* AI 搭子面板宽 */
+  --sess-w: 148px;    /* 面板内会话列表宽 */
+
+  /* ==================== 深色（默认） ==================== */
+
+  /* 表面层 —— 实色，值恒定可预测 */
+  --bg-base: #000000;
+  --surface-1: #070708;   /* 主面板：文件树 / 编辑器 / AI 面板 */
+  --surface-2: #0c0c0e;   /* 面板内卡片 */
+  --surface-3: #121214;   /* 行 hover */
+  --surface-4: #1c1c1f;   /* 行选中 / 激活 */
+  --surface-5: #26262a;   /* 浮层：菜单 / 命令面板 / 对话框 */
+  --scrim: rgba(0, 0, 0, 0.62);
+
+  /* 描边 */
+  --border-subtle: #171719;
+  --border-default: #222226;
+  --border-strong: #33333a;
+
+  /* 文字 */
+  --text-1: #f5f5f7;
+  --text-2: #c2c2c8;
+  --text-3: #9a9aa2;
+  --text-disabled: #5a5a61;
+
+  /* 强调色：拆两个角色 ——
+     填充要够深（白字 >=4.5:1），深色底上的文字色要够亮，方向相反，单 token 兼顾不了。
+     theme.js 会在运行时按用户选的主题色重新推导这两个值。 */
+  --accent: #6fa8ff;          /* 深色底上的文字 / 图标 → 8.12:1 */
+  --accent-solid: #2563eb;    /* 填充（配白字）→ 5.17:1 */
+  --accent-solid-hi: #1d4ed8; /* 填充 hover → 6.70:1 */
+  --accent-contrast: #ffffff;
+
+  /* 语义色（均已抬亮，保证在 surface-4 上仍 >=4.5:1） */
+  --ok: #5fd6bd;
+  --warn: #e0b830;
+  --danger: #ff6b6b;
+  --info: #6fa8ff;
+
+  /* 中性交互底（用于不需要语义色的 hover/选中） */
+  --hover: rgba(255, 255, 255, 0.05);
+  --hover-strong: rgba(255, 255, 255, 0.08);
+  --card: rgba(255, 255, 255, 0.04);
+  --input-bg: rgba(0, 0, 0, 0.30);
+  --code-bg: #08080a;
+
+  /* 滚动条 */
+  --scrollbar-thumb: #2a2a30;
+  --scrollbar-thumb-hover: #3a3a42;
+}
+
+/* ==================== 浅色 ==================== */
+:root[data-theme="light"] {
+  --bg-base: #ffffff;
+  --surface-1: #fafbfc;
+  --surface-2: #f4f6f8;
+  --surface-3: #eef1f5;
+  --surface-4: #e4e8ef;
+  --surface-5: #ffffff;
+  --scrim: rgba(20, 22, 26, 0.34);
+
+  --border-subtle: #e8ebf0;
+  --border-default: #d8dce3;
+  --border-strong: #b9c0cb;
+
+  --text-1: #14161a;   /* 最差 14.7:1 */
+  --text-2: #2b3038;   /* 最差 10.8:1 */
+  --text-3: #4a515c;   /* 最差  6.5:1 */
+  --text-disabled: #9aa1ab;
+
+  --accent: #1d4ed8;          /* 浅色底上的文字 / 图标 → 6.70:1 */
+  --accent-solid: #1d4ed8;    /* 填充（配白字）→ 6.70:1 */
+  --accent-solid-hi: #1e40af;
+  --accent-contrast: #ffffff;
+
+  --ok: #0f5f57;      /* 最差 6.1:1 */
+  --warn: #854d0e;    /* 最差 5.6:1 */
+  --danger: #c62828;  /* 最差 4.6:1 */
+  --info: #1d4ed8;
+
+  --hover: rgba(0, 0, 0, 0.05);
+  --hover-strong: rgba(0, 0, 0, 0.08);
+  --card: rgba(0, 0, 0, 0.03);
+  --input-bg: rgba(0, 0, 0, 0.04);
+  --code-bg: #f5f7f9;
+
+  --scrollbar-thumb: #cfd4dc;
+  --scrollbar-thumb-hover: #b3bac5;
+}
+
+/* ==========================================================================
+   响应式：窗口变窄时逐级收窄布局尺寸
+   --------------------------------------------------------------------------
+   Electron 桌面端的「响应式」= 用户拖拽窗口。三栏都是固定/弹性混合，
+   必须逐级收窄，否则窄窗口下编辑器会被挤到不可用。
+   < 900px 时 AI 面板改为浮层（见 style.css 的 body.narrow），不再占布局宽度。
+   ========================================================================== */
+@media (max-width: 1439px) {
+  :root { --panel-w: 460px; --sess-w: 140px; }
+}
+@media (max-width: 1199px) {
+  :root { --panel-w: 420px; --sess-w: 132px; --tree-w: 220px; }
+}
+@media (max-width: 1023px) {
+  :root { --panel-w: 380px; --sess-w: 124px; --tree-w: 200px; }
+}
+@media (max-width: 899px) {
+  :root { --panel-w: 360px; --sess-w: 120px; --tree-w: 180px; }
+}
+
+/* ==========================================================================
+   用户偏好适配
+   ========================================================================== */
+
+/* 减少动效：全局归零（原实现仅 2 处覆盖，而 spring/shimmer/光环等动画有十余处） */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 更高对比度：把次级文字与描边整体提一档 */
+@media (prefers-contrast: more) {
+  :root {
+    --text-2: #ffffff;
+    --text-3: #d0d0d6;
+    --border-subtle: #3a3a42;
+    --border-default: #4a4a54;
+    --border-strong: #6a6a76;
+  }
+  :root[data-theme="light"] {
+    --text-2: #000000;
+    --text-3: #333a44;
+    --border-subtle: #b9c0cb;
+    --border-default: #9aa1ab;
+    --border-strong: #6b7280;
+  }
+}

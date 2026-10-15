@@ -150,9 +150,22 @@ function createTesting({ winRef, agents, rootDir, config, agentApi, sessionApi, 
     await captureTo(path.join(shotDir, '01-editor.png'));
 
     // 2. Editor
-    await winRef().webContents.executeJavaScript(
-      `window.__openFolderForDemo(${JSON.stringify(rootDir)}); switchMode('editor');`
+    /* 必须 await：__openFolderForDemo 是 async（render + openFile 都是 IPC 往返），
+       调用处不等待会出现竞态 —— 打开含 node_modules 的仓库目录较慢时，
+       截图时目录树与标签页还都是空的（实测 filetreeItems=0、tabs=0）。
+       executeJavaScript 会把返回的 Promise 解析完再返回，因此在脚本内 await 即可。 */
+    const openRes = await winRef().webContents.executeJavaScript(
+      `(async () => {
+        try { await window.__openFolderForDemo(${JSON.stringify(rootDir)}); }
+        catch (e) { return 'ERR: ' + (e && e.stack ? e.stack : String(e)); }
+        switchMode('editor');
+        return 'OK';
+      })()`
     );
+    if (openRes !== 'OK') {
+      console.log('[assert FAIL] 打开目录失败（目录树会静默变空）：' + openRes);
+      process.exitCode = 1;
+    }
     await sleep(1800);
     const dbg = await winRef().webContents.executeJavaScript('JSON.stringify(window.__debugState())');
     console.log('[debug editor]', dbg);
@@ -200,6 +213,39 @@ function createTesting({ winRef, agents, rootDir, config, agentApi, sessionApi, 
     await sleep(800);
     const dbg2 = await winRef().webContents.executeJavaScript('JSON.stringify(window.__debugAgents())');
     console.log('[debug agents]', dbg2);
+    /* 诊断：找出 AI 面板内横向溢出的元素（卡片被裁切的根因） */
+    const overflow = await winRef().webContents.executeJavaScript(`(() => {
+      const panel = document.getElementById('ai-panel');
+      const pr = panel.getBoundingClientRect();
+      const out = [];
+      panel.querySelectorAll('*').forEach((el) => {
+        const r = el.getBoundingClientRect();
+        const cs = getComputedStyle(el);
+        const overParent = r.right > pr.right + 1;
+        const selfScroll = el.scrollWidth > el.clientWidth + 1;
+        if (overParent || (selfScroll && cs.overflowX !== 'visible')) {
+          out.push({
+            sel: el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') + (el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(' ').slice(0, 2).join('.') : ''),
+            w: Math.round(r.width), right: Math.round(r.right),
+            sw: el.scrollWidth, cw: el.clientWidth,
+            ox: cs.overflowX, ws: cs.whiteSpace
+          });
+        }
+      });
+      return JSON.stringify({ panelRight: Math.round(pr.right), count: out.length, top: out.slice(0, 14) }, null, 1);
+    })()`);
+    /* 回归断言：AI 面板内的滚动容器不得横向溢出。
+       曾踩过：给 .agent-item 加了 display:flex，nowrap 子元素触发 flex 的
+       min-content 撑宽，把 147px 的会话列表撑到 389px，出现横向滚动条。 */
+    const ov = JSON.parse(overflow);
+    const bad = ov.top.filter((e) => e.sel.indexOf('agent-list') >= 0 || e.sel.indexOf('transcript') >= 0);
+    if (bad.length) {
+      console.log('[assert FAIL] AI 面板内出现横向溢出：');
+      bad.forEach((e) => console.log(`    ${e.sel} 容器 ${e.cw}px / 内容 ${e.sw}px`));
+      process.exitCode = 1;
+    } else {
+      console.log(`[assert OK] AI 面板滚动容器无横向溢出（共检出 ${ov.count} 处被裁切元素，均为 ellipsis 设计预期）`);
+    }
     const layPanel = await layoutProbe('ai-panel-open');
     if (!layPanel.aiPanel || layPanel.aiPanel.w < 340) {
       console.log(`[assert FAIL] AI 面板展开后宽度应 ≥ 340px，实际 ${layPanel.aiPanel ? layPanel.aiPanel.w : 'null'}px`);
@@ -325,7 +371,28 @@ function createTesting({ winRef, agents, rootDir, config, agentApi, sessionApi, 
     console.log('[debug lightmode]', lightTest);
     await winRef().webContents.executeJavaScript('window.setMode("light")');
     await sleep(400);
-    await captureTo(path.join(shotDir, '05-light.png'));
+        /* 断言：切到亮色主题后，面板底色必须真的变亮。
+       这条防的是「主题切换静默失效」——tokens.css 的浅色块若没生效，
+       界面会半亮半暗（顶栏亮了、面板还是黑的）而没有任何报错。 */
+    const lightProbe = JSON.parse(await winRef().webContents.executeJavaScript(`(() => {
+      const bg = (id) => { const e = document.getElementById(id); return e ? getComputedStyle(e).backgroundColor : ''; };
+      const parse = (c) => { const m = String(c).match(/[0-9]+/g) || [0, 0, 0]; return [+m[0], +m[1], +m[2]]; };
+      const lum = ([r, g, b]) => 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      return JSON.stringify({
+        theme: document.documentElement.dataset.theme,
+        panelLum: lum(parse(bg('filetree-panel'))),
+        mainLum: lum(parse(bg('editor-main'))),
+        aiLum: lum(parse(bg('ai-panel')))
+      });
+    })()`));
+    const lightBad = lightProbe.theme !== 'light' || lightProbe.panelLum < 180 || lightProbe.mainLum < 180 || lightProbe.aiLum < 180;
+    if (lightBad) {
+      console.log(`[assert FAIL] 亮色主题未生效：theme=${lightProbe.theme} 文件树亮度=${lightProbe.panelLum.toFixed(0)} 编辑器=${lightProbe.mainLum.toFixed(0)} AI面板=${lightProbe.aiLum.toFixed(0)}（应均 >=180）`);
+      process.exitCode = 1;
+    } else {
+      console.log(`[assert OK] 亮色主题已生效：theme=${lightProbe.theme} 面板亮度 ${lightProbe.panelLum.toFixed(0)}/${lightProbe.mainLum.toFixed(0)}/${lightProbe.aiLum.toFixed(0)}`);
+    }
+await captureTo(path.join(shotDir, '05-light.png'));
     await winRef().webContents.executeJavaScript('window.setMode("dark")');
     // Git 面板截图
     await winRef().webContents.executeJavaScript('switchMode("editor"); window.openGitPanel()');

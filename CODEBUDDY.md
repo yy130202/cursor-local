@@ -93,6 +93,18 @@ main.js（组装点）
 ## 渲染层约定（易踩坑）
 
 - `renderer/index.html` 用**普通 `<script src>` 按顺序加载**所有模块（`consent → core → editor/* → keymap → editor → agents → mention → ai-panel → theme → … → renderer.js`）。**没有 ES module、没有打包器**，各文件靠顶层 `const` / `function` 与 `window.xxx` 共享全局。新增渲染模块**必须加到 index.html 的脚本列表并注意顺序**（被依赖者在前）。
+- **样式表顺序固定**：`tokens.css` → `xterm.css` → `style.css`。改样式时记得同步升 `?v=` 查询串。
+
+### 设计系统 v2.0（样式改动必读）
+
+- **`renderer/tokens.css` 是所有视觉值的唯一来源**。`style.css` 里**不允许再定义 token 值**，只允许出现「别名」——`:root { --text-dim: var(--text-3) }` 这种把旧名指向新 token 的写法，用于让 2600 行既有规则平滑过渡。新增样式**一律引用 token，不写字面量**。
+- **表面层用实色，不用叠加 alpha**。`rgba(255,255,255,.028)` 叠在另一个半透明层上结果取决于叠了几层，同一个「面板底」在不同容器深浅不一，既无法截图比对也无法算对比度。用 `--surface-1..5`。
+- **强调色是两个 token，不是一个**：`--accent`（深色底上的文字/图标，要够亮）与 `--accent-solid`（按钮填充，配白字，要够深）。二者明度方向相反，单 token 无法兼顾 —— 历史上用单个 `--accent` 导致「白字 / #3b82f6」只有 3.68:1 不达标。**给元素上背景色时先问：上面有 `--accent-contrast` 文字吗？有就用 `--accent-solid`。**
+- **`theme.js` 运行时按 WCAG 对比度自动推导这两个值**（`tuneLightness()`），所以用户任选主题色都不会跌破 4.5:1。切换明暗主题会**重跑 `applyTheme`**（`applyMode` 里）——浅色底要暗、深色底要亮，基准不同，不能沿用。
+- **文字 token 按「最亮可能背景」定值**，不是默认背景。只按默认底校验会让 hover / 浮层上跌破 4.5:1（`--text-dim #858585` 在浮层底只有 4.10:1，已提亮为 `--text-3 #9a9aa2`）。
+- **可点击目标 ≥ 24×24 CSS px**（WCAG 2.2 SC 2.5.8）。密度策略是**字形保持小尺寸、用 padding/固定尺寸把热区撑够**，不是把按钮做大。改交互元素尺寸时留意这条。
+- **响应式由 tokens.css 的断点驱动**（`--tree-w` / `--panel-w` / `--sess-w`，1439/1199/1023/899 四级）。`ai-panel.js` 展开时会写**内联 width**，内联优先级高于变量，所以它读一次 `--panel-w` 做上限钳制，并在 `resize` 时重算 —— 否则用户拖宽后缩窗口，断点会失效。**< 900px 时 AI 面板改 `position:absolute` 浮层**，不再占布局宽度。
+- 焦点态用双层环（内层底色抠缝 + 外层强调色），任何底色上都 ≥3:1。动效必须有 `prefers-reduced-motion` 归零（tokens.css 已全局覆盖，新增动画无需重复处理）。
 - 渲染层不能 `require`，只能走 `window.api`（`preload.js` 用 `contextBridge` 暴露，是**唯一 IPC 入口**）。
 - 跨文件全局约定：`EditorState`（`currentFolder` / 标签页 / editor 实例）、`window.escapeHtml`、`window.lucideIcon`、`window.updateIsland`、`window.setMode`、`openPalette` / `openGlobalSearch` / `openTerminal` / `openGitPanel`。用 `typeof fn === 'function'` / `typeof EditorState !== 'undefined'` 做防御式调用。
 - **AI 面板折叠只有一个写入点**：`ai-panel.js` 的 `setCollapsed()`（对外 `window.__setAiPanelCollapsed` / `CL.aiPanel.setCollapsed`）。它同时管类名 `.ai-collapsed` 与元素上的**内联 `width`**。踩过的坑：`switchMode('editor')` 早期只 `classList.add('ai-collapsed')`，没清掉 `setCollapsed(false)` 写入的内联 `width:460px`，于是类名变了、面板仍占 460px，编辑器被压窄一半。CSS 里另有 `#ai-panel.ai-collapsed { width: 0 !important }` 兜底（内联样式优先级高于类选择器）。
@@ -100,6 +112,7 @@ main.js（组装点）
 - 命令与快捷键统一定义在 `renderer/keymap.js` 的 `COMMANDS` 数组（含默认键位 + action），用户自定义键位存 `config.keybindings`。
 - **HTML 插值一律走 `escapeHtml`**（覆盖 `& < > " '`），Markdown 链接仅放行 `http/https/mailto`。
 - 性能约定：`renderer/agents.js` 用 `sigOf(entry)` 渲染签名复用 DOM 节点 + 行级 LCS diff（扁平 `Int32Array` DP 表 + 记忆化）。**改动渲染逻辑时不要退回全量重建**，实测曾把 DOM 重建从 10,474 次降到 171 次、主线程长任务从 4,810ms 降到 236ms。
+- **文件树 `treeDirCache` 有并发渲染陷阱**（已修，勿改回）：`readDirCached()` 里 `await window.api.readDir()` 会让出执行权，期间若另一轮 `renderTree` 开始/结束，模块级 `treeDirCache` 会被换成新 Map 或被清成 null，回来再 `.get()` 就抛 `Cannot read properties of null` 并**中断整棵树的渲染（表现为目录树静默变空）**。启动自动打开上次目录 + 手动打开新目录重叠时必现。现在的写法是：函数内先 `const cache = treeDirCache` 取本地引用，且 `renderTree` 的 `finally` 只在 `treeDirCache === cache`（仍是自己那份）时才清空。
 
 ## 验证体系（本项目最有特色的部分）
 
@@ -162,7 +175,17 @@ scripts/
 | `TEST_MD` | Markdown 预览回归（打开 README 校验表格渲染 + 截图） |
 | `PERF` / `PERF_ENTRIES` | 渲染性能实测 → `.perf/electron-perf.json`（默认 120 条） |
 
-`SHOT_MODE` 产出的截图：`01-editor.png`（编辑器全宽 / AI 面板折叠，默认态）、`02-ai-panel.png`（AI 面板展开 + demo 会话）、`03-git.png`、`04-terminal.png`、`05-light.png`。截图流程里带**运行时断言**：折叠态面板宽度必须为 0 且编辑器铺满剩余宽度、展开态面板宽度 ≥340px——这是为了防「面板收起但仍占位」这类布局回归。
+`SHOT_MODE` 产出的截图：`01-editor.png`（编辑器全宽 / AI 面板折叠，默认态）、`02-ai-panel.png`（AI 面板展开 + demo 会话）、`03-git.png`、`04-terminal.png`、`05-light.png`。截图流程里带 **5 条运行时断言**，都是曾经真实出过问题的回归防线：
+
+| 断言 | 防的问题 |
+|---|---|
+| 折叠态面板宽度 = 0、编辑器铺满 | 「面板收起但仍占位」（类名变了但内联 width 没清） |
+| 展开态面板宽度 ≥340px | 折叠/展开状态机坏掉 |
+| 打开目录必须成功（`await` 的结果为 OK） | 目录树静默变空 —— 早先调用处没 `await`，异常被吞，截图上只是「看起来没文件」 |
+| AI 面板内滚动容器无横向溢出 | flex min-content 撑宽（给 `.agent-item` 错加 `display:flex` 把 147px 会话列表撑到 389px） |
+| 亮色主题切换后三栏面板亮度 ≥180 | 主题切换静默失效（顶栏亮了、面板还是黑的，且无任何报错） |
+
+> 调截图流程时的教训：`__openFolderForDemo` 是 **async**，必须 await（`executeJavaScript` 会等返回的 Promise）。不 await 时异常进不了主进程日志，只表现为截图内容不对。
 
 `screenshot-run.js` / `test-agent.js` 均由环境变量驱动，**不传环境变量直接运行会走正常应用启动流程**。这些是主进程内启动、跑完自动 `app.quit()` 的集成验证，不是普通单元测试。
 

@@ -6,7 +6,9 @@
         content="default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' monaco:; worker-src 'self' blob: monaco:; style-src 'self' 'unsafe-inline'; connect-src monaco: https: http://localhost:* http://127.0.0.1:*; img-src 'self' data: blob: file:; media-src 'self' data: blob: file:; font-src 'self' data:; object-src 'none'; base-uri 'none'">
   <title>Cursor Local</title>
   <link rel="stylesheet" href="../node_modules/@xterm/xterm/css/xterm.css">
-  <link rel="stylesheet" href="style.css?v=5">
+  <!-- 设计系统 v2.0：tokens.css 必须先于 style.css（唯一值来源） -->
+  <link rel="stylesheet" href="tokens.css?v=1">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
   <div id="aura" aria-hidden="true"></div>

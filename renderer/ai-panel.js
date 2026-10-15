@@ -26,15 +26,27 @@
 
   const STORAGE_KEY = 'aiPanel';
   const MIN_W = 340;
-  const MAX_W = 760;
-  const DEFAULT_W = 460;
+  const MAX_W = 720;
+  const DEFAULT_W = 520;   /* 与 tokens.css 的 --panel-w 默认值保持一致 */
+  /* 断点宽度（--panel-w）由 CSS 变量驱动，窄窗口会自动收窄。
+     但展开时我们会把宽度写成**内联 style**，内联优先级高于变量，
+     于是断点失效、窄窗口下仍撑到 520px。所以这里读一次 CSS 变量做上限。 */
+  function breakpointWidth() {
+    const v = getComputedStyle(document.documentElement).getPropertyValue('--panel-w');
+    const n = parseFloat(v);
+    return Number.isFinite(n) && n > 0 ? n : DEFAULT_W;
+  }
+  /** 当前窗口下允许的面板宽度：用户拖拽值 与 断点值 取小 */
+  function clampToBreakpoint(w) {
+    return Math.max(MIN_W, Math.min(MAX_W, breakpointWidth(), Math.round(w)));
+  }
   /** 本会话已从 config 读过的持久化状态（避免每次读盘） */
   let persisted = { width: DEFAULT_W, collapsed: true };
 
   /* ---- 折叠 / 展开 ---- */
   function setCollapsed(collapsed, opts) {
     PANEL.classList.toggle('ai-collapsed', !!collapsed);
-    PANEL.style.width = collapsed ? '' : (persisted.width || DEFAULT_W) + 'px';
+    PANEL.style.width = collapsed ? '' : clampToBreakpoint(persisted.width || DEFAULT_W) + 'px';
     if (TOGGLE_BTN) TOGGLE_BTN.classList.toggle('active', !collapsed);
     if (!(opts && opts.skipPersist)) {
       persisted.collapsed = !!collapsed;
@@ -71,8 +83,13 @@
       const cfg = await window.api.getConfig();
       const saved = cfg && cfg[STORAGE_KEY];
       if (saved && typeof saved === 'object') {
+        /* 旧默认宽 460px 迁移到新默认 520px。
+           460 是上一版的 DEFAULT_W，停在恰好 460 的用户基本是没拖过，
+           应当跟随新默认值；真正拖过的值（如 380 / 600）原样保留。 */
+        const LEGACY_DEFAULT_W = 460;
+        const savedW = saved.width === LEGACY_DEFAULT_W ? DEFAULT_W : saved.width;
         persisted = {
-          width: Math.max(MIN_W, Math.min(MAX_W, saved.width || DEFAULT_W)),
+          width: Math.max(MIN_W, Math.min(MAX_W, savedW || DEFAULT_W)),
           collapsed: saved.collapsed !== false // 缺省折叠（编辑器优先）
         };
       }
@@ -170,6 +187,18 @@
       e.preventDefault();
       toggle();
     }
+  });
+
+  /* ---- 窗口尺寸变化：重新按断点钳制宽度 ----
+     没有这段，用户在宽窗口拖到 720px 后再把窗口缩到 1000px，
+     内联的 720px 会一直生效，把编辑器挤废。 */
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    if (resizeTimer) clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (PANEL.classList.contains('ai-collapsed')) return;
+      PANEL.style.width = clampToBreakpoint(PANEL.getBoundingClientRect().width) + 'px';
+    }, 120);
   });
 
   /* ---- 启动：读持久化状态 ---- */

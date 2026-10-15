@@ -561,8 +561,8 @@ async function envSuite() {
   });
 
   await smoke('依赖环境', '渲染层资源文件齐备', () => {
-    const need = ['renderer/index.html', 'renderer/style.css', 'renderer/core.js',
-      'renderer/agents.js', 'renderer/editor.js'];
+    const need = ['renderer/index.html', 'renderer/tokens.css', 'renderer/style.css',
+      'renderer/core.js', 'renderer/agents.js', 'renderer/editor.js'];
     const missing = need.filter((f) => !fs.existsSync(path.join(ROOT, f)));
     eq(missing.length, 0, `缺失: ${missing.join(',')}`);
     return `${need.length} 个渲染层核心资源文件全部存在`;

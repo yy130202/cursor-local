@@ -76,11 +76,69 @@ function luminance(hex) {
   return 0.299 * r + 0.587 * g + 0.114 * b;
 }
 
+/* ---------- 对比度工具（WCAG 2.x 相对亮度） ----------
+   注意：上面的 luminance() 用的是 YIQ 近似（0.299R+0.587G+0.114B），
+   与 WCAG 的相对亮度不是一回事，不能用来判断合规。判断 AA 必须用下面这组。 */
+function relLum(hex) {
+  const { r, g, b } = hexToRgb(hex);
+  const f = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+}
+function contrast(a, b) {
+  const l1 = relLum(a); const l2 = relLum(b);
+  const hi = Math.max(l1, l2); const lo = Math.min(l1, l2);
+  return (hi + 0.05) / (lo + 0.05);
+}
+function rgbToHsl(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b); const min = Math.min(r, g, b);
+  const l = (max + min) / 2; const d = max - min;
+  const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+  let h = 0;
+  if (d !== 0) {
+    if (max === r) h = ((g - b) / d) % 6;
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h *= 60; if (h < 0) h += 360;
+  }
+  return { h, s, l };
+}
+function hslToHex(h, s, l) {
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = l - c / 2;
+  let r = 0; let g = 0; let b = 0;
+  if (h < 60) { r = c; g = x; } else if (h < 120) { r = x; g = c; }
+  else if (h < 180) { g = c; b = x; } else if (h < 240) { g = x; b = c; }
+  else if (h < 300) { r = x; b = c; } else { r = c; b = x; }
+  const to = (v) => Math.round(Math.max(0, Math.min(1, v + m)) * 255).toString(16).padStart(2, '0');
+  return '#' + to(r) + to(g) + to(b);
+}
+/*
+ * 保持色相与饱和度，只沿明度轴步进，直到与 bg 的对比度达标。
+ * 用于把「用户任选的主题色」推导成合规的填充色 / 文字色：
+ * 原来的实现只按亮度换黑字或白字，中间明度的颜色两头都不到 4.5:1。
+ */
+function tuneLightness(base, bg, target, dir) {
+  const { r, g, b } = hexToRgb(base);
+  const { h, s, l } = rgbToHsl(r, g, b);
+  let cur = l;
+  for (let i = 0; i < 100; i += 1) {
+    const cand = hslToHex(h, s, cur);
+    if (contrast(cand, bg) >= target) return cand;
+    cur += dir === 'dark' ? -0.01 : 0.01;
+    if (cur < 0 || cur > 1) break;
+  }
+  return dir === 'dark' ? '#000000' : '#ffffff';
+}
+
 /* 亮/暗模式切换 */
 function applyMode(mode) {
   document.documentElement.dataset.theme = mode === 'light' ? 'light' : 'dark';
   const color = currentTheme.custom || (PRESETS[currentTheme.preset] && PRESETS[currentTheme.preset].color) || PRESETS.aurora.color;
-  updateMonacoTheme(color);
+  // 明暗切换会改变推导基准（深色底要亮、浅色底要暗），
+  // 必须重跑 applyTheme，否则浅色主题会沿用为深色底推导出的亮色 accent。
+  applyTheme(color);
 }
 
 async function setMode(mode) {
@@ -94,13 +152,30 @@ window.setMode = setMode;
 function applyTheme(accentHex) {
   const root = document.documentElement;
   const { r, g, b } = hexToRgb(accentHex);
-  root.style.setProperty('--accent', accentHex);
-  root.style.setProperty('--accent-hover', mix(accentHex, 'white', 0.16));
-  root.style.setProperty('--accent-soft', rgba(accentHex, 0.16));
-  root.style.setProperty('--accent-soft-2', rgba(accentHex, 0.28));
-  root.style.setProperty('--glow', rgba(accentHex, 0.5));
+  /*
+   * 强调色拆两个角色（二者明度方向相反，单 token 兼顾不了）：
+   *   --accent       : 面板/深色底上的文字与图标
+   *   --accent-solid : 按钮等「填充」，配 --accent-contrast 文字
+   * 两个值都由用户选的颜色按 WCAG 对比度自动推导，
+   * 这样无论用户换成什么主题色，都不会出现「按钮白字 3.68:1」这类问题。
+   */
+  const dark = document.documentElement.dataset.theme !== 'light';
+  const surface = dark ? '#070708' : '#ffffff';
+  // 文字/图标角色：暗色底要够亮，浅色底要够暗
+  const accentText = tuneLightness(accentHex, surface, 4.5, dark ? 'light' : 'dark');
+  // 填充角色：与白字的对比度必须 >= 4.5:1
+  const accentSolid = tuneLightness(accentHex, '#ffffff', 4.5, 'dark');
+
+  root.style.setProperty('--accent', accentText);
+  root.style.setProperty('--accent-solid', accentSolid);
+  // hover 取更暗的一档：对比度只增不减，任何主题色都安全
+  root.style.setProperty('--accent-solid-hi', mix(accentSolid, 'black', 0.18));
+  root.style.setProperty('--accent-hover', mix(accentSolid, 'black', 0.18));
+  root.style.setProperty('--accent-contrast', '#ffffff');
+  root.style.setProperty('--accent-soft', rgba(accentHex, dark ? 0.16 : 0.12));
+  root.style.setProperty('--accent-soft-2', rgba(accentHex, dark ? 0.28 : 0.20));
+  root.style.setProperty('--glow', rgba(accentHex, dark ? 0.5 : 0.32));
   root.style.setProperty('--accent-rgb', `${r}, ${g}, ${b}`);
-  root.style.setProperty('--accent-contrast', luminance(accentHex) > 155 ? '#111' : '#fff');
   // Aurora 光球跟随主题色
   root.style.setProperty('--orb-1', rgba(accentHex, 0.55));
   root.style.setProperty('--orb-2', rgba(mix(accentHex, 'white', 0.3), 0.4));
