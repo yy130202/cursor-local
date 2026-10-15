@@ -38,7 +38,9 @@ function loadConfig() {
     autoSave: false,
     wordWrap: 'off',
     largeFileThreshold: 1048576,
-    lockscreen: true
+    lockscreen: true,
+    // 自愈重试次数：工具失败/命令非零退出时，注入错误上下文让模型修正后重试的次数
+    healRetries: 1
   };
   try {
     const raw = JSON.parse(fs.readFileSync(configPath(), 'utf8'));

@@ -1,30 +1,41 @@
 # Cursor Local
 
-复刻 Cursor 核心体验的**本地桌面 AI 编程工具**，基于 Electron + Monaco Editor（VS Code 官方编辑器内核），内置可在本地自主读文件、改代码、跑终端命令的并行 AI Agent。
+**AI 搭子式的本地编程工作台**：AI 不是另开一个页面等你切换，而是常驻在编辑器右侧、与代码同屏协作。基于 Electron + Monaco Editor（VS Code 官方编辑器内核），AI 可自主读文件、改代码、跑终端命令，并留下**可追溯、可回滚**的执行轨迹。
 
 许可证：MIT（见 [LICENSE](./LICENSE)）。
 
 ## 功能
 
-### Editor Window（传统编辑器）
+**单视图布局**：整个应用只有一个编辑器视图——左侧文件树、中间 Monaco、右侧 AI 搭子面板三栏同屏。没有「主页」和独立的「Agent 页」，AI 能力全部收进编辑器侧栏（`Ctrl+Alt+B` 折叠/展开，宽度可拖拽，状态跨重启保持）。
+
+### 编辑器
 - 左侧文件树（懒加载、目录展开/收起、按文件类型着色图标）
 - 多标签页（打开/切换/关闭、拖拽排序、未保存 ● 标记、Ctrl+S 保存）
 - Monaco 语法高亮编辑器（自动识别 JS/TS/Python/HTML/CSS/JSON/Markdown 等）
 - Git 集成：文件树状态标记、gutter 变更标记、侧栏提交面板、并排 diff 对比
-- 全局搜索（分块并发 grep）、命令面板、@ 文件引用、Markdown 实时预览
+- 全局搜索（分块并发 grep）、命令面板、@ 文件引用、Markdown 实时预览（含表格）
 - 非文本文件查看器：图片 / 音频 / 视频 / 压缩包内容列表
 
-### Agents Window（Agent 优先工作台）
-- 新建 Agent 任务，Agent 在**当前工作目录**自主工作
-- 支持**多个 Agent 并行**运行，侧栏切换查看
-- 完整展示 Agent 每一步：思考说明、推理流、工具调用、文件变更、执行结果
+### AI 搭子面板（右侧分栏）
+- 新建任务，AI 在**当前工作目录**自主工作；支持**多个会话并行**，侧栏切换
+- 完整展示每一步：思考说明、推理流、工具调用（含**单次耗时**）、文件变更、执行结果
 - 变更卡片可一键「撤销改动」，逐字节还原原始文件
+- 会话列表按父子关系缩进，子任务一眼可见
 - 历史会话按时间分组，支持搜索、导出 Markdown、删除
 
 **内置 10 个工具**：`list_dir` 查目录、`list_tree` 目录树、`read_file` 读文件、`write_file` 写文件、`delete_file` 删除、`move_file` 移动、`search_files` 内容搜索、`get_file_info` 文件信息、`run_command` 执行终端命令、`spawn_subagent` 拆子任务（创建子 Agent 并等待其完成，支持任务拆解与并行）。
 
-### 两种工作模式
-顶部 `◧ Editor` / `🤖 Agents` 一键切换（AI 面板显隐）。
+### 四项「AI 搭子」能力
+
+| 能力 | 说明 |
+|---|---|
+| **计划—执行双阶段** | `plan` 模式先只产出实施计划（编号步骤 / 涉及文件 / 风险与回滚），以计划卡呈现并**停住等你批准**；点「批准并执行」后自动切 `craft` 并带着计划续跑 |
+| **轨迹导出** | 会话全程（工具参数、结果摘要、耗时、变更汇总、审批、错误）可导出为 Markdown 或完整事件流 JSON，交由 `session:exportTrajectory` 生成 |
+| **子任务拆解** | 双通道：模型可自行调用 `spawn_subagent` 拆解并行子目标；也可在面板点「拆为子任务」，把你写在输入框里的描述交给新子 agent。父任务停止时子任务级联停止 |
+| **失败自愈重试** | 工具报错或命令非零退出时，把错误摘要注入上下文让模型**分析原因、换策略**（不原样重发，避免非幂等命令重复副作用）；次数可配 0/1/2 次，中途成功一轮自动恢复额度 |
+
+### AI 后端
+OpenAI 兼容协议（默认 DeepSeek），可指向任意兼容端点。思考流（`reasoning_content`）单独渲染进「思考框」。
 
 ## 运行
 
@@ -59,7 +70,7 @@ cursor-local/
 ├── main/
 │   └── testing.js         # 开发期自动化：截图 / 回归 / 诊断 / 性能实测
 ├── modules/               # 业务模块（单一职责，均以工厂函数 + 依赖注入组织）
-│   ├── agent.js           #   Agent 引擎：工具循环、沙箱、审批流、SSE 流式解析
+│   ├── agent.js           #   AI 引擎：工具循环、沙箱、审批流、SSE 流式、计划—执行、子任务、失败自愈
 │   ├── agent/tools.js     #  10 个工具实现（依赖全部外部注入，便于隔离测试）
 │   ├── ai.js              #   LLM 对话、补全、选区编辑、内联改写、诊断
 │   ├── auth.js            #   用户系统：注册 / 登录 / 会话
@@ -68,7 +79,7 @@ cursor-local/
 │   ├── git.js             #   Git 状态/diff/暂存/提交/分支，1200ms TTL 缓存
 │   ├── log.js             #   日志模块（debug/info/warning/error，上限 1500 条）
 │   ├── memory.js          #   记忆与规则（global / project 两级作用域）
-│   ├── session.js         #   会话持久化、导出、文件回滚
+│   ├── session.js         #   会话持久化、轨迹导出（exportTrajectory）、文件回滚
 │   └── terminal.js        #   终端实例管理（xterm 双向流）
 ├── store/
 │   ├── user-store.js      #   用户存储：scrypt 加盐哈希、配置加密
@@ -76,15 +87,15 @@ cursor-local/
 ├── renderer/              # 渲染层（core.js 零副作用，最先加载）
 │   ├── index.html         #   主窗口结构
 │   ├── style.css          #   全局样式与主题变量
-│   ├── renderer.js        #   顶层逻辑：视图切换、设置面板、状态栏、启动
+│   ├── renderer.js        #   顶层逻辑：视图与 AI 面板显隐、设置面板、状态栏、启动
 │   ├── core.js            #   escapeHtml 等公共纯函数（统一入口）
-│   ├── agents.js          #   Agents 工作台：增量 DOM 渲染 + 行级 LCS diff
-│   ├── editor.js          #   Editor 窗口：文件树 + 标签页 + Monaco
+│   ├── agents.js          #   AI 面板会话渲染：增量 DOM 复用 + 行级 LCS diff + 计划/自愈/子任务卡
+│   ├── ai-panel.js        #   AI 面板外壳：折叠/展开、拖拽调宽、状态持久化、轨迹导出入口
+│   ├── editor.js          #   编辑器：文件树 + 标签页 + Monaco
 │   ├── editor/
 │   │   ├── filetree.js    #     文件树：懒加载 + Git 标记
 │   │   ├── breadcrumb.js  #     面包屑导航
 │   │   └── preview.js     #     Markdown 预览 + 媒体预览
-│   ├── ai-panel.js        #   AI 搭子面板（显隐管理）
 │   ├── inline.js          #   内联改写浮层
 │   ├── diagnose.js        #   AI 代码诊断面板
 │   ├── git.js             #   Git 侧栏：更改列表、diff、分支、历史
@@ -114,7 +125,7 @@ cursor-local/
 │       ├── release-ops.js      #   门禁 070-089 发布防护
 │       ├── build-matrix.js     #   验收矩阵生成
 │       └── index.js            #   门禁编排入口
-├── test/                  # 237 项单元测试
+├── test/                  # 253 项单元测试
 │   ├── helpers/           #   测试地基（harness / agent-harness）
 │   └── *.test.js          #   agent、agent-tools、git、fs-grep、session…
 ├── outputs/               # 验证产物（基线清单、门禁结果、验收矩阵）
@@ -141,7 +152,7 @@ cursor-local/
 ### 常用命令
 
 ```bash
-npm test                    # 237 项单元测试
+npm test                    # 253 项单元测试
 npm run test:coverage       # 核心模块真实行覆盖率
 npm run verify:smoke        # 119 项全维烟测
 npm run verify:gates        # 90 项质量门禁（含三态汇总与失败明细）
@@ -159,10 +170,10 @@ npm run release:rollback    # 沙箱无损回滚演练
 
 | 验证项 | 结果 |
 | --- | --- |
-| 单元测试 | **237 / 237 通过**（2.7s） |
+| 单元测试 | **253 / 253 通过** |
 | 核心模块行覆盖率 | **92.35%**（分支 95.42%、函数 98.15%） |
-| 全维烟测 | 117 通过 / 1 失败 / 1 环境受限（119 项） |
-| 质量门禁 | 88 通过 / 2 失败 / 0 环境受限（90 项，通过率 97.78%） |
+| 全维烟测 | **118 通过 / 0 失败 / 1 环境受限**（119 项） |
+| 质量门禁 | **90 通过 / 0 失败 / 0 环境受限**（90 项，通过率 100%） |
 
 核心模块覆盖率明细：
 

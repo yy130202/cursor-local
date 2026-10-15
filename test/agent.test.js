@@ -684,3 +684,97 @@ test('stop 父任务时级联停止子 agent', () => {
   assert.equal(parent.status, 'stopped');
   assert.equal(child.status, 'stopped', '子任务应被级联停止');
 });
+
+/* ---- 自愈重试（阶段5新增） ---- */
+test('工具失败时触发自愈：注入错误上下文并让模型换策略后成功', async () => {
+  // 第 1 轮：run_command 失败（非零退出）；第 2 轮：模型换策略后成功总结
+  let attempt = 0;
+  const h = createAgentHarness({
+    handlers: () => ({ run_command: async () => { attempt += 1; return attempt === 1 ? '退出码: 1\nvite: command not found' : '退出码: 0\nok'; } }),
+    fetch: responses(
+      [sse(toolsDelta([['run_command', { command: 'vite build' }]]))], // 第 1 轮：失败
+      [sse(toolsDelta([['run_command', { command: 'npx vite build' }]]))], // 第 2 轮：换策略
+      [sse({ content: '构建成功。' })] // 第 3 轮：收尾
+    )
+  });
+  const healEv = watchEvent(h, (e) => e.kind === 'heal');
+  const agent = h.makeAgent();
+  await h.api.runAgent(agent);
+
+  const ev = await healEv;
+  assert.equal(ev.name, 'run_command');
+  assert.equal(ev.attempt, 1);
+  assert.match(ev.reason, /command not found/);
+  // 错误上下文应以 user 消息注入（模型能看到失败原因与「换策略」要求）
+  assert.ok(agent.messages.some((m) => m.role === 'user' && /上一步 `run_command` 失败了/.test(m.content || '')));
+  // 第 2 轮换策略后成功
+  assert.equal(agent.status, 'done');
+  assert.ok(agent.log.some((e) => e.kind === 'tool_result' && /退出码: 0/.test(e.result)));
+});
+
+test('自愈：失败轮次的每个 tool_call 都有配对的 tool 消息回填（防 API 拒答）', async () => {
+  // 一轮内并发两个工具调用，两个都失败 → 两个都必须回填 tool 消息
+  const h = createAgentHarness({
+    handlers: () => ({ run_command: async () => '退出码: 2\nboom' }),
+    fetch: responses(
+      [sse(toolsDelta([['run_command', { command: 'a' }], ['run_command', { command: 'b' }]]))],
+      [sse({ content: '两次都失败了，我改用别的方式。' })]
+    )
+  });
+  const agent = h.makeAgent();
+  await h.api.runAgent(agent);
+
+  // 找出所有带 tool_calls 的 assistant 消息，其 id 集合应与后续 tool 消息的 tool_call_id 集合一致
+  for (const m of agent.messages) {
+    if (m.role !== 'assistant' || !m.tool_calls || !m.tool_calls.length) continue;
+    const ids = m.tool_calls.map((c) => c.id);
+    const replied = agent.messages.filter((x) => x.role === 'tool' && ids.includes(x.tool_call_id));
+    assert.equal(replied.length, ids.length, `assistant 的 ${ids.length} 个 tool_call 应全部有 tool 消息回填，实际 ${replied.length}`);
+  }
+});
+
+test('自愈次数受 config.healRetries 限制，连续失败不会无限重试', async () => {
+  // healRetries=0：不注入自愈，直接继续
+  const h0 = createAgentHarness({
+    config: { healRetries: 0 },
+    handlers: () => ({ run_command: async () => '退出码: 1\nfail' }),
+    fetch: responses(
+      [sse(toolsDelta([['run_command', { command: 'x' }]]))],
+      [sse({ content: '失败后直接收尾。' })]
+    )
+  });
+  const agent0 = h0.makeAgent();
+  await h0.api.runAgent(agent0);
+  assert.equal(agent0.log.filter((e) => e.kind === 'heal').length, 0, 'healRetries=0 时不应触发自愈');
+
+  // healRetries=1：连续失败只自愈一次
+  const h1 = createAgentHarness({
+    config: { healRetries: 1 },
+    handlers: () => ({ run_command: async () => '退出码: 1\nfail' }),
+    fetch: responses(
+      [sse(toolsDelta([['run_command', { command: 'x' }]]))], // 失败 → 自愈 1
+      [sse(toolsDelta([['run_command', { command: 'y' }]]))], // 再失败 → 超预算，不再自愈
+      [sse({ content: '仍失败，停止尝试。' })]
+    )
+  });
+  const agent1 = h1.makeAgent();
+  await h1.api.runAgent(agent1);
+  assert.equal(agent1.log.filter((e) => e.kind === 'heal').length, 1, '连续失败应只自愈 1 次');
+});
+
+test('中途成功一轮后自愈预算恢复（允许「失败→成功→再失败」再自愈）', async () => {
+  let cmd = 0;
+  const h = createAgentHarness({
+    config: { healRetries: 1 },
+    handlers: () => ({ run_command: async () => { cmd += 1; return cmd === 2 ? '退出码: 0\nok' : '退出码: 1\nfail'; } }),
+    fetch: responses(
+      [sse(toolsDelta([['run_command', { command: 'a' }]]))], // 失败 → 自愈 1（计数 1）
+      [sse(toolsDelta([['run_command', { command: 'b' }]]))], // 成功 → 计数归零
+      [sse(toolsDelta([['run_command', { command: 'c' }]]))], // 再失败 → 预算已恢复，可再自愈
+      [sse({ content: '先成功后失败，已记录。' })]
+    )
+  });
+  const agent = h.makeAgent();
+  await h.api.runAgent(agent);
+  assert.equal(agent.log.filter((e) => e.kind === 'heal').length, 2, '中间成功一轮后应恢复自愈预算');
+});

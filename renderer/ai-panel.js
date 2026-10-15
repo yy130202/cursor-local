@@ -87,8 +87,16 @@
     if (input) setTimeout(() => input.focus(), 60);
   }
   window.__focusAiPanel = focusAiPanel;
+  /*
+   * 暴露 setCollapsed 作为折叠状态的「唯一写入点」。
+   * 教训：switchMode('editor') 早期只 add('ai-collapsed') 类名，没有清掉
+   * setCollapsed(false) 留在元素上的内联 width，于是类名变了、宽度仍是 460px，
+   * 面板看似收起却仍占位。折叠必须同时改类名与内联宽度，故统一走这里。
+   */
+  window.__setAiPanelCollapsed = (v) => setCollapsed(!!v);
   CL.aiPanel.focus = focusAiPanel;
   CL.aiPanel.toggle = toggle;
+  CL.aiPanel.setCollapsed = setCollapsed;
   CL.aiPanel.setWidth = setWidth;
 
   /* ---- 事件绑定 ---- */

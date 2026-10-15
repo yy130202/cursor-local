@@ -4,10 +4,16 @@
  * switchMode 保留以兼容既有调用点：home/agents 归一为展开 AI 面板，
  * editor 折叠 AI 面板让编辑器全宽。 */
 function switchMode(mode) {
-  const panel = document.getElementById('ai-panel');
-  if (!panel) return;
-  if (mode === 'editor') panel.classList.add('ai-collapsed');
-  else panel.classList.remove('ai-collapsed');
+  // 折叠必须走 ai-panel 的 setCollapsed（它同时管类名与内联宽度）；
+  // 只改类名会留下 setCollapsed(false) 写入的内联 width，面板收起后仍占位。
+  const setCollapsed = window.__setAiPanelCollapsed;
+  if (typeof setCollapsed === 'function') {
+    setCollapsed(mode === 'editor');
+  } else {
+    const panel = document.getElementById('ai-panel');
+    if (!panel) return;
+    panel.classList.toggle('ai-collapsed', mode === 'editor');
+  }
   if (mode === 'agents' && typeof window.__focusAiPanel === 'function') window.__focusAiPanel();
 }
 
@@ -33,6 +39,8 @@ async function openSettings() {
   if (aiToggle) aiToggle.classList.toggle('on', cfg.aiComplete !== false);
   const permSeg = document.getElementById('cfg-permission-seg');
   if (permSeg) permSeg.querySelectorAll('button').forEach((b) => b.classList.toggle('active', b.dataset.v === (cfg.permission || 'safe')));
+  const healSeg = document.getElementById('cfg-heal-seg');
+  if (healSeg) healSeg.querySelectorAll('button').forEach((b) => b.classList.toggle('active', b.dataset.v === String(cfg.healRetries == null ? 1 : cfg.healRetries)));
   const lightToggle = document.getElementById('cfg-light-mode');
   if (lightToggle) lightToggle.classList.toggle('on', (cfg.theme && cfg.theme.mode) === 'light');
   const fsSel = document.getElementById('cfg-font-size');
@@ -106,12 +114,15 @@ document.getElementById('cfg-save').onclick = async () => {
   const aiToggle = document.getElementById('cfg-ai-complete');
   const permSeg = document.getElementById('cfg-permission-seg');
   const permActive = permSeg && permSeg.querySelector('button.active');
+  const healSeg = document.getElementById('cfg-heal-seg');
+  const healActive = healSeg && healSeg.querySelector('button.active');
   const cfg = await window.api.setConfig({
     baseUrl: document.getElementById('cfg-baseurl').value.trim(),
     apiKey: document.getElementById('cfg-apikey').value.trim(),
     model: document.getElementById('cfg-model').value.trim(),
     aiComplete: aiToggle ? aiToggle.classList.contains('on') : true,
-    permission: permActive ? permActive.dataset.v : 'safe'
+    permission: permActive ? permActive.dataset.v : 'safe',
+    healRetries: healActive ? Number(healActive.dataset.v) : 1
   });
   window.__aiCompleteEnabled = cfg.aiComplete !== false;
   modal.classList.add('hidden');
@@ -135,6 +146,11 @@ if (aiToggleBtn) aiToggleBtn.onclick = () => aiToggleBtn.classList.toggle('on');
 const permSegEl = document.getElementById('cfg-permission-seg');
 if (permSegEl) permSegEl.querySelectorAll('button').forEach((b) => {
   b.onclick = () => permSegEl.querySelectorAll('button').forEach((x) => x.classList.toggle('active', x === b));
+});
+// 失败自愈重试档位（0/1/2 次）
+const healSegEl = document.getElementById('cfg-heal-seg');
+if (healSegEl) healSegEl.querySelectorAll('button').forEach((b) => {
+  b.onclick = () => healSegEl.querySelectorAll('button').forEach((x) => x.classList.toggle('active', x === b));
 });
 // 亮色模式开关（即时切换）
 const lightToggleBtn = document.getElementById('cfg-light-mode');

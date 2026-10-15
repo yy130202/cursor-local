@@ -2430,7 +2430,7 @@ svg.lucide { color: #fff; }
 #ai-panel.ai-collapsed #ai-body { visibility: hidden; }
 
 /* 侧栏在面板内收窄 */
-#ai-panel #agents-sidebar { width: 190px; flex-shrink: 0; }
+#ai-panel #agents-sidebar { width: 168px; flex-shrink: 0; }
 #ai-panel #agents-main { flex: 1; min-width: 0; }
 
 /* 空状态：原相对 agents-main 定位，sidebar 已移出 main，基准改 0 */
@@ -2445,7 +2445,6 @@ svg.lucide { color: #fff; }
 /* 窄窗口：面板自动收窄 */
 @media (max-width: 1180px) {
   #ai-panel:not(.ai-collapsed) { width: 400px; }
-  #ai-panel #agents-sidebar { width: 168px; }
 }
 
 /* 工具卡耗时徽标（Trajectory 可视化） */
@@ -2517,3 +2516,109 @@ svg.lucide { color: #fff; }
   border-left: 1px solid rgba(255, 255, 255, .22); border-bottom: 1px solid rgba(255, 255, 255, .22);
   margin-right: 6px; flex-shrink: 0;
 }
+
+/* ==================== 自愈重试卡 ==================== */
+.heal-card { border-left: 2px solid #e3b23c; }
+.heal-card .head { display: flex; align-items: center; gap: 8px; }
+.heal-card .tag.heal-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 6px;
+  background: rgba(227, 178, 60, .15); color: #e3b23c;
+}
+.heal-card .tag.heal-tag svg.lucide { width: 11px; height: 11px; }
+.heal-card .heal-info { font-size: 10.5px; font-family: Consolas, monospace; color: var(--text-dim); }
+.heal-card .heal-reason {
+  margin-top: 8px; padding: 8px 10px; border-radius: 6px;
+  background: rgba(227, 178, 60, .07); border: 1px solid rgba(227, 178, 60, .18);
+  font-size: 11.5px; color: var(--text-dim); line-height: 1.6;
+  max-height: 120px; overflow: auto; white-space: pre-wrap; word-break: break-all;
+}
+
+/* ==========================================================
+   AI 搭子面板：布局与配色修正
+   ========================================================== */
+
+/* 折叠是硬不变量：宽度必为 0。
+   加 !important 是因为面板宽度平时由 ai-panel.js 的内联 style 写入
+   （拖拽调宽 / 恢复持久化宽度），内联优先级高于类选择器；
+   一旦某条路径只改类名不清内联宽度，面板就会「收起但仍占位」。
+   这里把折叠态的宽度钉死，任何内联写入都无法破坏它。 */
+#ai-panel.ai-collapsed {
+  width: 0 !important;
+  min-width: 0 !important;
+  border-left-width: 0 !important; /* content-box 下 1px 边框会让 0 宽度残留 1px */
+}
+
+/* 文件树面板与 AI 面板侧栏并入纯黑主题（原先保留旧深灰，与纯黑背景不协调） */
+#filetree-panel, #ai-panel #agents-sidebar {
+  background: rgba(255, 255, 255, .028);
+}
+
+/* 会话侧栏收窄，给对话区留出更多横向空间（原 190px 下计划卡按钮会被截断） */
+#ai-panel #agents-sidebar { width: 168px; }
+
+/* 计划卡的「批准并执行 / 重新规划」允许换行，窄面板下不裁切文字 */
+.plan-card .plan-actions { flex-wrap: wrap; }
+.plan-card .plan-actions .action { padding: 5px 10px; white-space: nowrap; }
+
+/* 自愈卡的信息行允许换行（工具名 + 第 n/m 次） */
+.heal-card .head { flex-wrap: wrap; }
+
+/* 窄窗口下侧栏再收一档 */
+@media (max-width: 1180px) {
+  #ai-panel #agents-sidebar { width: 150px; }
+}
+
+/* ---- 空状态定位修正 ----
+   原规则用 inset 的左侧硬编码偏移（240px / 300px）来「避开」左侧栏，
+   绝对定位的实际基准是视口（#editor-main / #agents-main 都没有 position），
+   于是面板展开时空状态会跑到 AI 面板底下。
+   改为让容器成为定位基准，空状态直接铺满自己的列，偏移不再需要硬编码。 */
+#editor-main { position: relative; }
+#editor-empty { inset: 0; }
+#agents-main { position: relative; background: transparent; }
+#agents-empty { inset: 0; }
+
+/* ---- AI 面板头部按钮 ----
+   这些按钮此前只继承了 padding 规则，没有背景/边框/配色声明，
+   于是回落到浏览器默认 <button>（浅灰底 + 黑字 + 2px 边框），
+   在纯黑面板上是一排刺眼的浅色方块。
+   这里按面板语言补齐：透明底、无边框、暗色图标、hover 提亮。 */
+#ai-panel-head .icon-btn,
+#ai-panel .icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; border: none; border-radius: 6px;
+  color: var(--text-dim); cursor: pointer; font: inherit;
+}
+#ai-panel-head .icon-btn:hover,
+#ai-panel .icon-btn:hover { background: rgba(255, 255, 255, .1); color: #fff; }
+#ai-panel-head .icon-btn:active { transform: scale(.94); }
+
+/* ---- 侧栏按钮纳入纯黑极简 ----
+   .new-task-btn / .panel-title button 原本用主题强调色（蓝）实心，
+   那是「独立 Agents 页」的视觉；收进编辑器右侧分栏后过重，
+   且与已确立的单色面板语言冲突。改为单色，hover 用半透明白提亮。 */
+#ai-panel .new-task-btn {
+  background: rgba(255, 255, 255, .06);
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+  box-shadow: none;
+  font-size: 12px; padding: 6px 10px;
+}
+#ai-panel .new-task-btn:hover {
+  background: rgba(255, 255, 255, .13);
+  color: #fff;
+  border-color: rgba(255, 255, 255, .2);
+  box-shadow: none;
+}
+#ai-panel .panel-title button {
+  background: rgba(255, 255, 255, .07);
+  color: var(--text);
+  box-shadow: none;
+  border-radius: 5px; padding: 3px 8px; font-size: 11px;
+}
+#ai-panel .panel-title button:hover { background: rgba(255, 255, 255, .15); color: #fff; }
+
+/* 会话侧栏标题与历史区标题统一为小号暗色标签 */
+#ai-panel .panel-title { color: var(--text-dim); letter-spacing: .06em; text-transform: uppercase; }
+#ai-panel .history-title { color: var(--text-dim); }

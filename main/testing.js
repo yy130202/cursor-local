@@ -92,6 +92,22 @@ function createTesting({ winRef, agents, rootDir, config, agentApi, sessionApi, 
   try {
     await sleep(2500); // 等待 monaco 加载
 
+    /* 布局探针（排查面板折叠/占位问题）：打印关键容器几何与背景 */
+    const layoutProbe = async (tag) => {
+      const out = await winRef().webContents.executeJavaScript(`(() => {
+        const w = (id) => { const e = document.getElementById(id); if (!e) return null; const r = e.getBoundingClientRect(); const cs = getComputedStyle(e); return { w: Math.round(r.width), l: Math.round(r.left), vis: cs.visibility, bg: cs.backgroundColor }; };
+        return JSON.stringify({
+          innerW: window.innerWidth,
+          editorView: w('editor-view'), filetreePanel: w('filetree-panel'), editorMain: w('editor-main'),
+          aiPanel: w('ai-panel'), aiSidebar: w('agents-sidebar'), aiMain: w('agents-main'), aiHead: w('ai-panel-head'),
+          aiPanelCls: document.getElementById('ai-panel') ? document.getElementById('ai-panel').className : null,
+          aiPanelInline: document.getElementById('ai-panel') ? document.getElementById('ai-panel').style.width : null
+        });
+      })()`);
+      console.log('[layout ' + tag + ']', out);
+      return JSON.parse(out);
+    };
+
     // 1. 编辑器（唯一视图）+ AI 搭子面板结构断言
     const homeDbg = await winRef().webContents.executeJavaScript(`(async () => {
       const bootDebug = window.__bootDebug || null;
@@ -100,6 +116,9 @@ function createTesting({ winRef, agents, rootDir, config, agentApi, sessionApi, 
       // 截图前先穿过锁屏（正常用户路径）
       const ls = document.getElementById('lockscreen');
       if (ls) ls.click();
+      // 显式回到默认态（编辑器全宽 / 面板折叠）：
+      // 面板折叠态是持久化的，不显式设置会让截图取决于上次运行留下的 config
+      if (typeof window.__setAiPanelCollapsed === 'function') window.__setAiPanelCollapsed(true);
       await new Promise((r) => setTimeout(r, 600));
       return JSON.stringify({
         bootDebug, bootError,
@@ -127,7 +146,8 @@ function createTesting({ winRef, agents, rootDir, config, agentApi, sessionApi, 
       return JSON.stringify({ shown: before, clockText: clock ? clock.textContent : 'none', removed: !after });
     })()`);
     console.log('[debug lockscreen]', ls);
-    await captureTo(path.join(shotDir, '01-home.png'));
+    await layoutProbe('home');
+    await captureTo(path.join(shotDir, '01-editor.png'));
 
     // 2. Editor
     await winRef().webContents.executeJavaScript(
@@ -144,7 +164,22 @@ function createTesting({ winRef, agents, rootDir, config, agentApi, sessionApi, 
       return JSON.stringify({ selection: c ? c.toString() : 'none', themeName: ed._themeService ? ed._themeService.getColorTheme().themeName : '?' });
     })()`);
     console.log('[debug deco]', deco);
-    await captureTo(path.join(shotDir, '02-editor.png'));
+    /* 回归断言：折叠态的面板必须真的不占位。
+     * 曾经踩过：switchMode 只切类名没清内联 width，
+     * 于是类名是 ai-collapsed、面板仍占 460px，编辑器被压窄一半。 */
+    const layOut = await layoutProbe('editor-collapsed');
+    const panelW = layOut.aiPanel ? layOut.aiPanel.w : -1;
+    const editorW = layOut.editorMain ? layOut.editorMain.w : -1;
+    if (panelW !== 0) {
+      console.log(`[assert FAIL] AI 面板折叠后宽度应为 0，实际 ${panelW}px（内联 ${layOut.aiPanelInline || '空'}）`);
+      process.exitCode = 1;
+    } else if (editorW < layOut.innerW - 260) {
+      console.log(`[assert FAIL] 编辑器应铺满剩余宽度（≥ ${layOut.innerW - 260}px），实际 ${editorW}px`);
+      process.exitCode = 1;
+    } else {
+      console.log(`[assert OK] 折叠态：面板 ${panelW}px、编辑器 ${editorW}/${layOut.innerW}px`);
+    }
+    // 该步与 01 同为「编辑器全宽」，不再重复产图，仅保留选区颜色与主题诊断
     // 主题诊断放在截图之后（连续切主题会污染画面）
     const themeTest = await winRef().webContents.executeJavaScript(`(async () => {
       const r = {};
@@ -165,7 +200,14 @@ function createTesting({ winRef, agents, rootDir, config, agentApi, sessionApi, 
     await sleep(800);
     const dbg2 = await winRef().webContents.executeJavaScript('JSON.stringify(window.__debugAgents())');
     console.log('[debug agents]', dbg2);
-    await captureTo(path.join(shotDir, '03-agents.png'));
+    const layPanel = await layoutProbe('ai-panel-open');
+    if (!layPanel.aiPanel || layPanel.aiPanel.w < 340) {
+      console.log(`[assert FAIL] AI 面板展开后宽度应 ≥ 340px，实际 ${layPanel.aiPanel ? layPanel.aiPanel.w : 'null'}px`);
+      process.exitCode = 1;
+    } else {
+      console.log(`[assert OK] 展开态：面板 ${layPanel.aiPanel.w}px、侧栏 ${layPanel.aiSidebar ? layPanel.aiSidebar.w : '?'}px`);
+    }
+    await captureTo(path.join(shotDir, '02-ai-panel.png'));
 
     // 新功能断言：命令面板 / 全局搜索 / AI 补全开关
     const feat = await winRef().webContents.executeJavaScript(`(async () => {
@@ -266,7 +308,7 @@ function createTesting({ winRef, agents, rootDir, config, agentApi, sessionApi, 
     // 终端面板截图
     await winRef().webContents.executeJavaScript('window.openTerminal()');
     await sleep(600);
-    await captureTo(path.join(shotDir, '06-terminal.png'));
+    await captureTo(path.join(shotDir, '04-terminal.png'));
     await winRef().webContents.executeJavaScript('document.querySelector(".term-panel") && document.querySelector(".term-panel").classList.add("hidden")');
     // 亮色模式验证 + 截图
     const lightTest = await winRef().webContents.executeJavaScript(`(async () => {
@@ -283,12 +325,12 @@ function createTesting({ winRef, agents, rootDir, config, agentApi, sessionApi, 
     console.log('[debug lightmode]', lightTest);
     await winRef().webContents.executeJavaScript('window.setMode("light")');
     await sleep(400);
-    await captureTo(path.join(shotDir, '04-light.png'));
+    await captureTo(path.join(shotDir, '05-light.png'));
     await winRef().webContents.executeJavaScript('window.setMode("dark")');
     // Git 面板截图
     await winRef().webContents.executeJavaScript('switchMode("editor"); window.openGitPanel()');
     await sleep(500);
-    await captureTo(path.join(shotDir, '05-git.png'));
+    await captureTo(path.join(shotDir, '03-git.png'));
     await winRef().webContents.executeJavaScript('document.querySelector(".git-panel") && document.querySelector(".git-panel").classList.add("hidden")');
     // IDE 体验验证（在 git 面板打开后）：ts worker / 文件树 git 标记 / gutter 标记 / monaco 协议
     const ide = await winRef().webContents.executeJavaScript(`(async () => {

@@ -602,6 +602,7 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
           emitAgent(agent, 'status', { status: 'done' });
           return;
         }
+        let roundFail = null; // 本轮首个失败的工具（整轮结束后统一判定自愈）
         for (const tc of calls) {
           if (agent.status === 'stopped' || agent.status === 'error') return;
           let fnName = tc.function && tc.function.name || 'unknown';
@@ -627,6 +628,33 @@ function createAgentModule({ winRef, addLog, loadConfig, agents, saveSession, ro
           result = String(result);
           emitAgent(agent, 'tool_result', { name: fnName, result: result.slice(0, 3000), ms: Date.now() - __t0 });
           agent.messages.push({ role: 'tool', tool_call_id: tc.id, content: result.slice(0, 12000) });
+          // 记录本轮首个失败（自愈判定统一放到整轮之后，见下）
+          if (!roundFail && (/^ERROR/.test(result) || /退出码: [1-9]/.test(result))) {
+            roundFail = { name: fnName, result };
+          }
+        }
+        /*
+         * 自愈重试（DSH 的失败自愈思路）：工具报错或命令非零退出时，把错误摘要
+         * 追加为一条 user 消息，让模型「分析原因、换策略」，而非原样重发
+         * （run_command 等非幂等工具原样重发会造成重复副作用）。
+         *
+         * 必须放在整轮工具调用「之后」：assistant 消息已带上了本轮全部 tool_calls，
+         * 每个 tool_call 都必须有配对的 tool 消息回填，否则下一轮请求会被 API
+         * 以「tool_calls 未被响应」拒绝。中途 continue 会漏掉回填。
+         *
+         * 计数策略：连续失败才累加，中间只要有一轮全部成功就归零——
+         * 既防止无进展时的死循环，又允许「失败→修正→再失败」的多次自愈。
+         */
+        if (roundFail) {
+          const limit = (cfg.healRetries == null ? 1 : cfg.healRetries);
+          agent.__healNudges = agent.__healNudges || 0;
+          if (limit > 0 && agent.__healNudges < limit) {
+            agent.__healNudges += 1;
+            emitAgent(agent, 'heal', { name: roundFail.name, attempt: agent.__healNudges, limit, reason: roundFail.result.slice(0, 200) });
+            agent.messages.push({ role: 'user', content: '上一步 `' + roundFail.name + '` 失败了：\n' + roundFail.result.slice(0, 1500) + '\n请分析失败原因，换一种策略重试（不要原样重复同样的调用）。' });
+          }
+        } else {
+          agent.__healNudges = 0; // 本轮全部成功 → 自愈预算恢复
         }
       }
       agent.status = 'done';

@@ -203,6 +203,10 @@ function handleAgentEvent(ev) {
       closeStreaming(a);
       a.entries.push({ kind: 'change', path: ev.path, relPath: ev.relPath, before: ev.before, after: ev.after, existed: ev.existed });
       break;
+    case 'heal':
+      closeStreaming(a);
+      a.entries.push({ kind: 'heal', name: ev.name, attempt: ev.attempt, limit: ev.limit, reason: ev.reason });
+      break;
     case 'plan':
       closeStreaming(a);
       a.entries.push({ kind: 'plan', text: ev.text });
@@ -447,15 +451,16 @@ function buildChangeCard(en, a) {
  */
 function sigOf(en) {
   switch (en.kind) {
-    case 'user': return 'u:' + en.text;
-    case 'agent-msg': return 'm:' + (en.streaming ? '1' : '0') + ':' + en.text;
-    case 'tool': return 't:' + en.name + (en.result ? 1 : 0) + (en.live ? en.live.length : 0) + (en.ms || '');
+    case 'user': return 'u' + en.text;
+    case 'agent-msg': return 'm' + !!en.streaming + en.text;
+    case 'tool': return 't' + en.name + !!en.result + (en.live || []).length + (en.ms || '');
+    case 'heal': return 'h' + en.name + en.attempt;
     case 'plan': return 'p' + en.text.length;
     case 'subtask': return 's' + en.id + en.status;
-    case 'approval': return 'a:' + (en.resolved ? (en.allowed ? '1' : '0') : 'p');
-    case 'change': return 'c:' + (en.reverted ? '1' : '0');
-    case 'error': return 'e:' + en.text;
-    default: return 'x:' + en.kind;
+    case 'approval': return 'a' + (en.resolved ? !!en.allowed : 'p');
+    case 'change': return 'c' + !!en.reverted;
+    case 'error': return 'e' + en.text;
+    default: return 'x' + en.kind;
   }
 }
 
@@ -509,6 +514,17 @@ function buildEntryNode(en, isLast) {
     const trEl = card.querySelector('.tool-result');
     if (trEl) trEl.onclick = () => card.classList.toggle('open');
     d.appendChild(card);
+    return { node: d };
+  }
+  if (en.kind === 'heal') {
+    // 自愈重试提示卡：模型带着错误上下文换策略重试
+    d.className = 'entry heal-card' + inCls;
+    d.innerHTML =
+      '<div class="head">' +
+        '<span class="tag heal-tag">' + (window.lucideIcon('heart-pulse') || '') + '自愈重试</span>' +
+        '<span class="heal-info">' + CL.util.escapeHtml(en.name || '') + ' · 第 ' + (en.attempt || 1) + '/' + (en.limit || 1) + ' 次</span>' +
+      '</div>' +
+      '<div class="heal-reason">' + CL.util.escapeHtml(String(en.reason || '').slice(0, 300)) + '</div>';
     return { node: d };
   }
   if (en.kind === 'subtask') {
@@ -927,15 +943,19 @@ window.__demoAgentEntry = function () {
   agentsState.agents.set(id, {
     id,
     task: '阅读项目结构，为 src/utils 添加日期格式化工具函数并补全测试',
-    cwd: 'H:\\workbubby\\2026-09-24-16-34-02\\cursor-clone',
+    cwd: 'H:////workbubby////2026-09-24-16-34-02////cursor-clone',
     status: 'running',
     entries: [
       { kind: 'user', text: '阅读项目结构，为 src/utils 添加日期格式化工具函数并补全测试' },
       { kind: 'agent-msg', text: '好的，我先查看项目的目录结构，了解现有代码组织方式。' },
-      { kind: 'tool', name: 'list_dir', args: { path: '.' }, ms: 18, result: 'main.js\npackage.json\nrenderer/\n  index.html\n  style.css\n  editor.js\n  agents.js\n  renderer.js' },
+      { kind: 'tool', name: 'list_dir', args: { path: '.' }, ms: 18, result: 'main.js\npackage.json\nsrc/\nrenderer/\n  index.html\n  style.css\n  agents.js' },
       { kind: 'tool', name: 'read_file', args: { path: 'package.json' }, ms: 9, result: '{\n  "name": "cursor-local",\n  "version": "0.1.0",\n  "main": "main.js"\n}' },
+      { kind: 'plan', text: '1. 读取 src/utils 现有导出，确认命名风格\n2. 新增 src/utils/date.js，导出 formatDate / parseDate\n3. 补 src/utils/date.test.js 覆盖边界（null / 非法日期 / 时区）\n4. 运行 node --test src/utils 验证\n\n涉及文件：src/utils/date.js、src/utils/date.test.js\n\n风险：时区处理易受本地环境影响，回滚方式为删除新增两个文件。' },
       { kind: 'change', relPath: 'src/utils/date.js', before: null, after: 'export function formatDate(d) {\n  return d.toISOString().slice(0, 10);\n}\n', existed: false },
-      { kind: 'tool', name: 'run_command', args: { command: 'node --test src/utils' }, ms: 1240, result: '退出码: 0\n✔ formatDate (2ms)\n\n1 pass, 0 fail' }
+      { kind: 'heal', name: 'run_command', attempt: 1, limit: 1, reason: '退出码: 127\nsh: vite: command not found\n上一步使用的本地 vite 未安装。' },
+      { kind: 'tool', name: 'run_command', args: { command: 'npx --no-install node --test src/utils' }, ms: 1240, result: '退出码: 0\n✔ formatDate (2ms)\n✔ parseDate (1ms)\n\n2 pass, 0 fail' },
+      { kind: 'subtask', id: 'agent-sub-1', task: '为 formatDate 补时区与时区偏移的边界用例并跑通测试', status: 'done' },
+      { kind: 'agent-msg', text: '已完成：新增 src/utils/date.js（formatDate / parseDate）与 date.test.js，2 个用例通过。子任务补充的时区边界用例也已并入。' }
     ]
   });
   selectAgent(id);

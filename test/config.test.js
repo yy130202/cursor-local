@@ -49,7 +49,8 @@ for (const [name, contents] of [['missing', undefined], ['invalid JSON', '{not-j
       baseUrl: 'https://api.deepseek.com/v1', apiKey: '', model: 'deepseek-flash',
       lastFolder: '', theme: { preset: 'aurora', custom: null }, aiComplete: true,
       permission: 'safe', keybindings: {}, fontSize: 14, tabSize: 2,
-      autoSave: false, wordWrap: 'off', largeFileThreshold: 1048576, lockscreen: true
+      autoSave: false, wordWrap: 'off', largeFileThreshold: 1048576, lockscreen: true,
+      healRetries: 1
     });
   });
 }
