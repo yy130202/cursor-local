@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-15T11:15:43.013Z",
-  "durationMs": 19276,
+  "generatedAt": "2026-10-15T11:33:24.666Z",
+  "durationMs": 18734,
   "total": 90,
   "passed": 90,
   "failed": 0,
@@ -16,12 +16,12 @@
         "kind": "static-scan",
         "value": {
           "files": 73,
-          "chars": 1063462,
+          "chars": 1063926,
           "dirty": 0,
           "exempted": 2
         },
-        "detail": "递归扫描 73 个源码文件（js/json/html/css/md），累计 1,063,462 字符，真实编码损坏 0 处；另有 2 处为讲解坏字符处理的有意示例（已豁免）: CLAUDE.md:58 文档示例, scripts/gates/static-compliance.js:418 文档示例",
-        "hash": "a855f636048a",
+        "detail": "递归扫描 73 个源码文件（js/json/html/css/md），累计 1,063,926 字符，真实编码损坏 0 处；另有 2 处为讲解坏字符处理的有意示例（已豁免）: CLAUDE.md:58 文档示例, scripts/gates/static-compliance.js:418 文档示例",
+        "hash": "dbbb50153793",
         "metric": null,
         "unit": "char"
       },
@@ -501,10 +501,10 @@
           "pass": 253,
           "fail": 0,
           "total": 253,
-          "durationMs": 6948
+          "durationMs": 6754
         },
-        "detail": "node:test isolation:'none' 真实执行 253 个用例：通过 253，失败 0，耗时 6948ms。分文件：agent-tools.test.js:85 agent.test.js:52 agents-render.test.js:28 config.test.js:14 filetree-gitmark.test.js:13 fs-grep.test.js:10 git.test.js:13 release-guard.test.js:4 session.test.js:18 user-store.test.js:16",
-        "hash": "16c591f6ac79",
+        "detail": "node:test isolation:'none' 真实执行 253 个用例：通过 253，失败 0，耗时 6754ms。分文件：agent-tools.test.js:85 agent.test.js:52 agents-render.test.js:28 config.test.js:14 filetree-gitmark.test.js:13 fs-grep.test.js:10 git.test.js:13 release-guard.test.js:4 session.test.js:18 user-store.test.js:16",
+        "hash": "e4350adbcd52",
         "metric": null,
         "unit": "test"
       },
@@ -807,12 +807,12 @@
       "evidence": {
         "kind": "metric",
         "value": {
-          "durationMs": 6948,
+          "durationMs": 6754,
           "total": 253,
-          "perSecond": 36.4
+          "perSecond": 37.5
         },
-        "detail": "真实执行 253 个用例耗时 6948ms（36.4 用例/秒），在 15000ms 预算内；测量方式为 node:test isolation:'none' 进程内执行，含模块加载与断言开销",
-        "hash": "4acd406ede87",
+        "detail": "真实执行 253 个用例耗时 6754ms（37.5 用例/秒），在 15000ms 预算内；测量方式为 node:test isolation:'none' 进程内执行，含模块加载与断言开销",
+        "hash": "3c4ab181f27e",
         "metric": null,
         "unit": "ms"
       },
@@ -1063,11 +1063,11 @@
       "evidence": {
         "kind": "metric",
         "value": {
-          "ms": 1.04,
+          "ms": 1.71,
           "bytes": 165092
         },
-        "detail": "hrtime 真实计时：读取 renderer/index.html(25113B) + tokens.css(6669B) + style.css(133310B) 同步耗时 1.04ms（门槛 <50ms，本地磁盘无网络往返）",
-        "hash": "e507053cbcc9",
+        "detail": "hrtime 真实计时：读取 renderer/index.html(25113B) + tokens.css(6669B) + style.css(133310B) 同步耗时 1.71ms（门槛 <50ms，本地磁盘无网络往返）",
+        "hash": "02080fa6dce5",
         "metric": null,
         "unit": "ms"
       },
@@ -1081,11 +1081,11 @@
       "evidence": {
         "kind": "metric",
         "value": {
-          "heapUsedMb": 24.24,
-          "rssMb": 94.89
+          "heapUsedMb": 12.59,
+          "rssMb": 76.93
         },
-        "detail": "门禁进程真实内存快照：heapUsed 24.24MB、rss 94.89MB，远低于 800MB 告警水位",
-        "hash": "2a1fd4708091",
+        "detail": "门禁进程真实内存快照：heapUsed 12.59MB、rss 76.93MB，远低于 800MB 告警水位",
+        "hash": "0e24ef6e21ed",
         "metric": null,
         "unit": "MB"
       },
@@ -1295,10 +1295,10 @@
       "evidence": {
         "kind": "artifact",
         "value": {
-          "sha": "b63ac3452db514ca"
+          "sha": "cf97d4ad95e921f8"
         },
-        "detail": "checksum.sha256 记录 b63ac3452db514ca…；重算一致；将 operator 篡改为 attacker 后哈希立即失配，防篡改有效",
-        "hash": "280adc557d03",
+        "detail": "checksum.sha256 记录 cf97d4ad95e921f8…；重算一致；将 operator 篡改为 attacker 后哈希立即失配，防篡改有效",
+        "hash": "7812a69544f2",
         "metric": null,
         "unit": "byte"
       },
@@ -1458,11 +1458,11 @@
         "kind": "artifact",
         "value": {
           "files": 46,
-          "createdAt": "2026-10-15T11:15:40.762Z",
+          "createdAt": "2026-10-15T11:33:22.646Z",
           "operator": "release-gate"
         },
-        "detail": "备份快照 46 个文件均带 64 位 sha256，元数据含时间戳 2026-10-15T11:15:40.762Z、责任人 release-gate、恢复指引与 checksum.sha256 校验值",
-        "hash": "77fe5c826cbb",
+        "detail": "备份快照 46 个文件均带 64 位 sha256，元数据含时间戳 2026-10-15T11:33:22.646Z、责任人 release-gate、恢复指引与 checksum.sha256 校验值",
+        "hash": "61dcef212b40",
         "metric": null,
         "unit": "file"
       },

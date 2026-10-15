@@ -73,6 +73,9 @@ npm start
 cursor-local/
 ├── main.js                # 主进程入口：模块组装、窗口创建、IPC 注册
 ├── preload.js             # contextBridge 安全暴露 API（渲染层无 Node 能力）
+├── start.bat              # Windows 一键启动（须清 ELECTRON_RUN_AS_NODE）
+├── screenshot-run.js      # SHOT_MODE 截图 + 5 条运行时断言入口
+├── test-agent.js          # TEST_AGENT 沙箱 / 审批 / 加密自测入口
 ├── main/
 │   └── testing.js         # 开发期自动化：截图 / 回归 / 诊断 / 性能实测
 ├── modules/               # 业务模块（单一职责，均以工厂函数 + 依赖注入组织）
@@ -92,7 +95,8 @@ cursor-local/
 │   └── billing.js         #   计费结构占位（BILLING_ENABLED=false，未启用）
 ├── renderer/              # 渲染层（core.js 零副作用，最先加载）
 │   ├── index.html         #   主窗口结构
-│   ├── style.css          #   全局样式与主题变量
+│   ├── tokens.css         #   设计 token 唯一来源（深/浅色、间距、圆角、字号、断点）
+│   ├── style.css          #   全局样式（:root 仅作别名层，不定义 token 值）
 │   ├── renderer.js        #   顶层逻辑：视图与 AI 面板显隐、设置面板、状态栏、启动
 │   ├── core.js            #   escapeHtml 等公共纯函数（统一入口）
 │   ├── agents.js          #   AI 面板会话渲染：增量 DOM 复用 + 行级 LCS diff + 计划/自愈/子任务卡
@@ -128,14 +132,13 @@ cursor-local/
 │       ├── smoke-suite.js      #   119 项全维烟测
 │       ├── static-compliance.js#   门禁 001-040 源码合规
 │       ├── perf-consistency.js #   门禁 041-069 性能与数据一致性
-│       ├── release-ops.js      #   门禁 070-089 发布防护
+│       ├── release-ops.js      #   门禁 070-090 发布防护
 │       ├── build-matrix.js     #   验收矩阵生成
 │       └── index.js            #   门禁编排入口
 ├── test/                  # 253 项单元测试
 │   ├── helpers/           #   测试地基（harness / agent-harness）
 │   └── *.test.js          #   agent、agent-tools、git、fs-grep、session…
-├── outputs/               # 验证产物（基线清单、门禁结果、验收矩阵）
-└── start.bat
+└── outputs/               # 验证产物（基线清单、门禁结果、验收矩阵）
 ```
 
 ## 质量验证体系
@@ -176,27 +179,30 @@ npm run release:rollback    # 沙箱无损回滚演练
 
 | 验证项 | 结果 |
 | --- | --- |
-| 单元测试 | **253 / 253 通过** |
-| 核心模块行覆盖率 | **92.35%**（分支 95.42%、函数 98.15%） |
+| 单元测试 | **253 / 253 通过**（约 12s） |
+| 核心模块行覆盖率 | **98.69%**（分支 88.52%、函数 98.37%） |
 | 全维烟测 | **118 通过 / 0 失败 / 1 环境受限**（119 项） |
 | 质量门禁 | **90 通过 / 0 失败 / 0 环境受限**（90 项，通过率 100%） |
+| 验收矩阵 | **90 PASS / 0 FAIL** |
+| 发布基线 | **46 个核心文件** |
 
 核心模块覆盖率明细：
 
 | 文件 | 行 | 分支 | 函数 |
 | --- | --- | --- | --- |
-| `modules/agent.js` | 98.17% | 93.10% | 100% |
-| `modules/agent/tools.js` | 100% | 98.72% | 100% |
+| `modules/agent.js` | 97.74% | 90.93% | 96.97% |
+| `modules/agent/tools.js` | 100% | 92.86% | 100% |
 | `modules/config.js` | 100% | 100% | 100% |
-| `modules/session.js` | 57.87% | 98.18% | 87.50% |
+| `modules/session.js` | 100% | 71.03% | 100% |
 | `store/user-store.js` | 100% | 100% | 100% |
 
-**当前 2 项失败（GATE-069 / GATE-072）与 1 项烟测失败（SMK-044）是同一个原因**：
-代码改动后未重跑 `npm run release:baseline`，基线清单与工作区哈希不一致。
-这不是代码缺陷，但会让基线校验失去预警意义 —— 修复方式见下方「基线维护工作流」。
+历史上两条「长期真实失败」**均已修复**，勿再当成已知问题：
+
+- **`GATE-016`**（缺许可证声明）→ 已补 MIT `LICENSE` 与 `package.json` 的 `license`/`author`
+- **`GATE-037`**（沙箱覆盖率不达标）→ 补全 `createToolHandlers` 的注入依赖后在 mkdtemp 沙箱内真实驱动工具处理器；同时**把基准从 98% 修正为 70%**（98% 是 `npm run test:coverage` 的口径，与本门禁「单进程直接驱动导出、不加载测试也不 spawn」的口径不可比）
 
 唯一 1 项环境受限（SMK-025）：验证 API Key 加密需要 Electron `safeStorage`（仅主进程可用），
-在纯 Node 测试环境无法执行，故记 `SKIPPED_ENV` 而非通过。
+在纯 Node 测试环境无法执行，故记 `SKIPPED_ENV` 而非通过——这是环境限制，不是失败。
 
 ### 基线维护工作流
 
