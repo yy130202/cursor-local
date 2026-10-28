@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-10-15T13:29:02.219Z",
-  "commit": "17c523cc41a4432880eaee5f75d7a6fde922c60a",
+  "generatedAt": "2026-10-28T13:06:17.860Z",
+  "commit": "2f89479c6ba4d6b24b54cdd91627195a2120916b",
   "tag": "v0.2-design-system",
   "configDigest": {
     "version": "0.1.0",
@@ -21,10 +21,10 @@
   },
   "metrics": {
     "artifactCount": 46,
-    "totalBytes": 716255
+    "totalBytes": 705336
   },
   "missing": [],
-  "setDigest": "32d7992785d7b769701a4c5aa51f1ad3ccbb128f6c73ec95812a78c399701c65",
+  "setDigest": "49bdb09c8832d769348c555961fb9b53bb93d1d822019361a94a90a5317d1d3f",
   "artifacts": [
     {
       "path": "main.js",
@@ -108,8 +108,8 @@
     },
     {
       "path": "renderer/agents.js",
-      "sha256": "f5e4d8a86d10a2785aa476bfcead08c16e574e4e2bf407dcaa0a582ad5909146",
-      "bytes": 52454
+      "sha256": "93285d820746952a25c7d743e4d2b31940ad959688868cb78dfa46df6ce2fb55",
+      "bytes": 52132
     },
     {
       "path": "renderer/ai-panel.js",
@@ -163,8 +163,8 @@
     },
     {
       "path": "renderer/index.html",
-      "sha256": "a54ac5c924c9eb424d9a7f19b00756733a90c209faf8281f62bd4d7a8fa3cb5b",
-      "bytes": 29016
+      "sha256": "33673160b4b585ad2830ad3b977ea562130edec9f73c04ae87270ea74c2118a8",
+      "bytes": 28972
     },
     {
       "path": "renderer/inline.js",
@@ -228,8 +228,8 @@
     },
     {
       "path": "renderer/style.css",
-      "sha256": "03eace8cf188524ad7831d5dfd694d18abe69ca7215accbcaaf30af037fff8e2",
-      "bytes": 147950
+      "sha256": "2a2904b8d2872582a37f0efdb099bb9e6ea48bea1b7efbf40f531aad0d1e769b",
+      "bytes": 138979
     },
     {
       "path": "renderer/terminal.js",
@@ -238,13 +238,13 @@
     },
     {
       "path": "renderer/theme.js",
-      "sha256": "41157395a1dd3bf30ae3773f6e7944e57ce28f03623eb2d8fcd2ca2b49cf4852",
-      "bytes": 14156
+      "sha256": "e2a04115abf572b812d63a8202860b008c6d1a1bcacec77e02598b8e33658a0f",
+      "bytes": 12544
     },
     {
       "path": "renderer/tokens.css",
-      "sha256": "391019912c6eabd8f8bcf920251b82146b66ed197af3bc237c9ac2a2ee7c7c60",
-      "bytes": 10135
+      "sha256": "c06905c1fba8377f69a0540bfb403e144230f2a319b34ec4c1411bc7dfbf14fe",
+      "bytes": 10165
     },
     {
       "path": "store/billing.js",

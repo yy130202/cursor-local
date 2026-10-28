@@ -226,15 +226,7 @@ function handleAgentEvent(ev) {
         }
       }
       a.status = ev.status;
-      // 环境光反馈：运行辉光呼吸 / 完成绿色脉冲
-      if (ev.status === 'running') document.body.classList.add('aura-running');
-      else {
-        document.body.classList.remove('aura-running');
-        if (ev.status === 'done') {
-          document.body.classList.add('aura-done');
-          setTimeout(() => document.body.classList.remove('aura-done'), 1200);
-        }
-      }
+      // 环境光反馈已移除（见 style.css 说明）：状态由灵动岛圆点表达，不再挂 aura-* 类
       if (ev.status !== 'running') {
         closeStreaming(a);
         // 完成后截断 entries，防超长会话内存累积
@@ -693,7 +685,7 @@ function renderTranscriptInner() {
     const t = document.createElement('div');
     t.className = 'thinking entry-in';
     t.innerHTML =
-      '<div class="th-orbit"><span class="th-core"></span></div>' +
+      '<div class="th-orbit"></div>' +
       '<div class="th-main">' +
         '<div class="th-label">' +
           (toolLabel
